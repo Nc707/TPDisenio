@@ -1,0 +1,20 @@
+package edu.inbugwethrust.premier.suite.services;
+
+import java.util.Optional;
+
+import edu.inbugwethrust.premier.suite.dto.HuespedDTO;
+import edu.inbugwethrust.premier.suite.model.Huesped;
+import edu.inbugwethrust.premier.suite.model.TipoDni;
+
+public interface GestorHuespedes {
+
+    Huesped dar_alta_huesped(HuespedDTO dto);
+
+    Huesped dar_alta_huesped_forzar(HuespedDTO dto);
+
+    Optional<Huesped> buscar_por_doc(TipoDni tipo, String numeroDocumento);
+
+    // otros métodos del diagrama que no implementamos ahora:
+    // void modificar_huesped(...);
+    // void baja_huesped(...);
+}
