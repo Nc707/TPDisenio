@@ -1,3 +1,4 @@
+
 function handleSubmit(event) {
     event.preventDefault(); // evita que se envíe el formulario
 
@@ -31,7 +32,8 @@ function handleSubmit(event) {
 
     // actualizar texto del popup
     const popupText = document.getElementById("popup-text");
-    popupText.innerHTML = "El huésped <b>${nombre} ${apellido}</b> ha sido<br>satisfactoriamente cargado al sistema.<br>¿Desea cargar otro?";
+    popupText.innerHTML = `El huésped <b>${nombre} ${apellido}</b> ha sido<br>
+      satisfactoriamente cargado al sistema.<br>¿Desea cargar otro?`;
 
     // mostrar popup
     document.getElementById("modal-confirm").style.display = "flex";

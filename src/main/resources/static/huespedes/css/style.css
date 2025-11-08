@@ -1,100 +1,101 @@
-* {
-   box-sizing: border-box;
-   font-family: Arial, Helvetica, sans-serif;
- }
+<style>
+    * {
+      box-sizng: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
 
- body {
-   margin: 0;
-   background-color: #f3f5f7;
- }
+    body {
+      margin: 0;
+      background-color: #f3f5f7;
+    }
 
- .top-bar {
-   background-color: #003b73;
-   color: #fff;
-   padding: 8px 20px;
-   text-align: right;
-   font-size: 14px;
- }
+    .top-bar {
+      background-color: #003b73;
+      color: #fff;
+      padding: 8px 20px;
+      text-align: right;
+      font-size: 14px;
+    }
 
- .form-container {
-   max-width: 1000px;
-   margin: 30px auto;
-   background-color: #ffffff;
-   padding: 25px 40px 30px;
-   border-radius: 4px;
-   box-shadow: 0 0 8px rgba(0,0,0,0.1);
- }
+    .form-container {
+      max-width: 1000px;
+      margin: 30px auto;
+      background-color: #ffffff;
+      padding: 25px 40px 30px;
+      border-radius: 4px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
 
- .form-container h1 {
-   text-align: center;
-   margin-top: 0;
-   margin-bottom: 20px;
-   color: #003b73;
- }
+    .form-container h1 {
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 20px;
+      color: #003b73;
+    }
 
- .guest-form {
-   display: grid;
-   grid-template-columns: repeat(3, 1fr);
-   column-gap: 25px;
-   row-gap: 10px;
- }
+    .guest-form {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      column-gap: 25px;
+      row-gap: 10px;
+    }
 
- .form-group {
-   display: flex;
-   flex-direction: column;
-   margin-bottom: 8px;
- }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 8px;
+    }
 
- label {
-   font-size: 12px;
-   margin-bottom: 3px;
-   color: #444;
- }
+    label {
+      font-size: 12px;
+      margin-bottom: 3px;
+      color: #444;
+    }
 
- .required {
-   color: #c00;
-   margin-left: 3px;
- }
+    .required {
+      color: #c00;
+      margin-left: 3px;
+    }
 
- input,
- select {
-   padding: 6px 8px;
-   font-size: 12px;
-   border: 1px solid #c4c4c4;
-   border-radius: 2px;
- }
+    input,
+    select {
+      padding: 6px 8px;
+      font-size: 12px;
+      border: 1px solid #c4c4c4;
+      border-radius: 2px;
+    }
 
- .small-inputs {
-   display: grid;
-   grid-template-columns: repeat(3, 1fr);
-   gap: 6px;
- }
+    .small-inputs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
 
- .buttons-row {
-   grid-column: 1 / -1; /* ocupa las 3 columnas */
-   display: flex;
-   justify-content: center;
-   gap: 20px;
-   margin-top: 15px;
- }
+    .buttons-row {
+      grid-column: 1 / -1; /* ocupa las 3 columnas */
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 15px;
+    }
 
- button {
-   padding: 6px 18px;
-   font-size: 12px;
-   border-radius: 3px;
-   border: none;
-   cursor: pointer;
- }
+    button {
+      padding: 6px 18px;
+      font-size: 12px;
+      border-radius: 3px;
+      border: none;
+      cursor: pointer;
+    }
 
- .btn-secondary {
-   background-color: #e0e6ed;
-   color: #000;
- }
+    .btn-secondary {
+      background-color: #e0e6ed;
+      color: #000;
+    }
 
- .btn-primary {
-   background-color: #003b73;
-   color: #fff;
- }
+    .btn-primary {
+      background-color: #003b73;
+      color: #fff;
+    }
     .modal {
   position: fixed;
   inset: 0;
@@ -153,3 +154,4 @@
   gap: 40px;
   padding: 20px 0 30px;
 }
+  </style>
