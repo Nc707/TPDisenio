@@ -6,13 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import edu.inbugwethrust.premier.suite.dto.HuespedDTO;
-import edu.inbugwethrust.premier.suite.mappers.DireccionMapper;
 import edu.inbugwethrust.premier.suite.mappers.HuespedMapper;
 import edu.inbugwethrust.premier.suite.model.CategoriaFiscal;
 import edu.inbugwethrust.premier.suite.model.Huesped;
 import edu.inbugwethrust.premier.suite.model.TipoDni;
 import edu.inbugwethrust.premier.suite.repositories.HuespedDAO;
 import edu.inbugwethrust.premier.suite.services.exceptions.HuespedDuplicadoException;
+import edu.inbugwethrust.premier.suite.validators.HuespedValidator;
 
 @Service
 public class GestorHuespedes implements IGestorHuespedes {
@@ -22,7 +22,7 @@ public class GestorHuespedes implements IGestorHuespedes {
     private final HuespedMapper huespedMapper;
 
     @Autowired
-    public GestorHuespedes(HuespedDAO huespedDAO, HuespedValidator validator, HuespedMapper mapper, DireccionMapper direccionMapper) {
+    public GestorHuespedes(HuespedDAO huespedDAO, HuespedValidator validator, HuespedMapper mapper) {
         this.huespedDAO = huespedDAO;
         this.validator = validator;
         this.huespedMapper = mapper;

@@ -37,7 +37,7 @@ public class HuespedController {
      * Este endpoint emula el botón "ACEPTAR IGUALMENTE" del CU 9.
      * Vuelve a validar obligatorios, pero no rechaza por documento duplicado.
      */
-    @PostMapping("/forzar")
+    @PostMapping("/alta-forzar")
     public ResponseEntity<Huesped> darAltaForzada(@RequestBody HuespedDTO dto) {
         Huesped creado = gestorHuespedes.dar_alta_huesped_forzar(dto);
         return ResponseEntity.ok(creado);
