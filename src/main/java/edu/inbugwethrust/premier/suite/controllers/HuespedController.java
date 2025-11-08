@@ -1,19 +1,21 @@
 package edu.inbugwethrust.premier.suite.controllers;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import edu.inbugwethrust.premier.suite.dto.HuespedDTO;
 import edu.inbugwethrust.premier.suite.model.Huesped;
-import edu.inbugwethrust.premier.suite.services.GestorHuespedes;
+import edu.inbugwethrust.premier.suite.services.IGestorHuespedes;
 
 @RestController
 @RequestMapping("/api/huespedes")
 public class HuespedController {
 
-    private final GestorHuespedes gestorHuespedes;
-
-    public HuespedController(GestorHuespedes gestorHuespedes) {
+    private final IGestorHuespedes gestorHuespedes;
+    
+    @Autowired
+    public HuespedController(IGestorHuespedes gestorHuespedes) {
         this.gestorHuespedes = gestorHuespedes;
     }
 
@@ -23,7 +25,7 @@ public class HuespedController {
      * - Si el doc existe, lanza HuespedDuplicadoException → lo toma el ControllerAdvice
      * - Si todo OK, guarda y devuelve el huésped
      */
-    @PostMapping
+    @PostMapping("/alta")
     public ResponseEntity<Huesped> darAlta(@RequestBody HuespedDTO dto) {
         Huesped creado = gestorHuespedes.dar_alta_huesped(dto);
         // si llegó hasta acá es porque no hubo excepción
