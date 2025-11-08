@@ -1,5 +1,6 @@
 package edu.inbugwethrust.premier.suite.model;
 
+import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,7 +10,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Embeddable
 public class Direccion {
+	
     private String calle;
     private String numero;
     private String piso;

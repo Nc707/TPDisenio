@@ -1,8 +1,11 @@
 package edu.inbugwethrust.premier.suite.mappers;
 
+import org.springframework.stereotype.Component;
+
 import edu.inbugwethrust.premier.suite.dto.DireccionDTO;
 import edu.inbugwethrust.premier.suite.model.Direccion;
 
+@Component
 public class DireccionMapper implements IDirecionMapper {
 
 	@Override
