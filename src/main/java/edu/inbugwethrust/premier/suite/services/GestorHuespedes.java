@@ -12,26 +12,21 @@ import edu.inbugwethrust.premier.suite.model.Huesped;
 import edu.inbugwethrust.premier.suite.model.TipoDni;
 import edu.inbugwethrust.premier.suite.repositories.HuespedDAO;
 import edu.inbugwethrust.premier.suite.services.exceptions.HuespedDuplicadoException;
-import edu.inbugwethrust.premier.suite.validators.HuespedValidator;
 
 @Service
 public class GestorHuespedes implements IGestorHuespedes {
 
     private final HuespedDAO huespedDAO;
-    private final HuespedValidator validator;
     private final HuespedMapper huespedMapper;
 
     @Autowired
-    public GestorHuespedes(HuespedDAO huespedDAO, HuespedValidator validator, HuespedMapper mapper) {
+    public GestorHuespedes(HuespedDAO huespedDAO, HuespedMapper mapper) {
         this.huespedDAO = huespedDAO;
-        this.validator = validator;
         this.huespedMapper = mapper;
     }
 
     @Override
     public Huesped dar_alta_huesped(HuespedDTO dto) {
-        // 1) validar obligatorios (flujo 2.A)
-        validator.validarDatosObligatorios(dto);
         // 2) chequear si ya existe por tipo + número (flujo 2.B)
         Optional<Huesped> existente = buscar_por_doc(dto.getTipoDocumento(), dto.getNumeroDocumento());
         if (existente.isPresent()) {
@@ -54,9 +49,6 @@ public class GestorHuespedes implements IGestorHuespedes {
 
     @Override
     public Huesped dar_alta_huesped_forzar(HuespedDTO dto) {
-        // misma validación de obligatorios
-        validator.validarDatosObligatorios(dto);
-
         // acá NO rechazamos si existe; simplemente guardamos
         if (dto.getCategoriaFiscal() == null) {
             dto.setCategoriaFiscal(CategoriaFiscal.CONSUMIDOR_FINAL);

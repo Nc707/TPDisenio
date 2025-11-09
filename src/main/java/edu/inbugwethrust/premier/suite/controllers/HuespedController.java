@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import edu.inbugwethrust.premier.suite.dto.HuespedDTO;
 import edu.inbugwethrust.premier.suite.model.Huesped;
 import edu.inbugwethrust.premier.suite.services.IGestorHuespedes;
+import jakarta.validation.Valid;
 
 @Controller
 @RequestMapping("/huespedes")
@@ -33,7 +34,12 @@ public class HuespedController {
     
     @PostMapping("api/alta")
     @ResponseBody
-    public ResponseEntity<Huesped> darAlta(@RequestBody HuespedDTO dto) {
+    public ResponseEntity<Huesped> darAlta(@Valid @RequestBody HuespedDTO dto) {
+    	// 1. Si la validación falla (ej. apellido en blanco, email inválido)
+        //    Spring lanzará una "MethodArgumentNotValidException" AUTOMÁTICAMENTE.
+        
+        // 2. Esta línea de código NUNCA se ejecutará si la validación falla.
+    	
         Huesped creado = gestorHuespedes.dar_alta_huesped(dto);
         // si llegó hasta acá es porque no hubo excepción
         return ResponseEntity.ok(creado);
@@ -46,7 +52,7 @@ public class HuespedController {
      */
     @PostMapping("api/alta-forzar")
     @ResponseBody
-    public ResponseEntity<Huesped> darAltaForzada(@RequestBody HuespedDTO dto) {
+    public ResponseEntity<Huesped> darAltaForzada(@Valid @RequestBody HuespedDTO dto) {
         Huesped creado = gestorHuespedes.dar_alta_huesped_forzar(dto);
         return ResponseEntity.ok(creado);
     }
