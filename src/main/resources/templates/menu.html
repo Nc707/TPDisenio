@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<!-- 1. Le decimos qué plantilla usar -->
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout.html}">
+<head>
+  <!-- El título se insertará en la plantilla maestra -->
+  <title>Menú Principal</title>
+</head>
+<body>
+
+  <!-- 2. Definimos el bloque "content" que se insertará en el layout -->
+  <div class="form-container" layout:fragment="content">
+    <h1>Menú Principal</h1>
+
+    <!-- Enlaces del menú -->
+    <div class="menu-links">
+      <!-- Usamos th:href para las rutas de Spring -->
+      <a th:href="@{/habitaciones/formulario-busqueda}" class="btn-primary">Mostrar Estado de Habitaciones</a>
+      <a th:href="@{/huespedes/formulario-alta}" class="btn-primary">Dar de alta un Huesped</a>
+    </div>
+
+  </div>
+
+</body>
+</html>

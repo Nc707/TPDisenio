@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE">Premier</title>
+  
+  <!-- TU CSS GLOBAL SE CARGA AQUÍ UNA SOLA VEZ -->
+  <link rel="stylesheet" th:href="@{/styles.css}">
+   <link rel="icon" th:href="@{/favicon.svg}" type="image/svg+xml">
+</head>
+<body>
+
+  <!-- BARRA SUPERIOR (Elemento global) -->
+  <div class="top-bar">
+    <!-- El contenido de la barra puede variar, lo manejamos en las hijas -->
+    <th:block layout:fragment="top-bar-content">
+        <span></span> <!-- Espaciador por defecto -->
+        <span>Premier</span>
+    </th:block>
+  </div>
+  <!-- 
+    AQUÍ SE INSERTARÁ EL CONTENIDO DE LAS PÁGINAS "HIJAS"
+    El "div" no es obligatorio, layout:fragment puede ir en cualquier etiqueta.
+  -->
+  <div layout:fragment="content"><!-- Contenido por defecto (puede estar vacío) -->
+<p>Contenido por defecto. Este texto será reemplazado por las páginas hijas.</p>
+  </div>
+  <!-- 3. ÁREA PARA MODALES (opcional) -->
+  <div layout:fragment="modals">
+    <!-- Los modales de la página hija van aquí -->
+  </div>
+
+  <script layout:fragment="scripts">
+    <!-- Los scripts de la página hija van aquí -->
+  </script>
+</body>
+</html>

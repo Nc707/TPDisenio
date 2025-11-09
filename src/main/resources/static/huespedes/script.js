@@ -1,4 +1,6 @@
 
+
+console.log("Script de huespedes cargado");
 function handleSubmit(event) {
     event.preventDefault(); // evita que se envíe el formulario
 

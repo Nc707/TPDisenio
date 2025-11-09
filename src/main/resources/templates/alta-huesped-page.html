@@ -1,16 +1,22 @@
-<html>
+<!DOCTYPE html>
+<!-- 1. Declaramos que este HTML usa 'layout.html' como plantilla -->
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout.html}">
 <head>
   <meta charset="UTF-8" />
+  <!-- 2. Solo necesitamos definir el título. El CSS se carga desde el layout -->
   <title>Alta Huésped</title>
-  <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
 
-  <header class="top-bar">
+  <!-- 3. Este bloque reemplaza al fragmento 'top-bar-content' del layout -->
+  <header class="top-bar" layout:fragment="top-bar-content">
     Premier
   </header>
 
-  <main class="form-container">
+  <!-- 4. Este bloque reemplaza al fragmento 'content' del layout -->
+  <main class="form-container" layout:fragment="content">
     <h1>Alta Huésped</h1>
 
     <!-- ✅ le agrego id y onsubmit -->
@@ -139,8 +145,8 @@
     </form>
   </main>
 
-  <!-- ✅ POPUP / MODAL -->
-  <div id="modal-confirm" class="modal">
+  <!-- 5. Este bloque reemplaza al fragmento 'modals' del layout -->
+  <div id="modal-confirm" class="modal" layout:fragment="modals">
     <div class="modal-box">
       <header class="modal-header">
         <div class="modal-left">
@@ -152,12 +158,11 @@
       </header>
 
       <div class="modal-body">
-  <p id="popup-text">
-    El huésped ha sido satisfactoriamente cargado al sistema.<br>
-    ¿Desea cargar otro?
-  </p>
-</div>
-
+        <p id="popup-text">
+          El huésped ha sido satisfactoriamente cargado al sistema.<br/>
+          ¿Desea cargar otro?
+        </p>
+      </div>
 
       <div class="modal-buttons">
         <button type="button" class="btn-secondary" onclick="handleNo()">NO</button>
@@ -166,8 +171,8 @@
     </div>
   </div>
 
-  <!-- ✅ JS para controlar el popup -->
+  <!-- 6. Este bloque reemplaza al fragmento 'scripts' del layout -->
+  <script th:src="@{/huespedes/script.js}" layout:fragment="scripts"></script>
 
-<script src="script.js"></script>
 </body>
 </html>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="32" height="32">
+  <!-- Fondo azul oscuro de la marca -->
+  <rect width="100" height="100" rx="20" fill="#003b73"/>
+  <!-- Letra 'P' en blanco -->
+  <text x="50%" y="50%" dominant-baseline="central" text-anchor="middle" 
+        font-family="Arial, sans-serif" font-size="65" font-weight="bold" fill="#ffffff">
+    P
+  </text>
+</svg>
