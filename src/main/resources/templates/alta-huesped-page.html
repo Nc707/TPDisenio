@@ -1,0 +1,173 @@
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Alta Huésped</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <header class="top-bar">
+    Premier
+  </header>
+
+  <main class="form-container">
+    <h1>Alta Huésped</h1>
+
+    <!-- ✅ le agrego id y onsubmit -->
+    <form class="guest-form" id="form-huesped" novalidate>
+      <!-- Columna 1 -->
+      <div class="form-group">
+        <label>Apellido<span class="required">*</span></label>
+        <input type="text" name="apellido" required/>
+      </div>
+
+      <!-- Columna 2 -->
+      <div class="form-group">
+        <label>Dirección<span class="required">*</span></label>
+        <input type="text" name="calle" placeholder="CALLE" required/>
+      </div>
+
+      <!-- Columna 3 -->
+      <div class="form-group">
+        <label>Fecha de Nacimiento<span class="required">*</span></label>
+        <input type="date" name="fecha_nacimiento" required/>
+      </div>
+
+      <!-- Columna 1 -->
+      <div class="form-group">
+        <label>Nombre<span class="required">*</span></label>
+        <input type="text" name="nombre" required/>
+      </div>
+
+      <!-- Columna 2: número / dpto / piso -->
+      <div class="form-group">
+        <label>&nbsp;</label>
+        <div class="small-inputs">
+          <input type="text" name="numero" placeholder="NÚMERO" required/>
+          <input type="text" name="dpto" placeholder="DPTO" />
+          <input type="text" name="piso" placeholder="PISO" />
+        </div>
+      </div>
+
+      <!-- Columna 3 -->
+      <div class="form-group">
+        <label>Teléfono<span class="required">*</span></label>
+        <input type="tel" name="telefono" required/>
+      </div>
+
+      <!-- Columna 1 -->
+      <div class="form-group">
+        <label>Tipo de Documento</label>
+        <select name="tipo_documento">
+          <option>DNI</option>
+          <option>Pasaporte</option>
+          <option>CUIL</option>
+        </select>
+      </div>
+
+      <!-- Columna 2 -->
+      <div class="form-group">
+        <label>Código Postal</label>
+        <input type="text" name="codigo_postal" />
+      </div>
+
+      <!-- Columna 3 -->
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" name="email" />
+      </div>
+
+      <!-- Columna 1 -->
+      <div class="form-group">
+        <label>Número de Documento</label>
+        <input type="text" name="numero_documento" />
+      </div>
+
+      <!-- Columna 2 -->
+      <div class="form-group">
+        <label>Localidad<span class="required">*</span></label>
+        <input type="text" name="localidad" required/>
+      </div>
+
+      <!-- Columna 3 -->
+      <div class="form-group">
+        <label>Ocupación<span class="required">*</span></label>
+        <input type="text" name="ocupacion" required/>
+      </div>
+
+      <!-- Columna 1 -->
+      <div class="form-group">
+        <label>CUIT</label>
+        <input type="text" name="cuit" />
+      </div>
+
+      <!-- Columna 2 -->
+      <div class="form-group">
+        <label>Provincia<span class="required">*</span></label>
+        <input type="text" name="provincia" required/>
+      </div>
+
+      <!-- Columna 3 -->
+      <div class="form-group">
+        <label>Nacionalidad<span class="required">*</span></label>
+        <input type="text" name="nacionalidad" required/>
+      </div>
+
+      <!-- Columna 1 -->
+      <div class="form-group">
+        <label>Posición frente al IVA</label>
+        <select name="iva">
+          <option>Categoría B</option>
+          <option>Responsable Inscripto</option>
+          <option>Monotributista</option>
+          <option>Exento</option>
+        </select>
+      </div>
+
+      <!-- Columna 2 vacía para respetar el diseño -->
+      <div></div>
+
+      <!-- Columna 3 vacía para respetar el diseño -->
+      <div></div>
+
+      <!-- Botones -->
+      <div class="buttons-row">
+        <button type="button" class="btn-secondary">CANCELAR</button>
+        <button type="reset" class="btn-secondary">BORRAR</button>
+        <button type="submit" class="btn-primary">SIGUIENTE</button>
+      </div>
+    </form>
+  </main>
+
+  <!-- ✅ POPUP / MODAL -->
+  <div id="modal-confirm" class="modal">
+    <div class="modal-box">
+      <header class="modal-header">
+        <div class="modal-left">
+          <span class="modal-icon">i</span>
+        </div>
+        <div class="modal-right">
+          Premier
+        </div>
+      </header>
+
+      <div class="modal-body">
+  <p id="popup-text">
+    El huésped ha sido satisfactoriamente cargado al sistema.<br>
+    ¿Desea cargar otro?
+  </p>
+</div>
+
+
+      <div class="modal-buttons">
+        <button type="button" class="btn-secondary" onclick="handleNo()">NO</button>
+        <button type="button" class="btn-primary" onclick="handleYes()">SÍ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ JS para controlar el popup -->
+
+<script src="script.js"></script>
+</body>
+</html>
