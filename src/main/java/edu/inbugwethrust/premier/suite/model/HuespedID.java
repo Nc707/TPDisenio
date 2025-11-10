@@ -4,7 +4,9 @@ import java.io.Serializable;
 import java.util.Objects;
 
 public class HuespedID implements Serializable {
-    private TipoDni tipoDocumento;
+
+	private static final long serialVersionUID = 1L;
+	private TipoDni tipoDocumento;
     private String numeroDocumento;
 
 
