@@ -15,12 +15,13 @@ public class DireccionMapper implements IDirecionMapper {
 		}
 		DireccionDTO dto = new DireccionDTO();
 		dto.setCalle(entity.getCalle());
-		dto.setCodigoPostal(entity.getCodigoPostal());
-		dto.setDepartamento(entity.getDepartamento());
-		dto.setLocalidad(entity.getLocalidad());
 		dto.setNumero(entity.getNumero());
 		dto.setPiso(entity.getPiso());
+		dto.setDepartamento(entity.getDepartamento());
+		dto.setCodigoPostal(entity.getCodigoPostal());
+		dto.setLocalidad(entity.getLocalidad());
 		dto.setProvincia(entity.getProvincia());
+		dto.setPais(entity.getPais());
 		return dto;
 		
 	}
@@ -32,12 +33,13 @@ public class DireccionMapper implements IDirecionMapper {
 		}
 		Direccion entity = new Direccion();
 		entity.setCalle(dto.getCalle());
-		entity.setCodigoPostal(dto.getCodigoPostal());
-		entity.setDepartamento(dto.getDepartamento());
-		entity.setLocalidad(dto.getLocalidad());
 		entity.setNumero(dto.getNumero());
 		entity.setPiso(dto.getPiso());
+		entity.setDepartamento(dto.getDepartamento());
+		entity.setCodigoPostal(dto.getCodigoPostal());
+		entity.setLocalidad(dto.getLocalidad());
 		entity.setProvincia(dto.getProvincia());
+		entity.setPais(dto.getPais());
 		return entity;
 	}
 
