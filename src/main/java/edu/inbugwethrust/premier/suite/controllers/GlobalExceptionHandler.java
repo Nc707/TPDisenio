@@ -10,7 +10,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-
+import edu.inbugwethrust.premier.suite.services.exceptions.CuitVacioException;
 import edu.inbugwethrust.premier.suite.services.exceptions.HuespedDuplicadoException;
 
 @ControllerAdvice
@@ -52,6 +52,17 @@ public class GlobalExceptionHandler {
         body.put("message", ex.getMessage());
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+    }
+    
+    @ExceptionHandler(CuitVacioException.class)
+    public ResponseEntity<?> manejarCuitVacio(CuitVacioException ex) {
+      Map<String, Object> body = new HashMap<>();
+      body.put("timestamp", LocalDateTime.now());
+      body.put("status", HttpStatus.BAD_REQUEST.value());
+      body.put("error", "Error de validación");
+      body.put("message", ex.getMessage()); 
+
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 
     // 3) Cualquier otra excepción no controlada

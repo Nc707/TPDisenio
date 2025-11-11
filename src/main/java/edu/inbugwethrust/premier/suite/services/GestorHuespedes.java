@@ -11,6 +11,7 @@ import edu.inbugwethrust.premier.suite.model.CategoriaFiscal;
 import edu.inbugwethrust.premier.suite.model.Huesped;
 import edu.inbugwethrust.premier.suite.model.TipoDni;
 import edu.inbugwethrust.premier.suite.repositories.HuespedDAO;
+import edu.inbugwethrust.premier.suite.services.exceptions.CuitVacioException;
 import edu.inbugwethrust.premier.suite.services.exceptions.HuespedDuplicadoException;
 
 @Service
@@ -27,18 +28,10 @@ public class GestorHuespedes implements IGestorHuespedes {
 
     @Override
     public Huesped dar_alta_huesped(HuespedDTO dto) {
-        // 2) chequear si ya existe por tipo + número (flujo 2.B)
-        Optional<Huesped> existente = buscar_por_doc(dto.getTipoDocumento(), dto.getNumeroDocumento());
-        if (existente.isPresent()) {
-            // acá en el CU muestran un cartel y dan a elegir.
-            // en backend lo representamos con una excepción específica
-            throw new HuespedDuplicadoException("¡CUIDADO! El tipo y número de documento ya existen en el sistema");
-        }
+        verificarDuplicidad(dto);
 
-        // 3) completar valores por omisión (posición frente al IVA)
-        if (dto.getCategoriaFiscal() == null) {
-            dto.setCategoriaFiscal(CategoriaFiscal.CONSUMIDOR_FINAL); // según CU: consumidor final por omisión
-        }
+        verificacionesDeCampos(dto);
+            
 
         // 4) mapear DTO -> entidad
         Huesped nuevo = huespedMapper.toEntity(dto);
@@ -47,15 +40,34 @@ public class GestorHuespedes implements IGestorHuespedes {
         return huespedDAO.save(nuevo);
     }
 
+    private void verificarDuplicidad(HuespedDTO dto) {
+      // 2) chequear si ya existe por tipo + número (flujo 2.B)
+      Optional<Huesped> existente = buscar_por_doc(dto.getTipoDocumento(), dto.getNumeroDocumento());
+      if (existente.isPresent()) {
+          // acá en el CU muestran un cartel y dan a elegir.
+          // en backend lo representamos con una excepción específica
+          throw new HuespedDuplicadoException("¡CUIDADO! El tipo y número de documento ya existen en el sistema");
+      }
+    }
+
     @Override
     public Huesped dar_alta_huesped_forzar(HuespedDTO dto) {
         // acá NO rechazamos si existe; simplemente guardamos
-        if (dto.getCategoriaFiscal() == null) {
-            dto.setCategoriaFiscal(CategoriaFiscal.CONSUMIDOR_FINAL);
-        }
+        verificacionesDeCampos(dto);
 
         Huesped nuevo = huespedMapper.toEntity(dto);
         return huespedDAO.save(nuevo);
+    }
+
+    private void verificacionesDeCampos(HuespedDTO dto) {
+      if (dto.getCategoriaFiscal() == null) {
+          dto.setCategoriaFiscal(CategoriaFiscal.CONSUMIDOR_FINAL);
+      }
+      if(dto.getCategoriaFiscal() == CategoriaFiscal.RESPONSABLE_INSCRIPTO 
+          && (dto.getCuit() == null || dto.getCuit().isBlank())){
+          throw new CuitVacioException("Error, el CUIT no puede estar vacio si el huesped es"
+              + "responsable inscripto");
+      }
     }
 
     @Override
