@@ -1,22 +1,29 @@
 package edu.inbugwethrust.premier.suite.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Table(name = "habitacion")
 public class Habitacion {
 	
 	@Id
 	int numero;
 	int piso;
+	
+	@Enumerated(EnumType.STRING)
 	EstadoHabitacion estado;
+	
+	@ManyToOne
+    @JoinColumn(name = "tipo_habitacion_id")
 	TipoHabitacion tipoHabitacion;
 }
