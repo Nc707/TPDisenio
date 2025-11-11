@@ -62,7 +62,7 @@
                   type="tel"
                   name="telefono"
                   required
-                  pattern="^[0-9+()\\s-]{7,}$"
+                  pattern="^[0-9+()\-\ ]{7,}$"
                   title="Ingrese un teléfono válido (mínimo 7 caracteres, solo números, espacios, +, - y paréntesis)"
           />
       </div>
@@ -92,7 +92,13 @@
       <!-- Columna 1 -->
       <div class="form-group">
         <label>Número de Documento</label>
-        <input type="text" name="numero_documento" />
+          <input
+                  type="text"
+                  name="numero_documento"
+                  required
+                  pattern="^[0-9]{9}$"
+                  title="El DNI debe consistir en 9 dígitos numéricos."
+          />
       </div>
 
       <!-- Columna 2 -->
@@ -126,15 +132,15 @@
       </div>
 
       <!-- Columna 1 -->
-      <div class="form-group">
-        <label>Posición frente al IVA</label>
-        <select name="iva">
-          <option>Categoría B</option>
-          <option>Responsable Inscripto</option>
-          <option>Monotributista</option>
-          <option>Exento</option>
-        </select>
-      </div>
+          <div class="form-group">
+              <label>Posición frente al IVA</label>
+              <select name="iva">
+                  <option value="">-- Seleccione --</option> <!-- opcional -->
+                  <option value="CONSUMIDOR_FINAL">Consumidor Final</option>
+                  <option value="MONOTRIBUTISTA">Monotributista</option>
+                  <option value="RESPONSABLE_INSCRIPTO">Responsable Inscripto</option>
+              </select>
+          </div>
 
       <!-- Columna 2 vacía para respetar el diseño -->
       <div></div>
