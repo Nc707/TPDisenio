@@ -40,3 +40,6 @@ bin/
 
 # MapStructFiles
 .factorypath
+
+# Intellij Idea Files
+.idea
