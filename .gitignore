@@ -37,3 +37,9 @@ bin/
 
 /.apt_generated/
 /.apt_generated_tests/
+
+# MapStructFiles
+.factorypath
+
+# Intellij Idea Files
+.idea
