@@ -58,7 +58,13 @@
       <!-- Columna 3 -->
       <div class="form-group">
         <label>Teléfono<span class="required">*</span></label>
-        <input type="tel" name="telefono" required/>
+          <input
+                  type="tel"
+                  name="telefono"
+                  required
+                  pattern="^[0-9+()\\s-]{7,}$"
+                  title="Ingrese un teléfono válido (mínimo 7 caracteres, solo números, espacios, +, - y paréntesis)"
+          />
       </div>
 
       <!-- Columna 1 -->

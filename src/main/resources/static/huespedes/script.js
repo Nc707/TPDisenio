@@ -52,3 +52,67 @@ function handleSubmit(event) {
     form.reset();
     document.getElementById("modal-confirm").style.display = "none";
   }
+
+  // Validación extra de email (más allá del type="email")
+  function esEmailValido(email) {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  }
+
+  // Validación de teléfono con regex
+  function esTelefonoValido(telefono) {
+    const regex = /^[0-9+()\s-]{7,}$/;
+    return regex.test(telefono);
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault();
+
+    const form = document.getElementById("form-huesped");
+    const modal = document.getElementById("modal-confirm");
+
+    // ✅ Validación HTML5 (required, pattern, type="email", etc.)
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+
+    // 🔎 Validación extra de email (si vino cargado)
+    if (data.email && !esEmailValido(data.email)) {
+      alert("El email no tiene un formato válido.");
+      return;
+    }
+
+    // 🔎 Validación extra de teléfono
+    if (!esTelefonoValido(data.telefono)) {
+      alert("El teléfono no tiene un formato válido.");
+      return;
+    }
+
+    // 📲 Llamada a la API (cambiá la URL si tu endpoint es otro)
+    fetch("/huespedes/api/alta", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          // si quisieras usar el alta forzada por algún motivo (doc duplicado, etc.)
+          // acá podrías chequear el status y decidir
+          throw new Error("Error al guardar el huésped");
+        }
+        return response.json().catch(() => ({}));
+      })
+      .then(() => {
+        const modal = document.getElementById("modal-confirm");
+        if (modal) modal.style.display = "flex";
+      })
+      .catch((error) => {
+        console.error(error);
+        alert("Ocurrió un error al guardar el huésped.");
+      });
