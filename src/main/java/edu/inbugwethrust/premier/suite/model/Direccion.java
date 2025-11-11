@@ -17,9 +17,9 @@ public class Direccion {
     private String calle;
     @Column(nullable = false)
     private String numero;
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String piso;
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String departamento;
     @Column(nullable = false)
     private String codigoPostal;
@@ -27,6 +27,4 @@ public class Direccion {
     private String localidad;
     @Column(nullable = false)
     private String provincia;
-    @Column(nullable = false)
-    private String pais;
 }
