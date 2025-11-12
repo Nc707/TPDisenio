@@ -14,12 +14,11 @@ function esTelefonoValido(telefono) {
 
 // -------------------- Submit del formulario --------------------
 
-// 👇 OJO: ahora es async
 async function handleSubmit(event) {
   event.preventDefault();
 
   const form = document.getElementById("form-huesped");
-  const modal = document.getElementById("modal-confirm");
+  const modalOk = document.getElementById("modal-confirm");
 
   // ✅ Validación HTML5 básica (required, pattern, type="email", etc.)
   if (!form.checkValidity()) {
@@ -32,35 +31,35 @@ async function handleSubmit(event) {
 
   // 🔎 Validación extra de email (si vino cargado)
   if (data.email && !esEmailValido(data.email)) {
-    alert("El email no tiene un formato válido.");
+    showErrorModal("Email inválido", "El email no tiene un formato válido.");
     return;
   }
 
   // 🔎 Validación extra de teléfono
   if (!esTelefonoValido(data.telefono)) {
-    alert("El teléfono no tiene un formato válido.");
+    showErrorModal("Teléfono inválido", "El teléfono no tiene un formato válido.");
     return;
   }
 
-  // 👇 Armar el JSON que espera HuespedDTO
+  // 👇 Armar el JSON que espera el backend (HuespedDTO / Huesped)
   const payload = {
     apellido: data.apellido,
-    nombres: data.nombre,                    // HTML: name="nombre"
-    tipoDocumento: data.tipo_documento,      // Enum TipoDni
+    nombres: data.nombre,               // name="nombre"
+    tipoDocumento: data.tipo_documento, // Enum TipoDni
     numeroDocumento: data.numero_documento,
     cuit: data.cuit || null,
-    categoriaFiscal: data.iva || null,       // Enum CategoriaFiscal
-    fechaNacimiento: data.fecha_nacimiento,  // LocalDate: "yyyy-MM-dd"
+    categoriaFiscal: data.iva && data.iva.trim() !== "" ? data.iva : null,         // Enum CategoriaFiscal (NOT NULL en BD)
+    fechaNacimiento: data.fecha_nacimiento,
     direccion: {
       calle: data.calle,
       numero: data.numero,
-      piso: data.piso || null,
       departamento: data.dpto || null,
-     codigoPostal: data.codigo_postal || null,
+      piso: data.piso || null,
+      codigoPostal: data.codigo_postal || null,
       localidad: data.localidad,
       provincia: data.provincia,
-      //pais: data.nacionalidad
-
+      // si tenés un input name="pais", descomentá esta línea:
+      // pais: data.pais
     },
     telefono: data.telefono,
     email: data.email || null,
@@ -79,32 +78,63 @@ async function handleSubmit(event) {
       body: JSON.stringify(payload)
     });
 
+    // ❌ Respuestas con error (400, 409, 500, etc.)
     if (!response.ok) {
-      const text = await response.text();
-      console.error("Error del servidor:", text);
-      alert("Error al registrar el huésped.\n" + text);
+      let errorData = null;
+      try {
+        errorData = await response.json();
+      } catch (e) {
+        console.error("No se pudo parsear JSON de error:", e);
+      }
+
+      console.error("Error del servidor:", errorData || response);
+
+      // 409 - HuespedDuplicadoException
+      if (response.status === 409 && errorData && errorData.error === "Huésped duplicado") {
+        showErrorModal(
+          "Huésped duplicado",
+          errorData.message || "Ya existe un huésped con ese tipo y número de documento."
+        );
+        return;
+      }
+
+      // 400 - Error de validación (DTO o reglas como CUIT vacío)
+      if (response.status === 400 && errorData && errorData.error === "Error de validación") {
+        // Podrías recorrer errorData.detalles para marcar campos, por ahora mensaje general
+        const msg =
+          errorData.message ||
+          "Hay errores en los datos enviados. Revisá los campos y volvé a intentar.";
+        showErrorModal("Error de validación", msg);
+        return;
+      }
+
+      // 500 - Error de base de datos u otros internos
+      const titulo = (errorData && errorData.error) || "Error al registrar el huésped";
+      const mensaje =
+        (errorData && errorData.message) ||
+        "¡CUIDADO! El tipo y número de documento ya existen en el sistema.";
+      showErrorModal(titulo, mensaje);
       return;
     }
 
-    // Si quisieras ver lo que devuelve el backend:
-    // const creado = await response.json();
-    // console.log("Huesped creado:", creado);
-
-    // 📝 Actualizar texto del popup usando lo que se envió
+    // ✅ Si llegó acá, la respuesta es 2xx → éxito
     const popupText = document.getElementById("popup-text");
     popupText.innerHTML = `El huésped <b>${payload.nombres} ${payload.apellido}</b> ha sido<br>
       satisfactoriamente cargado al sistema.<br>¿Desea cargar otro?`;
 
-    // 👀 Mostrar popup
-    modal.style.display = "flex";
+    modalOk.style.display = "flex";
 
   } catch (err) {
+    // Solo entra acá si NO hay respuesta del servidor (app caída, puerto mal, etc.)
     console.error("Error de red:", err);
-    alert("No se pudo conectar con el servidor.");
+    showErrorModal(
+      "Error de conexión",
+      "No se pudo conectar con el servidor. Verificá que la aplicación esté ejecutándose."
+    );
   }
 }
 
-// -------------------- Botones del popup --------------------
+// -------------------- Botones del popup de éxito --------------------
 
 function handleNo() {
   document.getElementById("modal-confirm").style.display = "none";
@@ -114,4 +144,23 @@ function handleYes() {
   const form = document.getElementById("form-huesped");
   form.reset();
   document.getElementById("modal-confirm").style.display = "none";
+}
+
+// -------------------- Modal de error --------------------
+
+function showErrorModal(titulo, mensaje) {
+  const modal = document.getElementById("modal-error");
+  const headerRight = modal.querySelector(".modal-right");
+  const text = document.getElementById("error-text");
+
+  if (headerRight) {
+    headerRight.textContent = titulo;
+  }
+  text.textContent = mensaje;
+
+  modal.style.display = "flex"; // o "block" según tu CSS
+}
+
+function closeErrorModal() {
+  document.getElementById("modal-error").style.display = "none";
 }

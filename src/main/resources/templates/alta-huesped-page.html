@@ -158,33 +158,66 @@
   </main>
 
   <!-- 5. Este bloque reemplaza al fragmento 'modals' del layout -->
-  <div id="modal-confirm" class="modal" layout:fragment="modals">
-    <div class="modal-box">
-      <header class="modal-header">
-        <div class="modal-left">
-          <span class="modal-icon">i</span>
-        </div>
-        <div class="modal-right">
-          Premier
-        </div>
-      </header>
+  <div layout:fragment="modals">
 
-      <div class="modal-body">
-        <p id="popup-text">
-          El huésped ha sido satisfactoriamente cargado al sistema.<br/>
-          ¿Desea cargar otro?
-        </p>
+      <!-- Modal de éxito -->
+      <div id="modal-confirm" class="modal">
+          <div class="modal-box">
+              <header class="modal-header">
+                  <div class="modal-left">
+                      <span class="modal-icon">i</span>
+                  </div>
+                  <div class="modal-right">
+                      Premier
+                  </div>
+              </header>
+
+              <div class="modal-body">
+                  <p id="popup-text">
+                      El huésped ha sido satisfactoriamente cargado al sistema.<br/>
+                      ¿Desea cargar otro?
+                  </p>
+              </div>
+
+              <div class="modal-buttons">
+                  <button type="button" class="btn-secondary" onclick="handleNo()">NO</button>
+                  <button type="button" class="btn-primary" onclick="handleYes()">SÍ</button>
+              </div>
+          </div>
       </div>
 
-      <div class="modal-buttons">
-        <button type="button" class="btn-secondary" onclick="handleNo()">NO</button>
-        <button type="button" class="btn-primary" onclick="handleYes()">SÍ</button>
+      <!-- Modal de ERROR -->
+      <div id="modal-error" class="modal">
+          <div class="modal-box">
+              <header class="modal-header">
+                  <div class="modal-left">
+                      <span class="modal-icon">!</span>
+                  </div>
+                  <div class="modal-right">
+                      Error
+                  </div>
+              </header>
+
+              <div class="modal-body">
+                  <p id="error-text">
+                      Ocurrió un error al procesar la solicitud.
+                  </p>
+              </div>
+
+              <div class="modal-buttons">
+                  <button type="button" class="btn-primary" onclick="closeErrorModal()">Aceptar</button>
+              </div>
+          </div>
       </div>
-    </div>
+
   </div>
+
 
   <!-- 6. Este bloque reemplaza al fragmento 'scripts' del layout -->
   <script th:src="@{/huespedes/script.js}" layout:fragment="scripts"></script>
+
+
+
 
 </body>
 </html>
