@@ -1,10 +1,12 @@
 package edu.inbugwethrust.premier.suite.services;
 
 import java.util.Optional;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import edu.inbugwethrust.premier.suite.dto.BusquedaHuespedDTO;
 import edu.inbugwethrust.premier.suite.dto.HuespedDTO;
 import edu.inbugwethrust.premier.suite.mappers.HuespedMapper;
 import edu.inbugwethrust.premier.suite.model.CategoriaFiscal;
@@ -13,6 +15,7 @@ import edu.inbugwethrust.premier.suite.model.TipoDni;
 import edu.inbugwethrust.premier.suite.repositories.HuespedDAO;
 import edu.inbugwethrust.premier.suite.services.exceptions.CuitVacioException;
 import edu.inbugwethrust.premier.suite.services.exceptions.HuespedDuplicadoException;
+
 
 @Service
 public class GestorHuespedes implements IGestorHuespedes {
@@ -74,6 +77,40 @@ public class GestorHuespedes implements IGestorHuespedes {
     public Optional<Huesped> buscar_por_doc(TipoDni tipo, String numeroDocumento) {
         return huespedDAO.findByTipoDocumentoAndNumeroDocumento(tipo, numeroDocumento);
     }
+   public List<Huesped> buscar_huespedes(BusquedaHuespedDTO busqueda){ 
+
+        // Convertir a mayúsculas según requerimiento
+        String apellido = busqueda.getApellido() != null ?busqueda.getApellido().toUpperCase() : null;
+        String nombres = busqueda.getNombres() != null ? busqueda.getNombres().toUpperCase() : null;
+        TipoDni tipoDocumento = busqueda.getTipoDocumento();
+        String numeroDocumento = busqueda.getNumeroDocumento();
+
+        // Si tiene tipo + número de documento → búsqueda exacta
+        if (tipoDocumento != null && numeroDocumento != null && !numeroDocumento.isBlank()) {
+            return huespedDAO.findByTipoDocumentoAndNumeroDocumento(tipoDocumento, numeroDocumento)
+                             .map(List::of)
+                             .orElse(List.of());
+        }
+
+        // Si tiene apellido + nombre → búsqueda combinada
+        if (apellido != null && nombres != null && !apellido.isBlank() && !nombres.isBlank()) {
+            return huespedDAO.findByApellidoStartingWithIgnoreCaseAndNombresStartingWithIgnoreCase(apellido, nombres);
+        }
+
+        // Solo apellido
+        if (apellido != null && !apellido.isBlank()) {
+            return huespedDAO.findByApellidoStartingWithIgnoreCase(apellido);
+        }
+
+        // Solo nombre
+        if (nombres != null && !nombres.isBlank()) {
+            return huespedDAO.findByNombresStartingWithIgnoreCase(nombres);
+        }
+
+        // Si no puso nada → devuelve todo
+        return huespedDAO.findAll();
+    }
+}
 
     /* 
     // ----------------------------------------------------
@@ -87,12 +124,11 @@ public class GestorHuespedes implements IGestorHuespedes {
 
     }
     
-    List<Huesped> buscar_huespedes(busquedaHuespedTOD busqueda){ 
-    }
+    
     */
     // ----------------------------------------------------
     // Método privado de mapeo DTO -> entidad
     // Esto lo podés sacar a un mapper después
     // ----------------------------------------------------
    
-}
+

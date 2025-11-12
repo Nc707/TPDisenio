@@ -4,7 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
+import java.util.List;
+import edu.inbugwethrust.premier.suite.dto.BusquedaHuespedDTO;
 import edu.inbugwethrust.premier.suite.dto.HuespedDTO;
 import edu.inbugwethrust.premier.suite.model.Huesped;
 import edu.inbugwethrust.premier.suite.services.IGestorHuespedes;
@@ -56,5 +57,23 @@ public class HuespedController {
         Huesped creado = gestorHuespedes.dar_alta_huesped_forzar(dto);
         return ResponseEntity.ok(creado);
     }
+
+
+@PostMapping("api/buscar")
+@ResponseBody
+public ResponseEntity<List<Huesped>> buscarHuespedes(@RequestBody BusquedaHuespedDTO busqueda) {
+ List<Huesped> resultados = gestorHuespedes.buscar_huespedes(busqueda);
+
+    if (resultados.isEmpty()) {
+        // No hay resultados → derivar al CU11 “Dar alta de huésped”
+        return ResponseEntity.noContent().build(); // 204
+    }
+
+    return ResponseEntity.ok(resultados);
+}
+
+
+
+
 
 }
