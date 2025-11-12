@@ -106,20 +106,29 @@ public class GestorHuespedes implements IGestorHuespedes {
     private List<Huesped> buscarTodos() {
         return huespedDAO.findAll();
     }
-     private BusquedaHuespedDTO normalizarBusqueda(BusquedaHuespedDTO busqueda) {
+    private BusquedaHuespedDTO normalizarBusqueda(BusquedaHuespedDTO busqueda) {
         if (busqueda == null) return new BusquedaHuespedDTO();
 
         BusquedaHuespedDTO dto = new BusquedaHuespedDTO();
-        dto.setApellido(toUpper(busqueda.getApellido()));
-        dto.setNombres(toUpper(busqueda.getNombres()));
+        dto.setApellido(cleanAndUpper(busqueda.getApellido()));
+        dto.setNombres(cleanAndUpper(busqueda.getNombres()));
         dto.setTipoDocumento(busqueda.getTipoDocumento());
-        dto.setNumeroDocumento(busqueda.getNumeroDocumento());
+        dto.setNumeroDocumento(clean(busqueda.getNumeroDocumento()));
         return dto;
     }
 
-    private String toUpper(String valor) {
-        return valor != null ? valor.toUpperCase() : null;
+    private String cleanAndUpper(String valor) {
+        if (valor == null) return null;
+        String trimmed = valor.trim();
+        return trimmed.isEmpty() ? null : trimmed.toUpperCase();
     }
+
+    private String clean(String valor) {
+        if (valor == null) return null;
+        String trimmed = valor.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
 
     private boolean notBlank(String s) {
         return s != null && !s.isBlank();
@@ -136,13 +145,5 @@ public class GestorHuespedes implements IGestorHuespedes {
 
     public void dar_baja_huesped(Long id) {
 
-    }
-    
-    
+    }      
     */
-    // ----------------------------------------------------
-    // Método privado de mapeo DTO -> entidad
-    // Esto lo podés sacar a un mapper después
-    // ----------------------------------------------------
-   
-

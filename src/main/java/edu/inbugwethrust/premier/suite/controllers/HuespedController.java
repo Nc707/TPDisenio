@@ -33,6 +33,11 @@ public class HuespedController {
     	        return "alta-huesped-page.html";
     }
     
+     /**
+     * Alta normal de huésped (botón SIGUIENTE del CU09, sin "ACEPTAR IGUALMENTE").
+     * - Valida campos obligatorios (@Valid)
+     * - Si el doc existe, lanza HuespedDuplicadoException → lo maneja un @ControllerAdvice
+     */
     @PostMapping("api/alta")
     @ResponseBody
     public ResponseEntity<Huesped> darAlta(@Valid @RequestBody HuespedDTO dto) {
@@ -59,21 +64,32 @@ public class HuespedController {
     }
 
 
-@PostMapping("api/buscar")
-@ResponseBody
-public ResponseEntity<List<Huesped>> buscarHuespedes(@RequestBody BusquedaHuespedDTO busqueda) {
- List<Huesped> resultados = gestorHuespedes.buscar_huespedes(busqueda);
+    // -------------------------------------------------
+    // CU02 – Buscar huésped
+    // -------------------------------------------------
 
-    if (resultados.isEmpty()) {
-        // No hay resultados → derivar al CU11 “Dar alta de huésped”
-        return ResponseEntity.noContent().build(); // 204
+
+    /**
+     * CU02 – Búsqueda de huéspedes.
+     * - Si no se envía ningún criterio → devuelve TODOS los huéspedes.
+     * - Si se envían criterios y NO hay resultados → 204 No Content
+     *   (el front interpreta esto como "ir a CU11 – Dar alta de huésped").
+     * - Si hay resultados → 200 OK con la lista.
+     */    
+    @PostMapping("/api/buscar")
+    @ResponseBody
+    public ResponseEntity<List<Huesped>> buscarHuespedes(
+            @RequestBody(required = false) BusquedaHuespedDTO busqueda) {
+
+        List<Huesped> resultados = gestorHuespedes.buscar_huespedes(busqueda);
+
+        if (resultados.isEmpty()) {
+            // No hay resultados → no existe ninguna concordancia según CU02 → CU11
+            return ResponseEntity.noContent().build(); // 204
+        }
+
+        // Hay uno o varios resultados → CU02 paso 4:
+        // el front mostrará la grilla y dejará elegir uno para luego ir a CU10.
+        return ResponseEntity.ok(resultados);
     }
-
-    return ResponseEntity.ok(resultados);
-}
-
-
-
-
-
 }
