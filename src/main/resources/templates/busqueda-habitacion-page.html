@@ -1,102 +1,118 @@
 <!DOCTYPE html>
-<!-- 1. Declaramos que este HTML usa 'layout.html' como plantilla -->
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout.html}">
 <head>
-  <!-- 2. Solo necesitamos definir el título. El CSS se carga desde el layout -->
-  <title>Mostrar Estado de Habitaciones</title>
+  <title>Reservar Habitaciones</title>
+  <link rel="stylesheet" th:href="@{/busqueda-habitacion.css}">
 </head>
 <body>
 
-  <!-- 3. Este bloque reemplaza al fragmento 'top-bar-content' del layout -->
   <div class="top-bar" layout:fragment="top-bar-content">
     Premier
   </div>
 
-  <!-- 4. Este bloque reemplaza al fragmento 'content' del layout -->
   <div class="form-container" layout:fragment="content">
-    <h1>Mostrar Estado de Habitaciones</h1>
+    
+    <h1 th:text="${modoAccion == 'RESERVAR'} ? 'Reservar Habitaciones' : 'Ocupar Habitación'">
+      Reservar Habitaciones
+    </h1>
 
-    <form id="room-status-form">
-      <!-- Fila para los campos de fecha y el botón de búsqueda -->
-      <div class="form-row">
-        <div class="form-group">
-          <label for="fecha-desde">Fecha desde</label>
-          <input type="date" id="fecha-desde" value="2025-06-04">
-        </div>
-        <div class="form-group">
-          <label for="fecha-hasta">Fecha hasta</label>
-          <input type="date" id="fecha-hasta" value="2025-06-04">
-        </div>
-        <button type="submit" class="btn-primary">BUSCAR</button>
-      </div>
-
-      <!-- Fila para el botón de cancelar -->
-      <div class="cancel-row">
-        <button type="button" class="btn-secondary" id="open-modal-btn">CANCELAR</button>
-      </div>
-
-    </form>
-  </div>
-
-  <!-- 5. Este bloque reemplaza al fragmento 'modals' del layout -->
-  <div class="modal" id="myModal" layout:fragment="modals">
-    <div class="modal-box">
-      <div class="modal-header">
-        <div class="modal-left">
-          <span class="modal-icon">?</span>
-          <span>Confirmación</span>
-        </div>
-        <span class="modal-close" id="modal-close-x">&times;</span>
-      </div>
-      <div class="modal-body">
-        <p>¿Está seguro de que desea cancelar la operación?</p>
-      </div>
-      <div class="modal-buttons">
-        <button type="button" class="btn-secondary" id="modal-cancel-btn">No</button>
-        <button type="button" class="btn-primary">Sí, Cancelar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 6. Este bloque reemplaza al fragmento 'scripts' del layout -->
-  <script layout:fragment="scripts">
-    // Pequeño script para hacer el modal funcional
-    document.addEventListener('DOMContentLoaded', () => {
-      const modal = document.getElementById('myModal');
-      const openBtn = document.getElementById('open-modal-btn');
-      const closeBtnX = document.getElementById('modal-close-x');
-      const cancelBtnModal = document.getElementById('modal-cancel-btn');
-
-      const showModal = () => {
-        modal.style.display = 'flex';
-      };
-
-      const hideModal = () => {
-        modal.style.display = 'none';
-      };
-
-      // Abrir modal
-      openBtn.addEventListener('click', showModal);
-
-      // Cerrar modal
-      closeBtnX.addEventListener('click', hideModal);
-      cancelBtnModal.addEventListener('click', hideModal);
-
-      // Cerrar al hacer clic fuera del modal-box
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-          hideModal();
-        }
-      });
+    <div class="busqueda-container">
       
-      // Prevenir envío del formulario (para demo)
-      document.getElementById('room-status-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        console.log('Formulario enviado (simulación)');
-      });
-    });
+      <ul class="leyenda">
+        <li><span class="status-circle status-seleccionada"></span>Seleccionada</li>
+        <li><span class="status-circle status-fuera_de_servicio"></span>Fuera de servicio</li>
+        <li><span class="status-circle status-reservada"></span>Reservadas</li>
+        <li><span class="status-circle status-ocupada"></span>Ocupada</li>
+        <li><span class="status-circle status-libre"></span>Libre</li>
+      </ul>
+
+      <form id="form-busqueda" th:action="@{/habitaciones/buscar}" th:object="${calendario.busquedaDTO}" method="get">
+        
+        <input type="hidden" name="accion" th:value="${modoAccion}" />
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="fecha-desde">Fecha desde</label>
+            <input type="date" id="fecha-desde" th:field="*{fechaInicio}">
+          </div>
+          <div class="form-group">
+            <label for="fecha-hasta">Fecha hasta</label>
+            <input type="date" id="fecha-hasta" th:field="*{fechaFin}">
+          </div>
+          <button type="submit" class="btn-primary">BUSCAR</button>
+        </div>
+      </form>
+    </div>
+
+    <form id="form-seleccion" 
+          th:action="${modoAccion == 'RESERVAR'} ? @{/reservas/crear-reserva} : @{/checkin/ocupar-habitacion}" 
+          method="post" 
+          th:if="${calendario.mapaDisponibilidad != null and not #maps.isEmpty(calendario.mapaDisponibilidad)}">
+
+      <div class="grilla-container">
+        <table class="grilla-habitaciones">
+          <thead>
+            <tr>
+              <th rowspan="2">Fecha</th> <th th:each="entry : ${calendario.habitacionesAgrupadas}" 
+                  th:colspan="${#lists.size(entry.value)}" 
+                  th:text="${entry.key}">
+                Doble Superior
+              </th>
+            </tr>
+            
+            <tr>
+              <th:block th:each="entry : ${calendario.habitacionesAgrupadas}">
+                <th th:each="hab : ${entry.value}" 
+                    th:text="${hab.numeroHabitacion}">
+                  101
+                </th>
+              </th:block>
+            </tr>
+          </thead>
+          
+          <tbody>
+            <tr th:each="fecha : ${calendario.fechas}">
+              
+              <th th:text="${#temporals.format(fecha, 'dd/MM/yyyy')}">04/11/2025</th>
+              
+              <th:block th:each="entry : ${calendario.habitacionesAgrupadas}">
+                <td th:each="hab : ${entry.value}">
+                  
+                  <th:block th:with="estado=${calendario.mapaDisponibilidad.get(fecha).get(hab.numeroHabitacion)}">
+                    
+                    <th:block th:if="${estado == T(edu.inbugwethrust.premier.suite.model.EstadoHabitacion).LIBRE}">
+                      <input type="checkbox" 
+                             th:id="'cell_' + ${hab.numeroHabitacion} + '_' + ${fecha}"
+                             name="celdasSeleccionadas"
+                             th:value="${hab.numeroHabitacion} + '_' + ${fecha}" />
+                      <label class="checkbox-label" 
+                             th:for="'cell_' + ${hab.numeroHabitacion} + '_' + ${fecha}"></label>
+                    </th:block>
+
+                    <th:block th:unless="${estado == T(edu.inbugwethrust.premier.suite.model.EstadoHabitacion).LIBRE}">
+                      <div class="status-circle" 
+                           th:classappend="'status-' + ${estado.toString().toLowerCase()}">
+                      </div>
+                    </th:block>
+                    
+                  </th:block>
+                </td>
+              </th:block>
+            </tr>
+          </tbody>
+        </table>
+      </div> <div class="botones-inferiores">
+        <button type="button" class="btn-secondary" id="open-modal-btn">CANCELAR</button>
+        <button type="submit" class="btn-primary">SIGUIENTE</button>
+      </div>
+
+    </form> </div> <div layout:fragment="modals" th:include="~{fragments/modal-cancelar :: modal-cancelar}">
+    </div>
+
+  <script layout:fragment="scripts" th:src="@{/js/modal.js}">
+    // El script del modal se carga aquí
   </script>
 
 </body>
