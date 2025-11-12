@@ -1,6 +1,7 @@
 package edu.inbugwethrust.premier.suite.services;
 
 import java.util.Optional;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,41 +78,82 @@ public class GestorHuespedes implements IGestorHuespedes {
     public Optional<Huesped> buscar_por_doc(TipoDni tipo, String numeroDocumento) {
         return huespedDAO.findByTipoDocumentoAndNumeroDocumento(tipo, numeroDocumento);
     }
-   public List<Huesped> buscar_huespedes(BusquedaHuespedDTO busqueda){ 
+    public List<Huesped> buscar_huespedes(BusquedaHuespedDTO busqueda){ 
+        
+     BusquedaHuespedDTO datos = normalizarBusqueda(busqueda);
 
-        // Convertir a mayúsculas según requerimiento
-        String apellido = busqueda.getApellido() != null ?busqueda.getApellido().toUpperCase() : null;
-        String nombres = busqueda.getNombres() != null ? busqueda.getNombres().toUpperCase() : null;
-        TipoDni tipoDocumento = busqueda.getTipoDocumento();
-        String numeroDocumento = busqueda.getNumeroDocumento();
+       List<Huesped> resultado;
 
-        // Si tiene tipo + número de documento → búsqueda exacta
-        if (tipoDocumento != null && numeroDocumento != null && !numeroDocumento.isBlank()) {
-            return huespedDAO.findByTipoDocumentoAndNumeroDocumento(tipoDocumento, numeroDocumento)
-                             .map(List::of)
-                             .orElse(List.of());
+    resultado = tieneTipoYNumeroDocumento(datos);
+    if (!resultado.isEmpty()) return resultado;
+
+    resultado = buscarPorApellidoYNombres(datos);
+    if (!resultado.isEmpty()) return resultado;
+
+    resultado = buscarPorApellido(datos);
+    if (!resultado.isEmpty()) return resultado;
+
+    resultado = buscarPorNombres(datos);
+    if (!resultado.isEmpty()) return resultado;
+
+    return buscarTodos(); // si no aplicó ningún criterio
+}
+    private List <Huesped> tieneTipoYNumeroDocumento(BusquedaHuespedDTO dto) {
+        if( dto.getTipoDocumento() != null && notBlank(dto.getNumeroDocumento())){
+                 return huespedDAO.findByTipoDocumentoAndNumeroDocumento(
+                dto.getTipoDocumento(), dto.getNumeroDocumento())
+                .map(List::of)
+                .orElse(List.of());
+            }
+
+             return List.of(); 
+    }
+
+    private List<Huesped> buscarPorApellidoYNombres(BusquedaHuespedDTO dto) {
+        if( notBlank(dto.getApellido()) && notBlank(dto.getNombres())){
+        return huespedDAO.findByApellidoStartingWithIgnoreCaseAndNombresStartingWithIgnoreCase
+        (dto.getApellido(), dto.getNombres());
+
         }
+         return List.of(); 
+    }
 
-        // Si tiene apellido + nombre → búsqueda combinada
-        if (apellido != null && nombres != null && !apellido.isBlank() && !nombres.isBlank()) {
-            return huespedDAO.findByApellidoStartingWithIgnoreCaseAndNombresStartingWithIgnoreCase(apellido, nombres);
+    private List<Huesped> buscarPorApellido(BusquedaHuespedDTO dto) {
+        
+           if(notBlank(dto.getApellido())&& !notBlank(dto.getNombres())){
+        return huespedDAO.findByApellidoStartingWithIgnoreCase(dto.getApellido());
+           }
+         return List.of(); 
+    }
+    private List<Huesped> buscarPorNombres(BusquedaHuespedDTO dto) {
+        if(notBlank(dto.getNombres()) &&  !(notBlank(dto.getApellido())) ){
+            return huespedDAO.findByNombresStartingWithIgnoreCase(dto.getNombres());
         }
-
-        // Solo apellido
-        if (apellido != null && !apellido.isBlank()) {
-            return huespedDAO.findByApellidoStartingWithIgnoreCase(apellido);
-        }
-
-        // Solo nombre
-        if (nombres != null && !nombres.isBlank()) {
-            return huespedDAO.findByNombresStartingWithIgnoreCase(nombres);
-        }
-
-        // Si no puso nada → devuelve todo
+         return List.of(); 
+    }
+    private List<Huesped> buscarTodos() {
         return huespedDAO.findAll();
     }
-}
+     private BusquedaHuespedDTO normalizarBusqueda(BusquedaHuespedDTO busqueda) {
+        if (busqueda == null) return new BusquedaHuespedDTO();
 
+        BusquedaHuespedDTO dto = new BusquedaHuespedDTO();
+        dto.setApellido(toUpper(busqueda.getApellido()));
+        dto.setNombres(toUpper(busqueda.getNombres()));
+        dto.setTipoDocumento(busqueda.getTipoDocumento());
+        dto.setNumeroDocumento(busqueda.getNumeroDocumento());
+        return dto;
+    }
+
+    private String toUpper(String valor) {
+        return valor != null ? valor.toUpperCase() : null;
+    }
+
+    private boolean notBlank(String s) {
+        return s != null && !s.isBlank();
+    }
+}
+    
     /* 
     // ----------------------------------------------------
     // Métodos del diagrama NO implementados aún:
