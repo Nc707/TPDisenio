@@ -78,59 +78,31 @@ public class GestorHuespedes implements IGestorHuespedes {
     public Optional<Huesped> buscar_por_doc(TipoDni tipo, String numeroDocumento) {
         return huespedDAO.findByTipoDocumentoAndNumeroDocumento(tipo, numeroDocumento);
     }
+
+    @Override
     public List<Huesped> buscar_huespedes(BusquedaHuespedDTO busqueda){ 
-        
-     BusquedaHuespedDTO datos = normalizarBusqueda(busqueda);
+        BusquedaHuespedDTO datos = normalizarBusqueda(busqueda);
 
-       List<Huesped> resultado;
+        boolean hayCriterio =
+                notBlank(datos.getApellido()) ||
+                notBlank(datos.getNombres()) ||
+                datos.getTipoDocumento() != null ||
+                notBlank(datos.getNumeroDocumento());
 
-    resultado = tieneTipoYNumeroDocumento(datos);
-    if (!resultado.isEmpty()) return resultado;
-
-    resultado = buscarPorApellidoYNombres(datos);
-    if (!resultado.isEmpty()) return resultado;
-
-    resultado = buscarPorApellido(datos);
-    if (!resultado.isEmpty()) return resultado;
-
-    resultado = buscarPorNombres(datos);
-    if (!resultado.isEmpty()) return resultado;
-
-    return buscarTodos(); // si no aplicó ningún criterio
-}
-    private List <Huesped> tieneTipoYNumeroDocumento(BusquedaHuespedDTO dto) {
-        if( dto.getTipoDocumento() != null && notBlank(dto.getNumeroDocumento())){
-                 return huespedDAO.findByTipoDocumentoAndNumeroDocumento(
-                dto.getTipoDocumento(), dto.getNumeroDocumento())
-                .map(List::of)
-                .orElse(List.of());
-            }
-
-             return List.of(); 
-    }
-
-    private List<Huesped> buscarPorApellidoYNombres(BusquedaHuespedDTO dto) {
-        if( notBlank(dto.getApellido()) && notBlank(dto.getNombres())){
-        return huespedDAO.findByApellidoStartingWithIgnoreCaseAndNombresStartingWithIgnoreCase
-        (dto.getApellido(), dto.getNombres());
-
+        if (!hayCriterio) {
+            // Caso "no ingresó nada" → mostrar todos
+            return buscarTodos();
         }
-         return List.of(); 
+
+        // Si hay criterios, delego todo al repo:
+        return huespedDAO.buscarHuespedes(
+                datos.getApellido(),
+                datos.getNombres(),
+                datos.getTipoDocumento(),
+                datos.getNumeroDocumento()
+        );
     }
 
-    private List<Huesped> buscarPorApellido(BusquedaHuespedDTO dto) {
-        
-           if(notBlank(dto.getApellido())&& !notBlank(dto.getNombres())){
-        return huespedDAO.findByApellidoStartingWithIgnoreCase(dto.getApellido());
-           }
-         return List.of(); 
-    }
-    private List<Huesped> buscarPorNombres(BusquedaHuespedDTO dto) {
-        if(notBlank(dto.getNombres()) &&  !(notBlank(dto.getApellido())) ){
-            return huespedDAO.findByNombresStartingWithIgnoreCase(dto.getNombres());
-        }
-         return List.of(); 
-    }
     private List<Huesped> buscarTodos() {
         return huespedDAO.findAll();
     }
