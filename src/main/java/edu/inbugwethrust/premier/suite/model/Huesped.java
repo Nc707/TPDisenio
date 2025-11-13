@@ -35,7 +35,7 @@ public class Huesped {
     private TipoDni tipoDocumento;
 
     @Id
-    @Column(length = 9, nullable = false)
+    @Column(length = 8, nullable = false)
     private String numeroDocumento;
 
     @Column(length = 11)
