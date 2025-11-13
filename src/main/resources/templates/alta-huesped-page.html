@@ -4,220 +4,216 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout.html}">
 <head>
-  <meta charset="UTF-8" />
-  <!-- 2. Solo necesitamos definir el título. El CSS se carga desde el layout -->
-  <title>Alta Huésped</title>
+    <meta charset="UTF-8" />
+    <!-- 2. Solo necesitamos definir el título. El CSS se carga desde el layout -->
+    <title>Alta Huésped</title>
 </head>
 <body>
 
-  <!-- 3. Este bloque reemplaza al fragmento 'top-bar-content' del layout -->
-  <header class="top-bar" layout:fragment="top-bar-content">
+<!-- 3. Este bloque reemplaza al fragmento 'top-bar-content' del layout -->
+<header class="top-bar" layout:fragment="top-bar-content">
     Premier
-  </header>
+</header>
 
-  <!-- 4. Este bloque reemplaza al fragmento 'content' del layout -->
-  <main class="form-container" layout:fragment="content">
+<!-- 4. Este bloque reemplaza al fragmento 'content' del layout -->
+<main class="form-container" layout:fragment="content">
     <h1>Alta Huésped</h1>
 
     <!-- ✅ le agrego id y onsubmit -->
-      <form class="guest-form" id="form-huesped" onsubmit="handleSubmit(event)" novalidate>
-      <!-- Columna 1 -->
-      <div class="form-group">
-        <label>Apellido<span class="required">*</span></label>
-        <input type="text" name="apellido" required/>
-      </div>
-
-      <!-- Columna 2 -->
-      <div class="form-group">
-        <label>Dirección<span class="required">*</span></label>
-        <input type="text" name="calle" placeholder="CALLE" required/>
-      </div>
-
-      <!-- Columna 3 -->
-      <div class="form-group">
-        <label>Fecha de Nacimiento<span class="required">*</span></label>
-        <input type="date" name="fecha_nacimiento" required/>
-      </div>
-
-      <!-- Columna 1 -->
-      <div class="form-group">
-        <label>Nombre<span class="required">*</span></label>
-        <input type="text" name="nombre" required/>
-      </div>
-
-      <!-- Columna 2: número / dpto / piso -->
-      <div class="form-group">
-        <label>&nbsp;</label>
-        <div class="small-inputs">
-          <input type="text" name="numero" placeholder="NÚMERO" required/>
-          <input type="text" name="dpto" placeholder="DPTO" />
-          <input type="text" name="piso" placeholder="PISO" />
+    <form class="guest-form" id="form-huesped" onsubmit="handleSubmit(event)" novalidate>
+        <!-- Columna 1 -->
+        <div class="form-group">
+            <label>Apellido<span class="required">*</span></label>
+            <input type="text" name="apellido" required/>
         </div>
-      </div>
 
-      <!-- Columna 3 -->
-      <div class="form-group">
-        <label>Teléfono<span class="required">*</span></label>
-          <input
-                  type="tel"
-                  name="telefono"
-                  required
-                  pattern="[0-9+()\- ]{7,}"
-                  title="Ingrese un teléfono válido (mínimo 7 caracteres, solo números, espacios, +, - y paréntesis)"
-          />
-      </div>
+        <!-- Columna 2 -->
+        <div class="form-group">
+            <label>Dirección<span class="required">*</span></label>
+            <input type="text" name="calle" placeholder="CALLE" required/>
+        </div>
 
-      <!-- Columna 1 -->
-      <div class="form-group">
-        <label>Tipo de Documento</label>
-        <select name="tipo_documento">
-          <option>DNI</option>
-          <option>Pasaporte</option>
-          <option>CUIL</option>
-        </select>
-      </div>
+        <!-- Columna 3 -->
+        <div class="form-group">
+            <label>Fecha de Nacimiento<span class="required">*</span></label>
+            <input type="date" name="fecha_nacimiento" required/>
+        </div>
 
-      <!-- Columna 2 -->
-      <div class="form-group">
-        <label>Código Postal</label>
-        <input type="text" name="codigo_postal" />
-      </div>
+        <!-- Columna 1 -->
+        <div class="form-group">
+            <label>Nombre<span class="required">*</span></label>
+            <input type="text" name="nombre" required/>
+        </div>
 
-      <!-- Columna 3 -->
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" name="email" />
-      </div>
+        <!-- Columna 2: número / dpto / piso -->
+        <div class="form-group">
+            <label>NÚMERO<span class="required">*</span></label>
+            <div class="small-inputs">
+                <input type="text" name="numero" required/>
+                <input type="text" name="dpto" placeholder="DPTO" />
+                <input type="text" name="piso" placeholder="PISO" />
+            </div>
+        </div>
 
-      <!-- Columna 1 -->
-      <div class="form-group">
-        <label>Número de Documento</label>
-          <input
-                  type="text"
-                  name="numero_documento"
-                  required
-                  pattern="^[0-9]{8}$"
-                  title="El DNI debe consistir en 9 dígitos numéricos."
-          />
-      </div>
+        <!-- Columna 3 -->
+        <div class="form-group">
+            <label>Teléfono<span class="required">*</span></label>
+            <input
+                    type="tel"
+                    name="telefono"
+                    required
+                    pattern="[0-9+()\- ]{7,}"
+                    title="Ingrese un teléfono válido (mínimo 7 caracteres, solo números, espacios, +, - y paréntesis)"
+            />
+        </div>
 
-      <!-- Columna 2 -->
-      <div class="form-group">
-        <label>Localidad<span class="required">*</span></label>
-        <input type="text" name="localidad" required/>
-      </div>
+        <!-- Columna 1 -->
+        <div class="form-group">
+            <label>Tipo de Documento</label>
+            <select name="tipo_documento">
+                <option>DNI</option>
+                <option>Pasaporte</option>
+                <option>CUIL</option>
+            </select>
+        </div>
 
-      <!-- Columna 3 -->
-      <div class="form-group">
-        <label>Ocupación<span class="required">*</span></label>
-        <input type="text" name="ocupacion" required/>
-      </div>
+        <!-- Columna 2 -->
+        <div class="form-group">
+            <label>Código Postal<span class="required">*</span></label>
+            <input type="text" name="codigo_postal" required/>
+        </div>
 
-      <!-- Columna 1 -->
-      <div class="form-group">
-        <label>CUIT</label>
-        <input type="text" name="cuit" />
-      </div>
+        <!-- Columna 3 -->
+        <div class="form-group">
+            <label>Email<span class="required">*</span></label>
+            <input type="email" name="email" required/>
+        </div>
 
-      <!-- Columna 2 -->
-      <div class="form-group">
-        <label>Provincia<span class="required">*</span></label>
-        <input type="text" name="provincia" required/>
-      </div>
+        <!-- Columna 1 -->
+        <div class="form-group">
+            <label>Número de Documento<span class="required">*</span></label>
+            <input
+                    type="text"
+                    name="numeroDocumento"
+                    required
+                    pattern="^[0-9]{8}$"
+                    title="El DNI debe consistir en 8 dígitos numéricos."
+            />
+        </div>
 
-      <!-- Columna 3 -->
-      <div class="form-group">
-        <label>Nacionalidad<span class="required">*</span></label>
-        <input type="text" name="nacionalidad" required/>
-      </div>
+        <!-- Columna 2 -->
+        <div class="form-group">
+            <label>Localidad<span class="required">*</span></label>
+            <input type="text" name="localidad" required/>
+        </div>
 
-      <!-- Columna 1 -->
-          <div class="form-group">
-              <label>Posición frente al IVA</label>
-              <select name="iva">
-                  <option value="">-- Seleccione --</option> <!-- opcional -->
-                  <option value="CONSUMIDOR_FINAL">Consumidor Final</option>
-                  <option value="MONOTRIBUTISTA">Monotributista</option>
-                  <option value="RESPONSABLE_INSCRIPTO">Responsable Inscripto</option>
-              </select>
-          </div>
+        <!-- Columna 3 -->
+        <div class="form-group">
+            <label>Ocupación<span class="required">*</span></label>
+            <input type="text" name="ocupacion" required/>
+        </div>
 
-      <!-- Columna 2 vacía para respetar el diseño -->
-      <div></div>
+        <!-- Columna 1 -->
+        <div class="form-group">
+            <label>CUIT</label>
+            <input type="text" name="cuit" />
+        </div>
 
-      <!-- Columna 3 vacía para respetar el diseño -->
-      <div></div>
+        <!-- Columna 2 -->
+        <div class="form-group">
+            <label>Provincia<span class="required">*</span></label>
+            <input type="text" name="provincia" required/>
+        </div>
 
-      <!-- Botones -->
-      <div class="buttons-row">
-        <button type="button" class="btn-secondary">CANCELAR</button>
-        <button type="reset" class="btn-secondary">BORRAR</button>
-        <button type="submit" class="btn-primary">SIGUIENTE</button>
-      </div>
+        <!-- Columna 3 -->
+        <div class="form-group">
+            <label>Nacionalidad<span class="required">*</span></label>
+            <input type="text" name="nacionalidad" required/>
+        </div>
+
+        <!-- Columna 1 -->
+        <div class="form-group">
+            <label>Posición frente al IVA</label>
+            <select name="iva">
+                <option value="">-- Seleccione --</option> <!-- opcional -->
+                <option value="CONSUMIDOR_FINAL">Consumidor Final</option>
+                <option value="MONOTRIBUTISTA">Monotributista</option>
+                <option value="RESPONSABLE_INSCRIPTO">Responsable Inscripto</option>
+            </select>
+        </div>
+
+        <!-- Columna 2 vacía para respetar el diseño -->
+        <div></div>
+
+        <!-- Columna 3 vacía para respetar el diseño -->
+        <div></div>
+
+        <!-- Botones -->
+        <div class="buttons-row">
+            <button type="button" class="btn-secondary">CANCELAR</button>
+            <button type="reset" class="btn-secondary">BORRAR</button>
+            <button type="submit" class="btn-primary">SIGUIENTE</button>
+        </div>
     </form>
-  </main>
+</main>
 
-  <!-- 5. Este bloque reemplaza al fragmento 'modals' del layout -->
-  <div layout:fragment="modals">
+<!-- 5. Este bloque reemplaza al fragmento 'modals' del layout -->
+<div layout:fragment="modals">
 
-      <!-- Modal de éxito -->
-      <div id="modal-confirm" class="modal">
-          <div class="modal-box">
-              <header class="modal-header">
-                  <div class="modal-left">
-                      <span class="modal-icon">i</span>
-                  </div>
-                  <div class="modal-right">
-                      Premier
-                  </div>
-              </header>
+    <!-- Modal de éxito -->
+    <div id="modal-confirm" class="modal">
+        <div class="modal-box">
+            <header class="modal-header">
+                <div class="modal-left">
+                    <span class="modal-icon">i</span>
+                </div>
+                <div class="modal-right">
+                    Premier
+                </div>
+            </header>
 
-              <div class="modal-body">
-                  <p id="popup-text">
-                      El huésped ha sido satisfactoriamente cargado al sistema.<br/>
-                      ¿Desea cargar otro?
-                  </p>
-              </div>
+            <div class="modal-body">
+                <p id="popup-text">
+                    El huésped ha sido satisfactoriamente cargado al sistema.<br/>
+                    ¿Desea cargar otro?
+                </p>
+            </div>
 
-              <div class="modal-buttons">
-                  <button type="button" class="btn-secondary" onclick="handleNo()">NO</button>
-                  <button type="button" class="btn-primary" onclick="handleYes()">SÍ</button>
-              </div>
-          </div>
-      </div>
+            <div class="modal-buttons">
+                <button type="button" class="btn-secondary" onclick="handleNo()">NO</button>
+                <button type="button" class="btn-primary" onclick="handleYes()">SÍ</button>
+            </div>
+        </div>
+    </div>
 
-      <!-- Modal de ERROR -->
-      <div id="modal-error" class="modal">
-          <div class="modal-box">
-              <header class="modal-header">
-                  <div class="modal-left">
-                      <span class="modal-icon">!</span>
-                  </div>
-                  <div class="modal-right">
-                      Error
-                  </div>
-              </header>
+    <!-- Modal de ERROR -->
+    <div id="modal-error" class="modal">
+        <div class="modal-box">
+            <header class="modal-header">
+                <div class="modal-left">
+                    <span class="modal-icon">!</span>
+                </div>
+                <div class="modal-right">
+                    Error
+                </div>
+            </header>
 
-              <div class="modal-body">
-                  <p id="error-text">
-                      Ocurrió un error al procesar la solicitud.
-                  </p>
-              </div>
+            <div class="modal-body">
+                <p id="error-text">
+                    Ocurrió un error al procesar la solicitud.
+                </p>
+            </div>
 
-              <div class="modal-buttons">
-                  <button type="button" class="btn-primary" onclick="closeErrorModal()">Aceptar</button>
-              </div>
-          </div>
-      </div>
+            <div class="modal-buttons">
+                <button type="button" class="btn-primary" onclick="closeErrorModal()">Aceptar</button>
+            </div>
+        </div>
+    </div>
 
-  </div>
+</div>
 
-
-  <!-- 6. Este bloque reemplaza al fragmento 'scripts' del layout -->
-  <script th:src="@{/huespedes/script.js}" layout:fragment="scripts"></script>
-
-
-
+<!-- 6. Este bloque reemplaza al fragmento 'scripts' del layout -->
+<script th:src="@{/huespedes/script.js}" layout:fragment="scripts"></script>
 
 </body>
 </html>
