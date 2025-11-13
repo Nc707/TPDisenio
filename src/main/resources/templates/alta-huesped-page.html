@@ -150,7 +150,7 @@
 
         <!-- Botones -->
         <div class="buttons-row">
-            <button type="button" class="btn-secondary">CANCELAR</button>
+            <button type="button" class="btn-secondary" onclick="showCancelModal()">CANCELAR</button>
             <button type="reset" class="btn-secondary">BORRAR</button>
             <button type="submit" class="btn-primary">SIGUIENTE</button>
         </div>
@@ -210,8 +210,36 @@
         </div>
     </div>
 
-</div>
 
+
+<!-- Modal de CONFIRMACIÓN DE CANCELAR -->
+<div id="modal-cancel" class="modal">
+    <div class="modal-box">
+        <header class="modal-header">
+            <div class="modal-left">
+                <span class="modal-icon">?</span>
+            </div>
+            <div class="modal-right">
+                Confirmación
+            </div>
+        </header>
+
+        <div class="modal-body">
+            <p>
+                ¿Desea cancelar el alta del huésped?
+            </p>
+        </div>
+
+        <div class="modal-buttons">
+            <!-- NO: vuelve al formulario con los datos -->
+            <button type="button" class="btn-secondary" onclick="handleCancelNo()">No</button>
+
+            <!-- SÍ: continúa con el paso 6 (acá decidís qué hacer) -->
+            <button type="button" class="btn-primary" onclick="handleCancelYes()">Sí</button>
+        </div>
+    </div>
+</div>
+</div>
 <!-- 6. Este bloque reemplaza al fragmento 'scripts' del layout -->
 <script th:src="@{/huespedes/script.js}" layout:fragment="scripts"></script>
 

@@ -46,9 +46,9 @@ async function handleSubmit(event) {
     apellido: data.apellido,
     nombres: data.nombre,               // name="nombre"
     tipoDocumento: data.tipo_documento, // Enum TipoDni
-    numeroDocumento: data.numero_documento,
+    numeroDocumento: data.numeroDocumento, // name="numeroDocumento" en el HTML
     cuit: data.cuit || null,
-    categoriaFiscal: data.iva && data.iva.trim() !== "" ? data.iva : null,         // Enum CategoriaFiscal (NOT NULL en BD)
+    categoriaFiscal: data.iva && data.iva.trim() !== "" ? data.iva : null,
     fechaNacimiento: data.fecha_nacimiento,
     direccion: {
       calle: data.calle,
@@ -57,9 +57,8 @@ async function handleSubmit(event) {
       piso: data.piso || null,
       codigoPostal: data.codigo_postal || null,
       localidad: data.localidad,
-      provincia: data.provincia,
-      // si tenés un input name="pais", descomentá esta línea:
-      // pais: data.pais
+      provincia: data.provincia
+      // pais: data.pais  // si después agregás el campo
     },
     telefono: data.telefono,
     email: data.email || null,
@@ -100,7 +99,6 @@ async function handleSubmit(event) {
 
       // 400 - Error de validación (DTO o reglas como CUIT vacío)
       if (response.status === 400 && errorData && errorData.error === "Error de validación") {
-        // Podrías recorrer errorData.detalles para marcar campos, por ahora mensaje general
         const msg =
           errorData.message ||
           "Hay errores en los datos enviados. Revisá los campos y volvé a intentar.";
@@ -150,17 +148,53 @@ function handleYes() {
 
 function showErrorModal(titulo, mensaje) {
   const modal = document.getElementById("modal-error");
+  if (!modal) return;
+
   const headerRight = modal.querySelector(".modal-right");
   const text = document.getElementById("error-text");
 
   if (headerRight) {
     headerRight.textContent = titulo;
   }
-  text.textContent = mensaje;
+  if (text) {
+    text.textContent = mensaje;
+  }
 
-  modal.style.display = "flex"; // o "block" según tu CSS
+  modal.style.display = "flex";
 }
 
 function closeErrorModal() {
-  document.getElementById("modal-error").style.display = "none";
+  const modal = document.getElementById("modal-error");
+  if (modal) {
+    modal.style.display = "none";
+  }
+}
+
+// -------------------- Modal de cancelar --------------------
+
+// Mostrar el popup de cancelar
+function showCancelModal() {
+  const modal = document.getElementById("modal-cancel");
+  if (modal) {
+    modal.style.display = "flex";
+  }
+}
+
+// El usuario elige NO -> se cierra el popup y no se pierde nada
+function handleCancelNo() {
+  const modal = document.getElementById("modal-cancel");
+  if (modal) {
+    modal.style.display = "none";
+  }
+}
+
+// El usuario elige SÍ -> continuar con el paso 6 (volver al menú)
+function handleCancelYes() {
+  const modal = document.getElementById("modal-cancel");
+  if (modal) {
+    modal.style.display = "none";
+  }
+
+  // Redirigir al menú principal
+  window.location.href = "/";
 }
