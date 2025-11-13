@@ -31,7 +31,7 @@ public class HuespedDTO {
     private TipoDni tipoDocumento;
     
 	@NotBlank(message = "El número de documento es obligatorio")
-	@Pattern(regexp = "^[0-9]{9}$", message = "El DNI debe consistir en 9 dígitos numéricos.")
+	@Pattern(regexp = "^[0-9]{8}$", message = "El DNI debe consistir en 8 dígitos numéricos.")
 	private String numeroDocumento;
 	
 	@Pattern(regexp = "^[0-9]{11}$", message = "El CUIT debe consistir en 11 dígitos numéricos.")
