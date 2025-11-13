@@ -11,5 +11,4 @@ public class SuiteApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(SuiteApplication.class, args);
 	}
-    private void nothing(){}
 }

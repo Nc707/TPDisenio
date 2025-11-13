@@ -1,10 +1,11 @@
 package edu.inbugwethrust.premier.suite.services;
 
 import java.util.Optional;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 
 import edu.inbugwethrust.premier.suite.dto.BusquedaHuespedDTO;
@@ -86,26 +87,24 @@ public class GestorHuespedes implements IGestorHuespedes {
         boolean hayCriterio =
                 notBlank(datos.getApellido()) ||
                 notBlank(datos.getNombres()) ||
-                datos.getTipoDocumento() != null ||
+                //datos.getTipoDocumento() != null ||
                 notBlank(datos.getNumeroDocumento());
 
         if (!hayCriterio) {
             // Caso "no ingresó nada" → mostrar todos
-            return buscarTodos();
+            return huespedDAO.findAll();
         }
+        
 
-        // Si hay criterios, delego todo al repo:
-        return huespedDAO.buscarHuespedes(
-                datos.getApellido(),
-                datos.getNombres(),
-                datos.getTipoDocumento(),
-                datos.getNumeroDocumento()
-        );
+        Huesped huespedProbe = huespedMapper.toEntityBusqueda(datos);
+        ExampleMatcher matcher = ExampleMatcher.matching()
+            .withIgnoreNullValues()
+            .withIgnoreCase()
+            .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
+        return huespedDAO.findAll(Example.of(huespedProbe, matcher));
+        
     }
 
-    private List<Huesped> buscarTodos() {
-        return huespedDAO.findAll();
-    }
     private BusquedaHuespedDTO normalizarBusqueda(BusquedaHuespedDTO busqueda) {
         if (busqueda == null) return new BusquedaHuespedDTO();
 

@@ -3,7 +3,9 @@ package edu.inbugwethrust.premier.suite.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 import edu.inbugwethrust.premier.suite.dto.BusquedaHuespedDTO;
 import edu.inbugwethrust.premier.suite.dto.HuespedDTO;
@@ -68,7 +70,38 @@ public class HuespedController {
     // CU02 – Buscar huésped
     // -------------------------------------------------
 
-
+    @GetMapping("/buscar")
+    public String mostrarFormularioBusqueda(Model model) {
+        if (!model.containsAttribute("busquedaHuespedDTO")) {
+            model.addAttribute("busquedaHuespedDTO", new BusquedaHuespedDTO());
+        }
+        return "buscar-huesped-page";
+    }
+    
+    @GetMapping("/resultados")
+    public String buscarHuespedes(
+            @ModelAttribute("busquedaHuespedDTO") BusquedaHuespedDTO dto, 
+            Model model,
+            RedirectAttributes redirectAttributes) {
+        
+        
+        List<Huesped> listaResultados = gestorHuespedes.buscar_huespedes(dto);
+        
+        if (listaResultados.isEmpty()) {
+            // 3. Agregamos el mensaje "Flash" (vive solo una petición)
+            redirectAttributes.addFlashAttribute("mensajeToast", "No se encontraron resultados con esos criterios. Intente nuevamente.");
+            redirectAttributes.addFlashAttribute("tipoToast", "warning"); // Opcional: para cambiar color
+            
+            // 4. Redirigimos AL FORMULARIO DE BÚSQUEDA (no a la tabla vacía)
+            return "redirect:/huespedes/buscar"; 
+        }
+        
+        // 2. Pasamos la lista a la vista
+        model.addAttribute("huespedes", listaResultados);
+        
+        // 3. Vamos a la nueva vista (que crearemos abajo)
+        return "resultados-huesped-page";
+    }
     /**
      * CU02 – Búsqueda de huéspedes.
      * - Si no se envía ningún criterio → devuelve TODOS los huéspedes.
