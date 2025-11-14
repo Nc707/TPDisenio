@@ -239,6 +239,39 @@
         </div>
     </div>
 </div>
+
+    <!-- Modal HUESPED DUPLICADO -->
+    <div id="modal-duplicado" class="modal">
+        <div class="modal-box">
+            <header class="modal-header">
+                <div class="modal-left">
+                    <span class="modal-icon">!</span>
+                </div>
+                <div class="modal-right">
+                    Huésped duplicado
+                </div>
+            </header>
+
+            <div class="modal-body">
+                <p id="duplicado-text">
+                    Ya existe un huésped con ese tipo y número de documento.
+                </p>
+            </div>
+
+            <div class="modal-buttons">
+                <!-- ACEPTAR IGUALMENTE -->
+                <button type="button" class="btn-primary" onclick="handleDuplicadoAceptar()">
+                    ACEPTAR IGUALMENTE
+                </button>
+
+                <!-- CORREGIR -->
+                <button type="button" class="btn-secondary" onclick="handleDuplicadoCorregir()">
+                    CORREGIR
+                </button>
+            </div>
+        </div>
+    </div>
+
 </div>
 <!-- 6. Este bloque reemplaza al fragmento 'scripts' del layout -->
 <script th:src="@{/huespedes/script.js}" layout:fragment="scripts"></script>

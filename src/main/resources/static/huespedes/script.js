@@ -98,14 +98,13 @@ async function handleSubmit(event) {
 
       console.error("Error del servidor:", errorData || response);
 
-      // 409 - HuespedDuplicadoException
-      if (response.status === 409 && errorData && errorData.error === "Huésped duplicado") {
-        showErrorModal(
-          "Huésped duplicado",
-          errorData.message || "Ya existe un huésped con ese tipo y número de documento."
-        );
-        return;
-      }
+    // 409 - HuespedDuplicadoException
+    if (response.status === 409 && errorData && errorData.error === "Huésped duplicado") {
+      const msg = errorData.message || "Ya existe un huésped con ese tipo y número de documento.";
+      showDuplicadoModal(msg);
+      return;
+    }
+
 
       // 400 - Error de validación (DTO o reglas como CUIT vacío)
       if (response.status === 400 && errorData && errorData.error === "Error de validación") {
@@ -209,6 +208,45 @@ function handleCancelNo() {
   if (modal) {
     modal.style.display = "none";
   }
+}
+function showDuplicadoModal(mensaje) {
+  const modal = document.getElementById("modal-duplicado");
+  if (!modal) {
+    // Fallback por si el modal no está en el HTML
+    showErrorModal("Huésped duplicado", mensaje);
+    return;
+  }
+
+  const text = document.getElementById("duplicado-text");
+  if (text) {
+    text.textContent = mensaje;
+  }
+
+  modal.style.display = "flex";
+}
+
+// Botón "CORREGIR" -> cerrar modal y enfocar el campo número de documento
+function handleDuplicadoCorregir() {
+  const modal = document.getElementById("modal-duplicado");
+  if (modal) {
+    modal.style.display = "none";
+  }
+
+  const docInput = document.querySelector('input[name="numeroDocumento"]');
+  if (docInput) {
+    docInput.focus();
+  }
+}
+
+// Botón "ACEPTAR IGUALMENTE"
+function handleDuplicadoAceptar() {
+  const modal = document.getElementById("modal-duplicado");
+  if (modal) {
+    modal.style.display = "none";
+  }
+
+  // TODO: acá iría la lógica de "aceptar igualmente" si el backend lo permite.
+  // Por ahora solo cierra el popup y deja los datos en el formulario.
 }
 
 // El usuario elige SÍ en el popup de cancelar -> volver al menú
