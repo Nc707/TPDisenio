@@ -1,0 +1,99 @@
+@charset "UTF-8";
+/* Título */
+.titulo-resultados {
+    text-align: center;
+    color: #1a3b5d;
+    margin-bottom: 30px;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+/* Contenedor de la tabla con SCROLL */
+.table-scroll-container {
+    max-height: 400px; /* Altura fija para que aparezca el scroll */
+    overflow-y: auto;  /* Scroll vertical automático */
+    border: 1px solid #7a7a7a;
+    margin-bottom: 30px;
+    background-color: white;
+}
+
+/* Estilos de la Tabla */
+.result-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+}
+
+/* Cabecera Azul */
+.result-table thead th {
+    background-color: #a1c8e9; /* El azul claro de la imagen */
+    color: #000;
+    font-weight: bold;
+    padding: 10px;
+    border: 1px solid #7a7a7a;
+    text-align: left;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+/* Celdas */
+.result-table td {
+    border: 1px solid #7a7a7a;
+    padding: 8px 10px;
+    color: #888; /* Texto grisáceo como en la imagen (APELLIDO 1...) */
+}
+
+/* Radio Button personalizado */
+.radio-cell {
+    text-align: center;
+    width: 50px;
+}
+
+input[type="radio"] {
+    transform: scale(1.5); /* Hacer el círculo más grande */
+    cursor: pointer;
+}
+
+/* Footer de botones */
+.footer-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.btn-custom {
+    padding: 10px 30px;
+    border: 1px solid #333;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 14px;
+    min-width: 120px;
+    text-transform: uppercase;
+    text-decoration: none;
+    text-align: center;
+}
+
+.btn-cancelar {
+    background-color: #5482a8; /* Azul grisáceo */
+    color: white;
+}
+
+.btn-siguiente {
+    background-color: #5482a8;
+    color: white;
+}
+
+/* Personalización del Scrollbar (estilo Chrome/Edge para que se vea azulito) */
+.table-scroll-container::-webkit-scrollbar {
+    width: 12px;
+}
+.table-scroll-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+.table-scroll-container::-webkit-scrollbar-thumb {
+    background: #a1c8e9;
+    border-radius: 6px;
+    border: 2px solid #f1f1f1;
+}

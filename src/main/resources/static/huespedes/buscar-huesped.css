@@ -1,0 +1,142 @@
+@charset "UTF-8";
+/* --- buscar-huesped.css --- */
+
+/* Título centrado y con el color corporativo */
+.titulo-principal {
+    color: #1a3b5d; /* Azul oscuro Premier */
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 60px; /* Espacio generoso antes del formulario */
+}
+
+/* Layout de Grilla: 2 columnas iguales con mucho espacio en medio.
+   Esto replica la separación visual de la imagen.
+*/
+.search-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dos columnas iguales */
+    column-gap: 100px; /* Gran espacio central */
+    row-gap: 30px;     /* Espacio vertical entre filas */
+    margin-bottom: 80px; /* Espacio antes de los botones */
+}
+
+/* Estilo de cada grupo (Label + Input) */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.input-group label {
+    font-size: 14px;
+    color: #333;
+    font-weight: normal;
+}
+
+/* Estilos específicos para los inputs para que se parezcan a la imagen */
+.input-group input,
+.input-group select {
+    padding: 10px;
+    border: 1px solid #7a7a7a;
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: #f0f0f0; /* Un gris muy suave de fondo */
+    color: #555;
+}
+
+/* Placeholder más claro para simular el texto de ejemplo */
+.input-group input::placeholder {
+    color: #b0b0b0;
+    text-transform: uppercase;
+}
+
+/* Contenedor de botones: pegados a los extremos */
+.botones-footer {
+    display: flex;
+    justify-content: space-between; /* Uno a la izq, otro a la der */
+    align-items: center;
+    padding-top: 20px;
+}
+
+/* Estilos base de botones */
+.btn-custom {
+    padding: 10px 30px;
+    border: 1px solid #333;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 14px;
+    min-width: 120px;
+    text-transform: uppercase;
+}
+
+/* Botón Cancelar (Gris azulado) */
+.btn-cancelar {
+    background-color: #6c859e; 
+    color: white;
+    border-color: #5a728a;
+}
+
+/* Botón Buscar (Azul oscuro Premier) */
+.btn-buscar {
+    background-color: #5482a8; /* Un tono azul acero */
+    color: white;
+    border-color: #3e6b91;
+}
+
+/* Hover effects */
+.btn-cancelar:hover { background-color: #5a728a; }
+.btn-buscar:hover { background-color: #3e6b91; }
+
+/* Ajuste para pantallas pequeñas */
+@media (max-width: 768px) {
+    .search-grid {
+        grid-template-columns: 1fr; /* Una sola columna en móvil */
+        column-gap: 0;
+    }
+}
+
+#toast-notification {
+            visibility: hidden; /* Oculto por defecto */
+            min-width: 300px;
+            background-color: #333; /* Color gris oscuro */
+            color: #fff;
+            text-align: center;
+            border-radius: 4px;
+            padding: 16px;
+            position: fixed;
+            z-index: 9999;
+            left: 50%;
+            bottom: 30px; /* Distancia desde abajo */
+            transform: translateX(-50%); /* Centrado perfecto */
+            font-size: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        /* Clase para mostrarlo con animación */
+        #toast-notification.show {
+            visibility: visible;
+            -webkit-animation: fadein 0.5s, fadeout 0.5s 4s; /* 4s de duración total */
+            animation: fadein 0.5s, fadeout 0.5s 4s;
+        }
+
+        /* Animaciones */
+        @-webkit-keyframes fadein {
+            from {bottom: 0; opacity: 0;} 
+            to {bottom: 30px; opacity: 1;}
+        }
+
+        @keyframes fadein {
+            from {bottom: 0; opacity: 0;}
+            to {bottom: 30px; opacity: 1;}
+        }
+
+        @-webkit-keyframes fadeout {
+            from {bottom: 30px; opacity: 1;} 
+            to {bottom: 0; opacity: 0;}
+        }
+
+        @keyframes fadeout {
+            from {bottom: 30px; opacity: 1;}
+            to {bottom: 0; opacity: 0;}
+        }

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout.html}">
+<head>
+    <title>Buscar Huésped</title>
+    <link rel="stylesheet" href="buscar-huesped.css">
+</head>
+<body>
+
+    <div class="top-bar" layout:fragment="top-bar-content">
+        Premier
+    </div>
+
+    <div class="form-container" layout:fragment="content">
+        
+        <h1 class="titulo-principal">Buscar Huésped</h1>
+
+        <form th:action="@{/huespedes/resultados}" th:object="${busquedaHuespedDTO}" method="get">
+            
+            <div class="search-grid">
+                
+                <div class="input-group">
+                    <label for="apellido">Apellido</label>
+                    <input type="text" id="apellido" th:field="*{apellido}" placeholder="APELLIDO">
+                </div>
+
+                <div class="input-group">
+                    <label for="tipoDocumento">Tipo de Documento</label>
+                    <select id="tipoDocumento" th:field="*{tipoDocumento}">
+                        <option value="" disabled selected>TIPO DE DOCUMENTO</option>
+                        <option th:each="tipo : ${T(edu.inbugwethrust.premier.suite.model.TipoDni).values()}"
+                                th:value="${tipo}" 
+                                th:text="${tipo}">
+                            DNI
+                        </option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="nombres">Nombre</label>
+                    <input type="text" id="nombres" th:field="*{nombres}" placeholder="NOMBRE">
+                </div>
+
+                <div class="input-group">
+                    <label for="numeroDocumento">Número de Documento</label>
+                    <input type="text" id="numeroDocumento" th:field="*{numeroDocumento}" placeholder="00000000">
+                </div>
+
+            </div>
+
+            <div class="botones-footer">
+                <a th:href="@{/}" class="btn-custom btn-cancelar" style="text-decoration: none; display: inline-block; text-align: center; line-height: 20px;">CANCELAR</a>
+                
+                <button type="submit" class="btn-custom btn-buscar">BUSCAR</button>
+            </div>
+
+        </form>
+    </div>
+    <div id="toast-notification" 
+         th:if="${mensajeToast}" 
+         th:text="${mensajeToast}"
+         class="show">
+         </div>
+
+
+    <script layout:fragment="scripts">
+        document.addEventListener('DOMContentLoaded', () => {
+            const toast = document.getElementById("toast-notification");
+            if (toast) {
+                // El CSS hace la animación de opacidad, 
+                // pero aquí lo removemos del HTML después de 4.5 segundos
+                // para limpiar la pantalla.
+                setTimeout(function(){ 
+                    toast.className = toast.className.replace("show", ""); 
+                    toast.style.display = 'none';
+                }, 4500);
+            }
+        });
+    </script>
+
+</body>
+</html>

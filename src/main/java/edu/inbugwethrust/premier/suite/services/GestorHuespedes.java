@@ -1,10 +1,14 @@
 package edu.inbugwethrust.premier.suite.services;
 
 import java.util.Optional;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 
+import edu.inbugwethrust.premier.suite.dto.BusquedaHuespedDTO;
 import edu.inbugwethrust.premier.suite.dto.HuespedDTO;
 import edu.inbugwethrust.premier.suite.mappers.HuespedMapper;
 import edu.inbugwethrust.premier.suite.model.CategoriaFiscal;
@@ -13,6 +17,7 @@ import edu.inbugwethrust.premier.suite.model.TipoDni;
 import edu.inbugwethrust.premier.suite.repositories.HuespedDAO;
 import edu.inbugwethrust.premier.suite.services.exceptions.CuitVacioException;
 import edu.inbugwethrust.premier.suite.services.exceptions.HuespedDuplicadoException;
+
 
 @Service
 public class GestorHuespedes implements IGestorHuespedes {
@@ -75,6 +80,60 @@ public class GestorHuespedes implements IGestorHuespedes {
         return huespedDAO.findByTipoDocumentoAndNumeroDocumento(tipo, numeroDocumento);
     }
 
+    @Override
+    public List<Huesped> buscar_huespedes(BusquedaHuespedDTO busqueda){ 
+        BusquedaHuespedDTO datos = normalizarBusqueda(busqueda);
+
+        boolean hayCriterio =
+                notBlank(datos.getApellido()) ||
+                notBlank(datos.getNombres()) ||
+                //datos.getTipoDocumento() != null ||
+                notBlank(datos.getNumeroDocumento());
+
+        if (!hayCriterio) {
+            // Caso "no ingresó nada" → mostrar todos
+            return huespedDAO.findAll();
+        }
+        
+
+        Huesped huespedProbe = huespedMapper.toEntityBusqueda(datos);
+        ExampleMatcher matcher = ExampleMatcher.matching()
+            .withIgnoreNullValues()
+            .withIgnoreCase()
+            .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
+        return huespedDAO.findAll(Example.of(huespedProbe, matcher));
+        
+    }
+
+    private BusquedaHuespedDTO normalizarBusqueda(BusquedaHuespedDTO busqueda) {
+        if (busqueda == null) return new BusquedaHuespedDTO();
+
+        BusquedaHuespedDTO dto = new BusquedaHuespedDTO();
+        dto.setApellido(cleanAndUpper(busqueda.getApellido()));
+        dto.setNombres(cleanAndUpper(busqueda.getNombres()));
+        dto.setTipoDocumento(busqueda.getTipoDocumento());
+        dto.setNumeroDocumento(clean(busqueda.getNumeroDocumento()));
+        return dto;
+    }
+
+    private String cleanAndUpper(String valor) {
+        if (valor == null) return null;
+        String trimmed = valor.trim();
+        return trimmed.isEmpty() ? null : trimmed.toUpperCase();
+    }
+
+    private String clean(String valor) {
+        if (valor == null) return null;
+        String trimmed = valor.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+
+    private boolean notBlank(String s) {
+        return s != null && !s.isBlank();
+    }
+}
+    
     /* 
     // ----------------------------------------------------
     // Métodos del diagrama NO implementados aún:
@@ -85,14 +144,5 @@ public class GestorHuespedes implements IGestorHuespedes {
 
     public void dar_baja_huesped(Long id) {
 
-    }
-    
-    List<Huesped> buscar_huespedes(busquedaHuespedTOD busqueda){ 
-    }
+    }      
     */
-    // ----------------------------------------------------
-    // Método privado de mapeo DTO -> entidad
-    // Esto lo podés sacar a un mapper después
-    // ----------------------------------------------------
-   
-}
