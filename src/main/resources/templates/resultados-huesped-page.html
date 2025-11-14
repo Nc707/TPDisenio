@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout.html}">
+<head>
+    <title>Resultados de Búsqueda</title>
+    <link rel="stylesheet" th:href="@{resultados-huesped.css}">
+</head>
+<body>
+
+    <div class="top-bar" layout:fragment="top-bar-content">
+        Premier
+    </div>
+
+    <div class="form-container" layout:fragment="content">
+        
+        <h1 class="titulo-resultados">Buscar Huésped</h1>
+
+        <form th:action="@{/huespedes/seleccionar}" method="post">
+            
+            <div class="table-scroll-container">
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Apellido</th>
+                            <th>Nombre</th>
+                            <th>Tipo de documento</th>
+                            <th>Número de Documento</th>
+                            <th style="width: 40px;"></th> </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="h : ${huespedes}">
+                            <td th:text="${h.apellido}">APELLIDO 1</td>
+                            <td th:text="${h.nombres}">NOMBRE 1</td>
+                            <td th:text="${h.tipoDocumento}">TIPO 1</td>
+                            <td th:text="${h.numeroDocumento}">0000001</td>
+                            <td class="radio-cell">
+                                <input type="radio" 
+                                       name="idSeleccionado" 
+                                       th:value="${h.tipoDocumento} + '_' + ${h.numeroDocumento}" 
+                                       required>
+                            </td>
+                        </tr>
+                        
+                        <tr th:if="${#lists.isEmpty(huespedes)}">
+                            <td colspan="5" style="text-align:center; padding: 20px;">
+                                No se encontraron huéspedes.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="footer-buttons">
+                <a th:href="@{/huespedes/buscar}" class="btn-custom btn-cancelar">CANCELAR</a>
+                
+                <button type="submit" class="btn-custom btn-siguiente" 
+                        th:disabled="${#lists.isEmpty(huespedes)}">
+                    SIGUIENTE
+                </button>
+            </div>
+        </form>
+    </div>
+
+</body>
+</html>
