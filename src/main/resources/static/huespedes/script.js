@@ -130,6 +130,14 @@ async function handleSubmit(event) {
       "No se pudo conectar con el servidor. Verificá que la aplicación esté ejecutándose."
     );
   }
+  if (data.iva === "RESPONSABLE_INSCRIPTO" &&
+        (!data.cuit || data.cuit.trim() === "")) {
+      showErrorModal(
+        "Datos incompletos",
+        "Si seleccionás Responsable Inscripto, tenés que ingresar el CUIT."
+      );
+      return;
+    }
 }
 
 // -------------------- Botones del popup de éxito --------------------
