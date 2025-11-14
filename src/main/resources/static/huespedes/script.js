@@ -41,6 +41,16 @@ async function handleSubmit(event) {
     return;
   }
 
+  // 🔎 Si es Responsable Inscripto, el CUIT es obligatorio
+  if (data.iva === "RESPONSABLE_INSCRIPTO" &&
+      (!data.cuit || data.cuit.trim() === "")) {
+    showErrorModal(
+      "Datos incompletos",
+      "Si seleccionás Responsable Inscripto, tenés que ingresar el CUIT."
+    );
+    return;
+  }
+
   // 👇 Armar el JSON que espera el backend (HuespedDTO / Huesped)
   const payload = {
     apellido: data.apellido,
@@ -130,26 +140,31 @@ async function handleSubmit(event) {
       "No se pudo conectar con el servidor. Verificá que la aplicación esté ejecutándose."
     );
   }
-  if (data.iva === "RESPONSABLE_INSCRIPTO" &&
-        (!data.cuit || data.cuit.trim() === "")) {
-      showErrorModal(
-        "Datos incompletos",
-        "Si seleccionás Responsable Inscripto, tenés que ingresar el CUIT."
-      );
-      return;
-    }
 }
 
 // -------------------- Botones del popup de éxito --------------------
 
+// NO: no quiero cargar otro -> cerrar modal y volver al menú
 function handleNo() {
-  document.getElementById("modal-confirm").style.display = "none";
+  const modal = document.getElementById("modal-confirm");
+  if (modal) {
+    modal.style.display = "none";
+  }
+
+  // Ir al menú principal
+  window.location.href = "/";
 }
 
+// SÍ: quiero cargar otro -> limpiar formulario y cerrar modal
 function handleYes() {
   const form = document.getElementById("form-huesped");
-  form.reset();
-  document.getElementById("modal-confirm").style.display = "none";
+  if (form) {
+    form.reset();
+  }
+  const modal = document.getElementById("modal-confirm");
+  if (modal) {
+    modal.style.display = "none";
+  }
 }
 
 // -------------------- Modal de error --------------------
@@ -188,7 +203,7 @@ function showCancelModal() {
   }
 }
 
-// El usuario elige NO -> se cierra el popup y no se pierde nada
+// El usuario elige NO en el popup de cancelar -> solo cerrar
 function handleCancelNo() {
   const modal = document.getElementById("modal-cancel");
   if (modal) {
@@ -196,13 +211,13 @@ function handleCancelNo() {
   }
 }
 
-// El usuario elige SÍ -> continuar con el paso 6 (volver al menú)
+// El usuario elige SÍ en el popup de cancelar -> volver al menú
 function handleCancelYes() {
   const modal = document.getElementById("modal-cancel");
   if (modal) {
     modal.style.display = "none";
   }
 
-  // Redirigir al menú principal
+  // Ir al menú principal
   window.location.href = "/";
 }
