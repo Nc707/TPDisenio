@@ -20,7 +20,7 @@ async function handleSubmit(event) {
   const form = document.getElementById("form-huesped");
   const modalOk = document.getElementById("modal-confirm");
 
-  // ✅ Validación HTML5 básica (required, pattern, type="email", etc.)
+  // Validación HTML5 básica (required, pattern, type="email", etc.)
   if (!form.checkValidity()) {
     form.reportValidity();
     return;
@@ -35,13 +35,13 @@ async function handleSubmit(event) {
     return;
   }
 
-  // 🔎 Validación extra de teléfono
+  // Validación extra de teléfono
   if (!esTelefonoValido(data.telefono)) {
     showErrorModal("Teléfono inválido", "El teléfono no tiene un formato válido.");
     return;
   }
 
-  // 🔎 Si es Responsable Inscripto, el CUIT es obligatorio
+  //Si es Responsable Inscripto, el CUIT es obligatorio
   if (data.iva === "RESPONSABLE_INSCRIPTO" &&
       (!data.cuit || data.cuit.trim() === "")) {
     showErrorModal(
@@ -51,7 +51,7 @@ async function handleSubmit(event) {
     return;
   }
 
-  // 👇 Armar el JSON que espera el backend (HuespedDTO / Huesped)
+  //JSON que espera el backend (HuespedDTO / Huesped)
   const payload = {
     apellido: data.apellido,
     nombres: data.nombre,               // name="nombre"
@@ -87,7 +87,7 @@ async function handleSubmit(event) {
       body: JSON.stringify(payload)
     });
 
-    // ❌ Respuestas con error (400, 409, 500, etc.)
+    // Respuestas con error (400, 409, 500, etc.)
     if (!response.ok) {
       let errorData = null;
       try {
@@ -124,7 +124,7 @@ async function handleSubmit(event) {
       return;
     }
 
-    // ✅ Si llegó acá, la respuesta es 2xx → éxito
+    // Si llegó acá, la respuesta es 2xx → éxito
     const popupText = document.getElementById("popup-text");
     popupText.innerHTML = `El huésped <b>${payload.nombres} ${payload.apellido}</b> ha sido<br>
       satisfactoriamente cargado al sistema.<br>¿Desea cargar otro?`;
@@ -143,7 +143,7 @@ async function handleSubmit(event) {
 
 // -------------------- Botones del popup de éxito --------------------
 
-// NO: no quiero cargar otro -> cerrar modal y volver al menú
+// NO: no quiero cargar otro, cerrar modal y volver al menú
 function handleNo() {
   const modal = document.getElementById("modal-confirm");
   if (modal) {
@@ -154,7 +154,7 @@ function handleNo() {
   window.location.href = "/";
 }
 
-// SÍ: quiero cargar otro -> limpiar formulario y cerrar modal
+// SÍ: quiero cargar otro, limpiar formulario y cerrar modal
 function handleYes() {
   const form = document.getElementById("form-huesped");
   if (form) {
@@ -202,7 +202,7 @@ function showCancelModal() {
   }
 }
 
-// El usuario elige NO en el popup de cancelar -> solo cerrar
+// El usuario elige NO en el popup de cancelar solo cerrar
 function handleCancelNo() {
   const modal = document.getElementById("modal-cancel");
   if (modal) {
