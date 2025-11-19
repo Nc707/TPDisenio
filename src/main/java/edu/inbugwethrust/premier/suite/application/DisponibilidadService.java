@@ -10,6 +10,7 @@ import edu.inbugwethrust.premier.suite.model.FichaEvento;
 import edu.inbugwethrust.premier.suite.model.Habitacion;
 import edu.inbugwethrust.premier.suite.services.IGestorFichaEvento;
 import edu.inbugwethrust.premier.suite.services.IGestorHabitaciones;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service; // <-- Añade @Service
 
@@ -20,7 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
+@Slf4j
 @Service
 public class DisponibilidadService implements IDisponibilidadService {
 
@@ -42,14 +43,31 @@ public class DisponibilidadService implements IDisponibilidadService {
    * @param busquedaDTO DTO que contiene las fechas de la búsqueda.
    * @return Un DTO que contiene toda la información necesaria para renderizar la grilla.
    */
-  public CalendarioDisponibilidadDTO consultarDisponibilidad(BusquedaHabitacionDTO busquedaDTO) {
-      
-    // Recoleccion de datos
-    if (busquedaDTO.getFechaFin().isBefore(busquedaDTO.getFechaInicio())) {
-        // Si el rango es inválido, devolvemos un calendario vacío
-        return new CalendarioDisponibilidadDTO(busquedaDTO, Collections.emptyList(), Collections.emptyMap(), Collections.emptyMap());
+  public CalendarioDisponibilidadDTO consultarDisponibilidad(BusquedaHabitacionDTO busquedaDTO) {      
+
+
+    if (busquedaDTO == null || 
+        busquedaDTO.getFechaInicio() == null || 
+        busquedaDTO.getFechaFin() == null) {
+        
+        // Si no hay fechas, devolvemos un calendario vacío.
+        return new CalendarioDisponibilidadDTO(
+            new BusquedaHabitacionDTO(), 
+            Collections.emptyList(), 
+            Collections.emptyMap(), 
+            Collections.emptyMap()
+        );
     }
 
+    if (busquedaDTO.getFechaFin().isBefore(busquedaDTO.getFechaInicio())) {   
+
+        return new CalendarioDisponibilidadDTO(
+            busquedaDTO, 
+            Collections.emptyList(), 
+            Collections.emptyMap(), 
+            Collections.emptyMap()
+        );
+    }
     List<LocalDate> fechas = construirFechas(busquedaDTO);
     List<Habitacion> habitaciones = gestorHabitaciones.obtenerHabitaciones();
     List<FichaEvento> fichasEventos = gestorFichaEvento.obtenerFichasEventoPorFechas(
@@ -111,14 +129,15 @@ public class DisponibilidadService implements IDisponibilidadService {
                     DisponibilidadHabitacionDTO::getNumeroHabitacion, // Clave del mapa interior
                     DisponibilidadHabitacionDTO::getEstado)          // Valor del mapa interior
             ));
+    
 
- // --- 4. Ensamblaje del Paquete Final ---
-      return new CalendarioDisponibilidadDTO(
+      CalendarioDisponibilidadDTO calendarioDTO = new CalendarioDisponibilidadDTO(
           busquedaDTO, 
           fechas, 
           mapaAgrupado,
-          mapaDisponibilidad
-      );
+          mapaDisponibilidad);
+      log.debug("Calendario de disponibilidad construido: {}", calendarioDTO);
+      return calendarioDTO;
   }
 
     private List<LocalDate> construirFechas(BusquedaHabitacionDTO busquedaHabitacionDTO) {
