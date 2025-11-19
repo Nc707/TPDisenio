@@ -4,32 +4,38 @@
       layout:decorate="~{layout.html}">
 <head>
   <title>Reservar Habitaciones</title>
-  <link rel="stylesheet" th:href="@{/busqueda-habitacion.css}">
+  <link rel="stylesheet" th:href="@{busqueda-habitacion.css}">
 </head>
 <body>
 
   <div class="top-bar" layout:fragment="top-bar-content">
     Premier
   </div>
-
+  
   <div class="form-container" layout:fragment="content">
-    
+    <aside class="leyenda-container">
+    <h2>Leyenda</h2>
+		<ul class="leyenda">
+	        <li><span class="status-circle status-seleccionada"></span>Seleccionada</li>
+	        <li><span class="status-circle status-fuera_de_servicio"></span>Fuera de servicio</li>
+	        <li><span class="status-circle status-reservada"></span>Reservadas</li>
+	        <li><span class="status-circle status-ocupada"></span>Ocupada</li>
+	        <li><span class="status-circle status-libre"></span>Libre</li>
+	      </ul>
+     </aside>
+     <div class="main-content">
     <h1 th:text="${modoAccion == 'RESERVAR'} ? 'Reservar Habitaciones' : 'Ocupar Habitación'">
       Reservar Habitaciones
     </h1>
-
+		
     <div class="busqueda-container">
       
-      <ul class="leyenda">
-        <li><span class="status-circle status-seleccionada"></span>Seleccionada</li>
-        <li><span class="status-circle status-fuera_de_servicio"></span>Fuera de servicio</li>
-        <li><span class="status-circle status-reservada"></span>Reservadas</li>
-        <li><span class="status-circle status-ocupada"></span>Ocupada</li>
-        <li><span class="status-circle status-libre"></span>Libre</li>
-      </ul>
+      
 
-      <form id="form-busqueda" th:action="@{/habitaciones/buscar}" th:object="${calendario.busquedaDTO}" method="get">
-        
+      <form id="form-busqueda" 
+      th:action="@{/habitaciones/buscar}" 
+      th:object="${busquedaDTO}" 
+      method="get">
         <input type="hidden" name="accion" th:value="${modoAccion}" />
 
         <div class="form-row">
@@ -73,47 +79,57 @@
           </thead>
           
           <tbody>
-            <tr th:each="fecha : ${calendario.fechas}">
-              
-              <th th:text="${#temporals.format(fecha, 'dd/MM/yyyy')}">04/11/2025</th>
-              
-              <th:block th:each="entry : ${calendario.habitacionesAgrupadas}">
-                <td th:each="hab : ${entry.value}">
-                  
-                  <th:block th:with="estado=${calendario.mapaDisponibilidad.get(fecha).get(hab.numeroHabitacion)}">
-                    
-                    <th:block th:if="${estado == T(edu.inbugwethrust.premier.suite.model.EstadoHabitacion).LIBRE}">
-                      <input type="checkbox" 
-                             th:id="'cell_' + ${hab.numeroHabitacion} + '_' + ${fecha}"
-                             name="celdasSeleccionadas"
-                             th:value="${hab.numeroHabitacion} + '_' + ${fecha}" />
-                      <label class="checkbox-label" 
-                             th:for="'cell_' + ${hab.numeroHabitacion} + '_' + ${fecha}"></label>
-                    </th:block>
+  <tr th:each="fecha : ${calendario.fechas}">
+    
+    <th th:text="${#temporals.format(fecha, 'dd/MM/yyyy')}"
+        th:data-fecha="${fecha}"> 04/11/2025
+    </th>
+    
+    <th:block th:each="entry : ${calendario.habitacionesAgrupadas}">
+      <td th:each="hab : ${entry.value}"
+          class="celda-interactiva"
+          th:data-habitacion="${hab.numeroHabitacion}"
+          th:data-fecha="${fecha}"
+          th:with="estado=${calendario.mapaDisponibilidad.get(fecha).get(hab.numeroHabitacion)}">
+        
+        <div class="cell-content" 
+             th:attr="data-estado=${estado.toString()}">
 
-                    <th:block th:unless="${estado == T(edu.inbugwethrust.premier.suite.model.EstadoHabitacion).LIBRE}">
-                      <div class="status-circle" 
-                           th:classappend="'status-' + ${estado.toString().toLowerCase()}">
-                      </div>
-                    </th:block>
-                    
-                  </th:block>
-                </td>
-              </th:block>
-            </tr>
-          </tbody>
+          <th:block th:if="${estado == T(edu.inbugwethrust.premier.suite.model.EstadoHabitacion).LIBRE}">
+            <input type="checkbox" 
+                   class="hidden-checkbox"
+                   th:id="'chk_' + ${hab.numeroHabitacion} + '_' + ${fecha}"
+                   name="celdasSeleccionadas"
+                   th:value="${hab.numeroHabitacion} + '_' + ${fecha}" />
+            
+            <div class="status-circle status-libre"></div>
+          </th:block>
+
+          <th:block th:unless="${estado == T(edu.inbugwethrust.premier.suite.model.EstadoHabitacion).LIBRE}">
+            <div class="status-circle" 
+                 th:classappend="'status-' + ${estado.toString().toLowerCase()}">
+            </div>
+          </th:block>
+
+        </div>
+      </td>
+    </th:block>
+  </tr>
+</tbody>
         </table>
-      </div> <div class="botones-inferiores">
+      </div>
+    </form> 
+    <div class="botones-inferiores">
         <button type="button" class="btn-secondary" id="open-modal-btn">CANCELAR</button>
+        <button type="button" class="btn-secondary" id="reset-btn">LIMPIAR</button>
         <button type="submit" class="btn-primary">SIGUIENTE</button>
       </div>
-
-    </form> </div> <div layout:fragment="modals" th:include="~{fragments/modal-cancelar :: modal-cancelar}">
     </div>
+    </div> <!--div layout:fragment="modals" th:include="~{fragments/modal-cancelar :: modal-cancelar}">
+    </div -->
 
-  <script layout:fragment="scripts" th:src="@{/js/modal.js}">
-    // El script del modal se carga aquí
-  </script>
+  <script layout:fragment="scripts" th:src="seleccion-rango.js"></script>
+</body>
 
 </body>
 </html>
