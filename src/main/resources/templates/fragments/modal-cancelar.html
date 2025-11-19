@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+  <div class="modal" id="myModal" th:fragment="modal-cancelar">
+    <div class="modal-box">
+      
+      <div class="modal-header">
+        <div class="modal-left">
+          <span class="modal-icon">?</span>
+          <span>Confirmación</span>
+        </div>
+        <span class="modal-close" id="modal-close-x">&times;</span>
+      </div>
+      
+      <div class="modal-body">
+        <p>¿Está seguro de que desea cancelar la operación?</p>
+      </div>
+      
+      <div class="modal-buttons">
+        <button type="button" class="btn-secondary" id="modal-cancel-btn">No</button>
+        <a th:href="@{/}" class="btn-primary" style="text-decoration:none;">Sí, Cancelar</a>
+      </div>
+      
+    </div>
+  </div>
+
+</body>
+</html>
