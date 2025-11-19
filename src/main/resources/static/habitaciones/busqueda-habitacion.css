@@ -77,15 +77,7 @@
   font-size: 12px;
   text-align: center;
 }
-.grilla-habitaciones thead {
-	background-color: var(--head-bg-color);
-	border-color: var(--head-border-color);
-	font-weight: bold;
-  position: sticky; /* Cabeceras fijas */
-  top: 0;
-  z-index: 10;
 
-}
 
 .grilla-habitaciones th{
 	border: 1px solid var(--head-border-color);
@@ -97,6 +89,7 @@
 		text-align: center;
 		vertical-align: middle;
 }
+
 .grilla-habitaciones td {
   border: 1px solid var(--border-color);
   padding: 6px 4px;
@@ -107,15 +100,73 @@
   vertical-align: middle;
 }
 
-
 .grilla-habitaciones tbody th {
   background-color: #f3f5f7; /* Fondo para la celda de la fecha */
   position: sticky; /* Columna de fecha fija */
   left: 0;
-  z-index: 5;
+  z-index: 30;
   min-width: 80px;
 }
 
+.grilla-habitaciones thead {
+	background-color: var(--head-bg-color);
+	border-color: var(--head-border-color);
+	font-weight: bold;
+
+}
+
+/* 1. Estilo BASE para todos los encabezados (Fondo, Borde, Sticky Arriba) */
+.grilla-habitaciones thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10; /* Capa base para el header */
+    background-color: var(--head-bg-color);
+    border: 1px solid var(--border-color);
+    
+    /* Evita la selección de texto azul al arrastrar */
+    user-select: none; 
+    -webkit-user-select: none;
+}
+
+/* 2. LA ESQUINA "FECHA" (El Rey) */
+/* Solo aplicamos esto al TH que está en el PRIMER TR */
+/* LA ESQUINA "FECHA" (El Rey Absoluto) */
+/* Selector específico: Primer hijo de la primera fila */
+.grilla-habitaciones thead tr:first-child th:first-child {
+    position: sticky;
+    
+    /* 1. Congelar Verticalmente (al bajar) */
+    top: 0;
+    
+    /* 2. Congelar Horizontalmente (al ir a la derecha) */
+    left: 0;
+    
+    /* 3. Capa Superior (Tapa a la columna de fechas y a la fila de habitaciones) */
+    z-index: 40 !important; 
+    
+    /* Estilos visuales para que sea sólida */
+    background-color: var(--head-bg-color);
+    
+    /* Bordes fuertes para delimitar la esquina */
+    border-right: 1px solid #999;
+    border-bottom: 1px solid #999;
+}
+
+/* 3. LAS CATEGORÍAS: (Ej: "Doble Estándar") - Primera Fila */
+/* Solo se pegan arriba. Nos aseguramos que NO se peguen a la izquierda */
+.grilla-habitaciones thead tr:first-child th:not(:first-child) {
+    left: auto !important;
+    z-index: 10;
+}
+
+/* 4. LOS NÚMEROS: (Ej: "106", "107") - Segunda Fila */
+/* Aquí está el truco: El navegador sabe apilarlos bajo la fila 1 automáticamente,
+   pero debemos asegurar que NO intenten pegarse a la izquierda. */
+.grilla-habitaciones thead tr:nth-child(2) th {
+    top: 30px; /* (Opcional) A veces ayuda dar un empujón si se solapan, pero sticky suele ser listo */
+    left: auto !important; /* CRÍTICO: Evita que el 106 se meta debajo de Fecha */
+    z-index: 10;
+}
 /* 3. Estilos de Checkbox (La parte más importante) */
 
 /* Ocultamos el checkbox real */
@@ -169,36 +220,62 @@
 	flex-grow: 0;
 }
 .main-content {
-	flex-grow: 1;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	flex-wrap: wrap;
-	justify-content: space-between;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    
+    /* --- AGREGA ESTO --- */
+    min-width: 0; /* CRÍTICO: Permite que el contenedor se encoja y aparezca el scroll */
+    width: 100%;  /* Asegura que use el espacio disponible */
+}
+/* ----------------------------------------------------------- */
+/* Estilos de la Barra de Desplazamiento (Scrollbar)           */
+/* ----------------------------------------------------------- */
+
+/* 1. Configuración del contenedor para soportar scroll */
+.grilla-container {
+    max-height: 500px; 
+    overflow: auto; /* Habilita scroll tanto vertical como horizontal */
+    border: 1px solid var(--border-color);
+    max-width: 100%; 
+    display: block;  
+
+    /* Variables para Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-track-color);
 }
 
-/* 2. Configuración del ancho/alto de la barra */
+/* 2. Ancho y Alto de la barra (Chrome/Edge/Safari) */
 .grilla-container::-webkit-scrollbar {
-  width: 10px;  /* Ancho para el scroll vertical */
-  height: 10px; /* Alto para el scroll horizontal */
+  width: 12px;  /* Un poco más ancho para que sea fácil de agarrar */
+  height: 12px; /* Altura de la barra horizontal */
 }
 
-/* 3. El fondo de la barra (el riel) */
+/* 3. El riel de fondo (Track) - ESTO ES LO QUE FALTABA */
 .grilla-container::-webkit-scrollbar-track {
-  background: var(--scrollbar-track-color);
+  background: var(--scrollbar-track-color); /* Usa tu variable #f1f1f1 */
   border-radius: 4px;
+  border: 1px solid #e0e0e0; /* Opcional: borde sutil para delimitar el riel */
 }
 
-/* 4. El slider (la parte que se mueve) */
+/* 4. El deslizador (Thumb) */
 .grilla-container::-webkit-scrollbar-thumb {
-  background-color: var(--scrollbar-thumb-color); /* Aquí aplicamos el color */
-  border-radius: 4px; /* Bordes redondeados */
-  border: 2px solid var(--scrollbar-track-color); /* Un pequeño borde blanco para dar efecto "flotante" */
+  background-color: var(--scrollbar-thumb-color); /* Tu color #A8C6FA */
+  border-radius: 6px; /* Más redondeado */
+  border: 3px solid var(--scrollbar-track-color); /* Borde interno para efecto 'flotante' */
 }
 
-/* 5. Efecto al pasar el mouse por encima del slider */
+/* 5. Efecto Hover en el deslizador */
 .grilla-container::-webkit-scrollbar-thumb:hover {
-  background-color: #5f7ea8; /* Un poco más oscuro al hacer hover */
+  background-color: #7a9bc9; /* Un tono más oscuro al pasar el mouse */
+}
+
+/* 6. La esquina donde se cruzan las barras (Corner) */
+.grilla-container::-webkit-scrollbar-corner {
+  background: var(--scrollbar-track-color);
 }
 
 /* --- Nuevos estilos para selección por rango --- */
@@ -232,4 +309,9 @@
 .in-range .status-circle {
   background-color: var(--seleccionada-color) !important;
   border-color: var(--border-color);
+}
+
+#form-seleccion {
+    width: 100%; /* Asegura que el form se adapte al ancho del main-content */
+    max-width: 100%;
 }
