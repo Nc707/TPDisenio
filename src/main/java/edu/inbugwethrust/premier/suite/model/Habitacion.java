@@ -20,9 +20,6 @@ public class Habitacion {
 	int numero;
 	int piso;
 	
-	@Enumerated(EnumType.STRING)
-	EstadoHabitacion estado;
-	
 	@ManyToOne
     @JoinColumn(name = "tipo_habitacion_id")
 	TipoHabitacion tipoHabitacion;
