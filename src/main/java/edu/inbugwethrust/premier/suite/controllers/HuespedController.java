@@ -9,6 +9,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 import edu.inbugwethrust.premier.suite.dto.BusquedaHuespedDTO;
 import edu.inbugwethrust.premier.suite.dto.HuespedDTO;
+import edu.inbugwethrust.premier.suite.dto.ObtenerHuespedDTO;
 import edu.inbugwethrust.premier.suite.model.Huesped;
 import edu.inbugwethrust.premier.suite.services.IGestorHuespedes;
 import jakarta.validation.Valid;
@@ -32,7 +33,14 @@ public class HuespedController {
      */
     @GetMapping("formulario-alta")
     public String obtenerFormularioAlta() {
-    	        return "alta-huesped-page.html";
+	        return "alta-huesped-page.html";
+    }
+    @GetMapping("editar")
+    public String obtenerFormularioEdicion(@ModelAttribute ObtenerHuespedDTO idHuesped, Model model) {
+      HuespedDTO huesped = gestorHuespedes.buscarPorId(idHuesped);
+      model.addAttribute("huesped", huesped);
+      return "alta-huesped-page.html";
+      
     }
     
      /**

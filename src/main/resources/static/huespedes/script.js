@@ -156,16 +156,16 @@ function handleNo() {
 
 // SÍ: quiero cargar otro, limpiar formulario y cerrar modal
 function handleYes() {
-  const form = document.getElementById("form-huesped");
-  if (form) {
-    form.reset();
-  }
   const modal = document.getElementById("modal-confirm");
   if (modal) {
     modal.style.display = "none";
   }
-}
 
+
+  const urlSinParametros = window.location.protocol + "//" + window.location.host + window.location.pathname;
+  window.location.href = urlSinParametros;
+
+}
 // -------------------- Modal de error --------------------
 
 function showErrorModal(titulo, mensaje) {
@@ -350,6 +350,22 @@ async function handleDuplicadoAceptar() {
 	}
 }
 
+function handleDuplicadoCorregir() {
+  const modal = document.getElementById("modal-duplicado");
+  if (modal) {
+    modal.style.display = "none";
+  }
+
+  // (Opcional pero recomendado para buena UX): 
+  // Ponemos el foco automáticamente en el campo 'numeroDocumento' 
+  // y seleccionamos el texto para que sea fácil de cambiar.
+  const docInput = document.querySelector('input[name="numeroDocumento"]');
+  if (docInput) {
+    docInput.focus();
+    docInput.select();
+  }
+}
+
 // El usuario elige SÍ en el popup de cancelar -> volver al menú
 function handleCancelYes() {
   const modal = document.getElementById("modal-cancel");
@@ -359,4 +375,30 @@ function handleCancelYes() {
 
   // Ir al menú principal
   window.location.href = "/";
+}
+
+function limpiarFormulario() {
+  const form = document.getElementById("form-huesped");
+  if (!form) return;
+
+  // Seleccionamos todos los campos interactivos
+  const elements = form.querySelectorAll("input, select, textarea");
+
+  elements.forEach((element) => {
+    // Ignoramos botones y inputs ocultos (como el ID si lo tuvieras)
+    if (element.type === "hidden" || element.type === "submit" || element.type === "button") {
+      return;
+    }
+
+    // Limpiamos el valor
+    element.value = "";
+
+    // Casos especiales (checkbox/radio)
+    if (element.type === "checkbox" || element.type === "radio") {
+      element.checked = false;
+    }
+  });
+  
+  // Opcional: Si tienes selects que no tienen opción vacía por defecto
+  // element.selectedIndex = 0; 
 }

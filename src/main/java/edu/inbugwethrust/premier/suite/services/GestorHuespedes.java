@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import edu.inbugwethrust.premier.suite.dto.BusquedaHuespedDTO;
 import edu.inbugwethrust.premier.suite.dto.HuespedDTO;
+import edu.inbugwethrust.premier.suite.dto.ObtenerHuespedDTO;
 import edu.inbugwethrust.premier.suite.mappers.HuespedMapper;
 import edu.inbugwethrust.premier.suite.model.CategoriaFiscal;
 import edu.inbugwethrust.premier.suite.model.Huesped;
@@ -132,17 +133,15 @@ public class GestorHuespedes implements IGestorHuespedes {
     private boolean notBlank(String s) {
         return s != null && !s.isBlank();
     }
+    
+    public HuespedDTO buscarPorId(ObtenerHuespedDTO id) {
+          Huesped huesped = huespedDAO.findByTipoDocumentoAndNumeroDocumento(id.getTipoDocumento(),
+           id.getNumeroDocumento()).orElse(null);
+          if (huesped == null) {
+            return null;
+          }
+          return huespedMapper.toDTO(huesped);
+        }  
 }
     
-    /* 
-    // ----------------------------------------------------
-    // Métodos del diagrama NO implementados aún:
-    // ----------------------------------------------------
-    public void modificar_huesped(HuespedDTO dto) {
-
-    }
-
-    public void dar_baja_huesped(Long id) {
-
-    }      
-    */
+  
