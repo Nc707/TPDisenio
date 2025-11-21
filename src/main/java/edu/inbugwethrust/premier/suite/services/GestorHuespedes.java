@@ -33,7 +33,7 @@ public class GestorHuespedes implements IGestorHuespedes {
     }
 
     @Override
-    public Huesped dar_alta_huesped(HuespedDTO dto) {
+    public HuespedDTO dar_alta_huesped(HuespedDTO dto) {
         verificarDuplicidad(dto);
 
         verificacionesDeCampos(dto);
@@ -43,7 +43,7 @@ public class GestorHuespedes implements IGestorHuespedes {
         Huesped nuevo = huespedMapper.toEntity(dto);
 
         // 5) guardar
-        return huespedDAO.save(nuevo);
+        return huespedMapper.toDTO(huespedDAO.save(nuevo));
     }
 
     private void verificarDuplicidad(HuespedDTO dto) {
@@ -57,12 +57,12 @@ public class GestorHuespedes implements IGestorHuespedes {
     }
 
     @Override
-    public Huesped dar_alta_huesped_forzar(HuespedDTO dto) {
+    public HuespedDTO dar_alta_huesped_forzar(HuespedDTO dto) {
         // acá NO rechazamos si existe; simplemente guardamos
         verificacionesDeCampos(dto);
 
         Huesped nuevo = huespedMapper.toEntity(dto);
-        return huespedDAO.save(nuevo);
+        return huespedMapper.toDTO(huespedDAO.save(nuevo));
     }
 
     private void verificacionesDeCampos(HuespedDTO dto) {
@@ -76,13 +76,13 @@ public class GestorHuespedes implements IGestorHuespedes {
       }
     }
 
-    @Override
-    public Optional<Huesped> buscar_por_doc(TipoDni tipo, String numeroDocumento) {
+    
+    private Optional<Huesped> buscar_por_doc(TipoDni tipo, String numeroDocumento) {
         return huespedDAO.findByTipoDocumentoAndNumeroDocumento(tipo, numeroDocumento);
     }
 
     @Override
-    public List<Huesped> buscar_huespedes(BusquedaHuespedDTO busqueda){ 
+    public List<HuespedDTO> buscar_huespedes(BusquedaHuespedDTO busqueda){ 
         BusquedaHuespedDTO datos = normalizarBusqueda(busqueda);
 
         boolean hayCriterio =
@@ -93,7 +93,7 @@ public class GestorHuespedes implements IGestorHuespedes {
 
         if (!hayCriterio) {
             // Caso "no ingresó nada" → mostrar todos
-            return huespedDAO.findAll();
+            return huespedDAO.findAll().stream().map(huespedMapper::toDTO).toList();
         }
         
 
@@ -102,7 +102,8 @@ public class GestorHuespedes implements IGestorHuespedes {
             .withIgnoreNullValues()
             .withIgnoreCase()
             .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
-        return huespedDAO.findAll(Example.of(huespedProbe, matcher));
+        return huespedDAO.findAll(Example.of(huespedProbe, matcher)).stream()
+            .map(huespedMapper::toDTO).toList();
         
     }
 

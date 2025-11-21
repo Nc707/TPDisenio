@@ -10,7 +10,6 @@ import java.util.List;
 import edu.inbugwethrust.premier.suite.dto.BusquedaHuespedDTO;
 import edu.inbugwethrust.premier.suite.dto.HuespedDTO;
 import edu.inbugwethrust.premier.suite.dto.ObtenerHuespedDTO;
-import edu.inbugwethrust.premier.suite.model.Huesped;
 import edu.inbugwethrust.premier.suite.services.IGestorHuespedes;
 import jakarta.validation.Valid;
 
@@ -50,13 +49,13 @@ public class HuespedController {
      */
     @PostMapping("api/alta")
     @ResponseBody
-    public ResponseEntity<Huesped> darAlta(@Valid @RequestBody HuespedDTO dto) {
+    public ResponseEntity<HuespedDTO> darAlta(@Valid @RequestBody HuespedDTO dto) {
     	// 1. Si la validación falla (ej. apellido en blanco, email inválido)
         //    Spring lanzará una "MethodArgumentNotValidException" AUTOMÁTICAMENTE.
         
         // 2. Esta línea de código NUNCA se ejecutará si la validación falla.
     	
-        Huesped creado = gestorHuespedes.dar_alta_huesped(dto);
+        HuespedDTO creado = gestorHuespedes.dar_alta_huesped(dto);
         // si llegó hasta acá es porque no hubo excepción
         return ResponseEntity.ok(creado);
     }
@@ -68,8 +67,8 @@ public class HuespedController {
      */
     @PostMapping("api/alta-forzar")
     @ResponseBody
-    public ResponseEntity<Huesped> darAltaForzada(@Valid @RequestBody HuespedDTO dto) {
-        Huesped creado = gestorHuespedes.dar_alta_huesped_forzar(dto);
+    public ResponseEntity<HuespedDTO> darAltaForzada(@Valid @RequestBody HuespedDTO dto) {
+        HuespedDTO creado = gestorHuespedes.dar_alta_huesped_forzar(dto);
         return ResponseEntity.ok(creado);
     }
 
@@ -93,7 +92,7 @@ public class HuespedController {
             RedirectAttributes redirectAttributes) {
         
         
-        List<Huesped> listaResultados = gestorHuespedes.buscar_huespedes(dto);
+        List<HuespedDTO> listaResultados = gestorHuespedes.buscar_huespedes(dto);
         
         if (listaResultados.isEmpty()) {
             // 3. Agregamos el mensaje "Flash" (vive solo una petición)
@@ -119,10 +118,10 @@ public class HuespedController {
      */    
     @PostMapping("/api/buscar")
     @ResponseBody
-    public ResponseEntity<List<Huesped>> buscarHuespedes(
+    public ResponseEntity<List<HuespedDTO>> buscarHuespedes(
             @RequestBody(required = false) BusquedaHuespedDTO busqueda) {
 
-        List<Huesped> resultados = gestorHuespedes.buscar_huespedes(busqueda);
+        List<HuespedDTO> resultados = gestorHuespedes.buscar_huespedes(busqueda);
 
         if (resultados.isEmpty()) {
             // No hay resultados → no existe ninguna concordancia según CU02 → CU11
