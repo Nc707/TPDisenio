@@ -1,82 +1,59 @@
 document.addEventListener('DOMContentLoaded', () => {
-    let seleccionInicio = null; // Guarda el primer clic: { habitacion, fecha, elemento }
+    let seleccionInicio = null;
 
     const celdas = document.querySelectorAll('.celda-interactiva');
     const btnLimpiar = document.getElementById('reset-btn');
+    const formSeleccion = document.getElementById('form-seleccion');
 
-    // --- 1. Lógica de "Click Fuera" (Cancelar modo selección) ---
+    // Click fuera cancela selección en curso
     document.addEventListener('click', (e) => {
-        // Si el clic NO fue dentro de una celda interactiva Y hay una selección iniciada
         const clicEnCelda = e.target.closest('.celda-interactiva');
-        
         if (!clicEnCelda && seleccionInicio) {
-            console.log("Clic fuera detectado: Cancelando modo selección.");
             limpiarEstiloInicio();
             seleccionInicio = null;
         }
     });
 
-    // --- 2. Lógica del Botón LIMPIAR (Reset total) ---
+    // Botón LIMPIAR
     if (btnLimpiar) {
         btnLimpiar.addEventListener('click', () => {
             limpiarTodo();
         });
     }
 
-    // --- 3. Lógica de Clic en Celdas ---
+    // Clic en celdas (selección de rango)
     celdas.forEach(celda => {
-        celda.addEventListener('click', (e) => {
-            // Detenemos la propagación para que este clic no dispare el listener del document inmediatamente
-            // (Aunque la lógica de closest() arriba ya lo maneja, esto es doble seguridad)
-            // e.stopPropagation(); 
-
+        celda.addEventListener('click', () => {
             const contenido = celda.querySelector('.cell-content');
             const estado = contenido.getAttribute('data-estado');
             const habitacion = celda.getAttribute('data-habitacion');
             const fechaStr = celda.getAttribute('data-fecha');
 
-            // Validación básica: No se puede clicar en ocupado
             if (estado !== 'LIBRE') {
                 alert("No puedes seleccionar una fecha ocupada.");
                 return;
             }
 
-            // --- A. PRIMER CLIC (Inicio de un rango nuevo) ---
             if (!seleccionInicio) {
-                
-                // REGLA NUEVA: Si esta habitación ya tenía algo seleccionado, lo borramos.
-                // (Porque las reservas deben ser consecutivas, no puede haber 2 rangos en la misma hab)
                 limpiarSeleccionDeHabitacion(habitacion);
-
-                // También limpiamos cualquier "inicio" visual huérfano de otra habitación
-                limpiarEstiloInicio(); 
-
-                seleccionInicio = {
-                    habitacion: habitacion,
-                    fecha: new Date(fechaStr),
-                    elemento: celda
-                };
-                
-                // Marcar visualmente el inicio (círculo oscuro)
-                celda.classList.add('selection-start');
-                return;
-            }
-
-            // --- B. SEGUNDO CLIC (Fin del rango) ---
-            
-            // Validar que sea la MISMA habitación
-            if (habitacion !== seleccionInicio.habitacion) {
-                // Si el usuario cambia de carril (habitación), asumimos que quiere
-                // empezar de nuevo en esta nueva habitación.
-                
                 limpiarEstiloInicio();
-                
-                // Limpiamos lo que hubiera en ESTA nueva habitación
+
+                seleccionInicio = {
+                    habitacion,
+                    fecha: new Date(fechaStr),
+                    elemento: celda
+                };
+
+                celda.classList.add('selection-start');
+                return;
+            }
+
+            if (habitacion !== seleccionInicio.habitacion) {
+                limpiarEstiloInicio();
                 limpiarSeleccionDeHabitacion(habitacion);
 
-                // Iniciamos la selección aquí
                 seleccionInicio = {
-                    habitacion: habitacion,
+                    habitacion,
                     fecha: new Date(fechaStr),
                     elemento: celda
                 };
@@ -84,18 +61,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Calcular rango (ordenar fecha inicio y fin)
             const fechaFin = new Date(fechaStr);
             const fechaInicio = seleccionInicio.fecha;
 
-            let start = fechaInicio < fechaFin ? fechaInicio : fechaFin;
-            let end = fechaInicio < fechaFin ? fechaFin : fechaInicio;
+            const start = fechaInicio < fechaFin ? fechaInicio : fechaFin;
+            const end   = fechaInicio < fechaFin ? fechaFin   : fechaInicio;
 
-            // Validar y Marcar
             if (validarYMarcarRango(habitacion, start, end)) {
-                // Éxito
                 limpiarEstiloInicio();
-                seleccionInicio = null; // Reseteamos para permitir seleccionar otra habitación distinta
+                seleccionInicio = null;
             } else {
                 alert("El rango seleccionado contiene fechas no disponibles.");
                 limpiarEstiloInicio();
@@ -104,7 +78,74 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- Funciones Auxiliares ---
+    // Interceptar submit del form para mostrar el mensaje de confirmación
+    if (formSeleccion) {
+        let omitirConfirm = false;
+
+        formSeleccion.addEventListener('submit', (e) => {
+            if (omitirConfirm) return;
+
+            e.preventDefault();
+
+            const seleccionados = document.querySelectorAll('.hidden-checkbox:checked');
+            if (seleccionados.length === 0) {
+                alert('Debes seleccionar al menos una habitación antes de continuar.');
+                return;
+            }
+
+            const reservasPorHabitacion = new Map();
+
+            seleccionados.forEach(cb => {
+                const valor = cb.value; // "114_2025-11-04"
+                const [habitacion, fechaStr] = valor.split('_');
+                const fecha = new Date(fechaStr);
+
+                const celda = cb.closest('.celda-interactiva');
+                const tipo = celda ? (celda.getAttribute('data-tipo') || '') : '';
+
+                let info = reservasPorHabitacion.get(habitacion);
+                if (!info) {
+                    info = { habitacion, tipo, inicio: fecha, fin: fecha };
+                    reservasPorHabitacion.set(habitacion, info);
+                } else {
+                    if (fecha < info.inicio) info.inicio = fecha;
+                    if (fecha > info.fin) info.fin = fecha;
+                }
+            });
+
+            function formatearFechaConHora(fecha, horaStr) {
+                const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+                const nombreDia = dias[fecha.getDay()];
+                const dd = String(fecha.getDate()).padStart(2, '0');
+                const mm = String(fecha.getMonth() + 1).padStart(2, '0');
+                const yyyy = fecha.getFullYear();
+                return `${nombreDia}, ${dd}/${mm}/${yyyy}, ${horaStr}`;
+            }
+
+            let mensaje = '';
+            mensaje += 'El sistema pinta las habitaciones entre el día inicial y el final con el color de "RESERVADA".\n\n';
+            mensaje += 'El sistema presenta el siguiente listado para que verifiques con el huésped la reserva solicitada:\n\n';
+
+            reservasPorHabitacion.forEach(info => {
+                const ingreso = formatearFechaConHora(info.inicio, '12:00hs');
+                const egreso  = formatearFechaConHora(info.fin,   '10:00hs');
+
+                mensaje += `Habitación ${info.habitacion}`;
+                if (info.tipo) mensaje += ` (${info.tipo})`;
+                mensaje += `\n  ✔ Ingreso: ${ingreso}`;
+                mensaje += `\n  ✔ Egreso: ${egreso}\n\n`;
+            });
+
+            mensaje += '¿Deseas confirmar y continuar?';
+
+            if (confirm(mensaje)) {
+                omitirConfirm = true;
+                formSeleccion.submit();
+            }
+        });
+    }
+
+    // Auxiliares
 
     function limpiarTodo() {
         document.querySelectorAll('.hidden-checkbox').forEach(cb => cb.checked = false);
@@ -113,18 +154,10 @@ document.addEventListener('DOMContentLoaded', () => {
         seleccionInicio = null;
     }
 
-    /**
-     * Limpia la selección existente SOLO para una habitación específica.
-     * Útil para garantizar que solo haya un rango consecutivo por habitación.
-     */
     function limpiarSeleccionDeHabitacion(nroHabitacion) {
-        // Buscamos todas las celdas de esta habitación
         const celdasHab = document.querySelectorAll(`.celda-interactiva[data-habitacion="${nroHabitacion}"]`);
-        
         celdasHab.forEach(celda => {
-            // Quitamos la clase visual
             celda.classList.remove('in-range');
-            // Desmarcamos el checkbox
             const checkbox = celda.querySelector('.hidden-checkbox');
             if (checkbox) checkbox.checked = false;
         });
@@ -137,12 +170,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function validarYMarcarRango(nroHabitacion, dateStart, dateEnd) {
         const celdasDeLaHabitacion = document.querySelectorAll(`.celda-interactiva[data-habitacion="${nroHabitacion}"]`);
         let esValido = true;
-        let celdasASeleccionar = [];
+        const celdasASeleccionar = [];
 
         celdasDeLaHabitacion.forEach(celda => {
             const fechaStr = celda.getAttribute('data-fecha');
             const fechaCelda = new Date(fechaStr);
-            
+
             if (fechaCelda >= dateStart && fechaCelda <= dateEnd) {
                 const contenido = celda.querySelector('.cell-content');
                 const estado = contenido.getAttribute('data-estado');
@@ -155,15 +188,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        if (esValido) {
-            celdasASeleccionar.forEach(celda => {
-                celda.classList.add('in-range');
-                const checkbox = celda.querySelector('.hidden-checkbox');
-                if (checkbox) checkbox.checked = true;
-            });
-            return true;
-        } else {
-            return false;
-        }
+        if (!esValido) return false;
+
+        celdasASeleccionar.forEach(celda => {
+            celda.classList.add('in-range');
+            const checkbox = celda.querySelector('.hidden-checkbox');
+            if (checkbox) checkbox.checked = true;
+        });
+
+        return true;
     }
 });
