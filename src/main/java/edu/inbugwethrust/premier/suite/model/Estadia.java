@@ -1,0 +1,21 @@
+package edu.inbugwethrust.premier.suite.model;
+
+
+
+@Entity
+@Table(name = "estadia")
+@Getter
+@Setter
+@NoArgsConstructor 
+@AllArgsConstructor
+
+public class Estadia {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer idEstadia;
+
+    @OneToOne
+    @JoinColumn(name = "id_reserva", nullable = false, unique = true)
+    private Reserva reserva;    
+}
