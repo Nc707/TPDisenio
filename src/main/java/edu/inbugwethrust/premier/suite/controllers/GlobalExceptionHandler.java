@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import edu.inbugwethrust.premier.suite.services.exceptions.CuitVacioException;
 import edu.inbugwethrust.premier.suite.services.exceptions.HuespedDuplicadoException;
+import edu.inbugwethrust.premier.suite.services.exceptions.ReservaNoDisponibleException;
 
 
 @ControllerAdvice
@@ -108,7 +109,22 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 
-    // 7) Cualquier otra excepción no controlada
+    // 7) ReservaNoDisponibleException de la lógica de reservas (CU04)
+    @ExceptionHandler(ReservaNoDisponibleException.class)
+    public ResponseEntity<?> manejarReservaNoDisponible(ReservaNoDisponibleException ex) {
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.CONFLICT.value());
+        body.put("error", "Reserva no disponible");
+        // Usamos el mensaje que vos armaste en la excepción para que llegue algo claro al front
+        body.put("message", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+    }
+
+
+    // 8) Cualquier otra excepción no controlada
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> manejarExcepcionGenerica(Exception ex) {
 
