@@ -1,8 +1,11 @@
 package edu.inbugwethrust.premier.suite.model;
-
-
+import edu.inbugwethrust.premier.suite.model.EstadoReserva;
+import edu.inbugwethrust.premier.suite.model.FichaEvento;
+import edu.inbugwethrust.premier.suite.model.Estadia;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -13,15 +16,16 @@ import java.util.List;
 @Table(name = "reserva")
 public class Reserva {
 
-    @id
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int idReserva;
+    private Long idReserva;
+
 
     @Enumerated(EnumType.STRING)
     private EstadoReserva estadoReserva;
 
     @OneToMany(mappedBy = "reserva", cascade = CascadeType.ALL)
-    private List<FichaEvento> listaFichaEventos;
+    private List<FichaEvento> listaFichaEventos = new ArrayList<>();
 
     @OneToOne(mappedBy = "reserva", cascade = CascadeType.ALL)
     private Estadia estadia;

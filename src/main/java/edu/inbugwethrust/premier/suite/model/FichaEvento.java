@@ -32,4 +32,8 @@ public class FichaEvento {
 	@ManyToOne
     @JoinColumn(name = "habitacion_id")
 	Habitacion habitacion; 
+
+	@ManyToOne
+	@JoinColumn(name = "reserva_id")
+	private Reserva reserva;
 }
