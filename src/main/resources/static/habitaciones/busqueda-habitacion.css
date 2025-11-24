@@ -1,5 +1,6 @@
 /* --- busqueda-habitacion.css --- */
 @charset "UTF-8";
+
 /* Contenedor principal para alinear leyenda y formulario de búsqueda */
 .busqueda-container {
   display: flex;
@@ -18,16 +19,17 @@
   padding: 0;
   margin: 0;
   list-style-type: none;
-  
 }
+
 .status-circle {
-	--seleccionada-color: #A8C6FA;
-	--fuera-de-servicio-color: #D4CDC5;
-	--reservada-color: #FEFAC0;
-	--ocupada-color: #FF5D55;
-	--libre-color: #92D36E;
-	--border-color: #000000;
+  --seleccionada-color: #A8C6FA;
+  --fuera-de-servicio-color: #D4CDC5;
+  --reservada-color: #FEFAC0;
+  --ocupada-color: #FF5D55;
+  --libre-color: #92D36E;
+  --border-color: #000000;
 }
+
 /* Agrega espacio solo a los círculos de la leyenda */
 .leyenda .status-circle {
   margin-right: 12px; /* Separa el círculo del texto */
@@ -57,17 +59,24 @@
 .status-seleccionada { background-color:  var(--seleccionada-color); border-color: var(--border-color); }
 
 .grilla-container {
-	--border-color: #C0C0C0;
-	--head-border-color: #C0C0C0;
-	--head-bg-color: #A8C6FA;
-	--scrollbar-thumb-color: #A8C6FA; 
+  --border-color: #C0C0C0;
+  --head-border-color: #C0C0C0;
+  --head-bg-color: #A8C6FA;
+  --scrollbar-thumb-color: #A8C6FA;
   --scrollbar-track-color: #f1f1f1;
 }
+
 /* 2. Estilos de la Grilla (Tabla) */
 .grilla-container {
   max-height: 500px; /* Altura máxima antes de hacer scroll */
   overflow: auto; /* Habilita scrollbars si la tabla es muy grande */
   border: 1px solid var(--border-color);
+  max-width: 100%;
+  display: block;
+
+  /* Variables para Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-track-color);
 }
 
 .grilla-habitaciones {
@@ -78,16 +87,14 @@
   text-align: center;
 }
 
-
-.grilla-habitaciones th{
-	border: 1px solid var(--head-border-color);
-		padding: 6px 4px;
-		min-width: 40px;
-		height: 30px;
-		box-sizing: border-box;
-		/* Asegura que el padding no rompa el layout */
-		text-align: center;
-		vertical-align: middle;
+.grilla-habitaciones th {
+  border: 1px solid var(--head-border-color);
+  padding: 6px 4px;
+  min-width: 40px;
+  height: 30px;
+  box-sizing: border-box;
+  text-align: center;
+  vertical-align: middle;
 }
 
 .grilla-habitaciones td {
@@ -95,86 +102,68 @@
   padding: 6px 4px;
   min-width: 40px;
   height: 30px;
-  box-sizing: border-box; /* Asegura que el padding no rompa el layout */
+  box-sizing: border-box;
   text-align: center;
   vertical-align: middle;
 }
 
+/* Columna de fechas sticky */
 .grilla-habitaciones tbody th {
-  background-color: #f3f5f7; /* Fondo para la celda de la fecha */
-  position: sticky; /* Columna de fecha fija */
+  background-color: #f3f5f7;
+  position: sticky;
   left: 0;
   z-index: 30;
   min-width: 80px;
 }
 
 .grilla-habitaciones thead {
-	background-color: var(--head-bg-color);
-	border-color: var(--head-border-color);
-	font-weight: bold;
-
+  background-color: var(--head-bg-color);
+  border-color: var(--head-border-color);
+  font-weight: bold;
 }
 
 /* 1. Estilo BASE para todos los encabezados (Fondo, Borde, Sticky Arriba) */
 .grilla-habitaciones thead th {
-    position: sticky;
-    top: 0;
-    z-index: 10; /* Capa base para el header */
-    background-color: var(--head-bg-color);
-    border: 1px solid var(--border-color);
-    
-    /* Evita la selección de texto azul al arrastrar */
-    user-select: none; 
-    -webkit-user-select: none;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: var(--head-bg-color);
+  border: 1px solid var(--border-color);
+
+  /* Evita la selección de texto azul al arrastrar */
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-/* 2. LA ESQUINA "FECHA" (El Rey) */
-/* Solo aplicamos esto al TH que está en el PRIMER TR */
-/* LA ESQUINA "FECHA" (El Rey Absoluto) */
-/* Selector específico: Primer hijo de la primera fila */
+/* Esquina "Fecha" */
 .grilla-habitaciones thead tr:first-child th:first-child {
-    position: sticky;
-    
-    /* 1. Congelar Verticalmente (al bajar) */
-    top: 0;
-    
-    /* 2. Congelar Horizontalmente (al ir a la derecha) */
-    left: 0;
-    
-    /* 3. Capa Superior (Tapa a la columna de fechas y a la fila de habitaciones) */
-    z-index: 40 !important; 
-    
-    /* Estilos visuales para que sea sólida */
-    background-color: var(--head-bg-color);
-    
-    /* Bordes fuertes para delimitar la esquina */
-    border-right: 1px solid #999;
-    border-bottom: 1px solid #999;
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 40 !important;
+  background-color: var(--head-bg-color);
+  border-right: 1px solid #999;
+  border-bottom: 1px solid #999;
 }
 
-/* 3. LAS CATEGORÍAS: (Ej: "Doble Estándar") - Primera Fila */
-/* Solo se pegan arriba. Nos aseguramos que NO se peguen a la izquierda */
+/* Categorías (fila 1, excepto la primera celda) */
 .grilla-habitaciones thead tr:first-child th:not(:first-child) {
-    left: auto !important;
-    z-index: 10;
+  left: auto !important;
+  z-index: 10;
 }
 
-/* 4. LOS NÚMEROS: (Ej: "106", "107") - Segunda Fila */
-/* Aquí está el truco: El navegador sabe apilarlos bajo la fila 1 automáticamente,
-   pero debemos asegurar que NO intenten pegarse a la izquierda. */
+/* Números de habitación (segunda fila) */
 .grilla-habitaciones thead tr:nth-child(2) th {
-    top: 30px; /* (Opcional) A veces ayuda dar un empujón si se solapan, pero sticky suele ser listo */
-    left: auto !important; /* CRÍTICO: Evita que el 106 se meta debajo de Fecha */
-    z-index: 10;
+  top: 30px;
+  left: auto !important;
+  z-index: 10;
 }
-/* 3. Estilos de Checkbox (La parte más importante) */
 
-/* Ocultamos el checkbox real */
+/* 3. Estilos de Checkbox (si se usan labels custom, por ahora solo se ocultan) */
 .grilla-habitaciones input[type="checkbox"] {
   display: none;
 }
 
-/* Estilizamos el 'label' para que parezca el círculo 'Libre' */
 .grilla-habitaciones .checkbox-label {
   display: inline-block;
   width: 18px;
@@ -185,24 +174,23 @@
   border: 1px solid #000000;
   transition: all 0.2s ease-in-out;
 }
+
 .grilla-habitaciones .status-circle,
 .grilla-habitaciones .checkbox-label {
-  margin: 0 auto;       /* Quita el margin-right de 10px y centra horizontalmente */
-  display: inline-block; /* Asegura que respeten el text-align del padre */
-  vertical-align: middle; /* Asegura centrado vertical fino */
+  margin: 0 auto;
+  display: inline-block;
+  vertical-align: middle;
 }
 
-/* * Cuando el checkbox está seleccionado (checked), 
- * su 'label' hermano (+) cambia al color 'Seleccionada' 
- */
+/* Cuando el checkbox está seleccionado (si se usara con label) */
 .grilla-habitaciones input[type="checkbox"]:checked + .checkbox-label {
-  background-color: #A8C6FA; /* Color 'Seleccionada' */
-  box-shadow: 0 0 5px 2px rgba(161, 200, 233, 0.7); /* Efecto de "brillo" */
+  background-color: #A8C6FA;
+  box-shadow: 0 0 5px 2px rgba(161, 200, 233, 0.7);
 }
 
 /* 4. Estilos Botones Inferiores */
 .botones-inferiores {
-	width: 100%;
+  width: 100%;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -212,89 +200,107 @@
 }
 
 .form-container {
-			display: flex;
-			flex-direction: row;
+  display: flex;
+  flex-direction: row;
 }
+
 .leyenda-container {
-	margin: 0 20px 20px 10px;
-	flex-grow: 0;
+  margin: 0 20px 20px 10px;
+  flex-grow: 0;
 }
+
 .main-content {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    
-    /* --- AGREGA ESTO --- */
-    min-width: 0; /* CRÍTICO: Permite que el contenedor se encoja y aparezca el scroll */
-    width: 100%;  /* Asegura que use el espacio disponible */
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  min-width: 0;
+  width: 100%;
 }
+
+#form-seleccion {
+  width: 100%;
+  max-width: 100%;
+}
+
 /* ----------------------------------------------------------- */
 /* Estilos de la Barra de Desplazamiento (Scrollbar)           */
 /* ----------------------------------------------------------- */
 
-/* 1. Configuración del contenedor para soportar scroll */
-.grilla-container {
-    max-height: 500px; 
-    overflow: auto; /* Habilita scroll tanto vertical como horizontal */
-    border: 1px solid var(--border-color);
-    max-width: 100%; 
-    display: block;  
-
-    /* Variables para Firefox */
-    scrollbar-width: thin;
-    scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-track-color);
-}
-
-/* 2. Ancho y Alto de la barra (Chrome/Edge/Safari) */
 .grilla-container::-webkit-scrollbar {
-  width: 12px;  /* Un poco más ancho para que sea fácil de agarrar */
-  height: 12px; /* Altura de la barra horizontal */
+  width: 12px;
+  height: 12px;
 }
 
-/* 3. El riel de fondo (Track) - ESTO ES LO QUE FALTABA */
 .grilla-container::-webkit-scrollbar-track {
-  background: var(--scrollbar-track-color); /* Usa tu variable #f1f1f1 */
+  background: var(--scrollbar-track-color);
   border-radius: 4px;
-  border: 1px solid #e0e0e0; /* Opcional: borde sutil para delimitar el riel */
+  border: 1px solid #e0e0e0;
 }
 
-/* 4. El deslizador (Thumb) */
 .grilla-container::-webkit-scrollbar-thumb {
-  background-color: var(--scrollbar-thumb-color); /* Tu color #A8C6FA */
-  border-radius: 6px; /* Más redondeado */
-  border: 3px solid var(--scrollbar-track-color); /* Borde interno para efecto 'flotante' */
+  background-color: var(--scrollbar-thumb-color);
+  border-radius: 6px;
+  border: 3px solid var(--scrollbar-track-color);
 }
 
-/* 5. Efecto Hover en el deslizador */
 .grilla-container::-webkit-scrollbar-thumb:hover {
-  background-color: #7a9bc9; /* Un tono más oscuro al pasar el mouse */
+  background-color: #7a9bc9;
 }
 
-/* 6. La esquina donde se cruzan las barras (Corner) */
 .grilla-container::-webkit-scrollbar-corner {
   background: var(--scrollbar-track-color);
 }
 
 /* --- Nuevos estilos para selección por rango --- */
 
-/* La celda entera debe parecer interactiva */
+/* La celda entera debe parecer interactiva solo si está LIBRE */
 .celda-interactiva {
-  cursor: pointer;
   transition: background-color 0.2s;
 }
 
-/* Efecto hover solo si la celda tiene contenido LIBRE dentro */
-.celda-interactiva:hover .cell-content[data-estado="LIBRE"] {
-  background-color: rgba(168, 198, 250, 0.3); /* Azul muy suave */
+.celda-interactiva[data-estado="LIBRE"] {
+  cursor: pointer;
+}
+
+.celda-interactiva:not([data-estado="LIBRE"]) {
+  cursor: default;
+}
+
+/* Hover solo sobre LIBRE */
+.celda-interactiva[data-estado="LIBRE"]:hover .cell-content {
+  background-color: rgba(168, 198, 250, 0.3);
   border-radius: 4px;
+}
+
+/* Variables de colores según modo de acción */
+
+/* RESERVAR: azul */
+body[data-modo="RESERVAR"] {
+  --seleccion-start-color: #003b73;
+  --seleccion-range-bg: rgba(168, 198, 250, 0.5);
+  --seleccion-range-circle-color: #A8C6FA;
+}
+
+/* OCUPAR: naranja */
+body[data-modo="OCUPAR"] {
+  --seleccion-start-color: #7a3e00;
+  --seleccion-range-bg: rgba(255, 179, 71, 0.5);
+  --seleccion-range-circle-color: #FFB347;
+}
+
+/* DISPONIBILIDAD: sin selección especial */
+body[data-modo="DISPONIBILIDAD"] {
+  --seleccion-start-color: transparent;
+  --seleccion-range-bg: transparent;
+  --seleccion-range-circle-color: inherit;
 }
 
 /* ESTADO: Primer click (Inicio del rango) */
 .selection-start .status-circle {
-  background-color: #003b73 !important; /* Azul oscuro */
+  background-color: var(--seleccion-start-color, #003b73) !important;
   border-color: #000;
   transform: scale(1.2);
   box-shadow: 0 0 5px rgba(0,0,0,0.5);
@@ -302,16 +308,19 @@
 
 /* ESTADO: Dentro del rango seleccionado */
 .in-range {
-  background-color: rgba(168, 198, 250, 0.5) !important; /* Fondo azulado en la celda */
+  background-color: var(--seleccion-range-bg, rgba(168, 198, 250, 0.5)) !important;
 }
 
-/* Cuando está seleccionado, cambiamos el círculo a azul */
 .in-range .status-circle {
-  background-color: var(--seleccionada-color) !important;
+  background-color: var(--seleccion-range-circle-color, var(--seleccionada-color)) !important;
   border-color: var(--border-color);
 }
 
-#form-seleccion {
-    width: 100%; /* Asegura que el form se adapte al ancho del main-content */
-    max-width: 100%;
+/* Modo solo disponibilidad: sin cursor ni highlight */
+body[data-modo="DISPONIBILIDAD"] .celda-interactiva {
+  cursor: default;
+}
+
+body[data-modo="DISPONIBILIDAD"] .celda-interactiva:hover .cell-content {
+  background-color: transparent;
 }
