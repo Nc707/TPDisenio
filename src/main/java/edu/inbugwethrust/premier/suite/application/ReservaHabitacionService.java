@@ -45,6 +45,28 @@ public void registrarReserva(ConfirmacionReservaDTO confirmacionReservaDTO) {
 
     // Ya viene validado por Bean Validation en el controller
     var habitacionesSeleccionadas = confirmacionReservaDTO.getHabitacionesSeleccionadas();
+// --- NUEVA VALIDACIÓN INTELIGENTE: Chequear solapamiento de fechas para la misma habitación ---
+    for (int i = 0; i < habitacionesSeleccionadas.size(); i++) {
+        for (int j = i + 1; j < habitacionesSeleccionadas.size(); j++) {
+            
+            var sel1 = habitacionesSeleccionadas.get(i);
+            var sel2 = habitacionesSeleccionadas.get(j);
+
+            // Si es la misma habitación, verificamos si las fechas chocan
+            if (sel1.getNumeroHabitacion().equals(sel2.getNumeroHabitacion())) {
+                
+                // Lógica de intersección de rangos: (InicioA < FinB) y (FinA > InicioB)
+                boolean seSolapan = sel1.getFechaIngreso().isBefore(sel2.getFechaEgreso()) && 
+                                    sel1.getFechaEgreso().isAfter(sel2.getFechaIngreso());
+
+                if (seSolapan) {
+                    throw new IllegalArgumentException(
+                        "Error: Se intenta reservar la habitación " + sel1.getNumeroHabitacion() + 
+                        " dos veces en fechas superpuestas dentro de la misma solicitud.");
+                }
+            }
+        }
+    }
     var datosHuesped = confirmacionReservaDTO.getDatosHuesped();
 
     // 1) Crear la Reserva con los datos del huésped

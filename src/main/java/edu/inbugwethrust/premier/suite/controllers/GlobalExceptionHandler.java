@@ -123,8 +123,20 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
     }
 
+    // 8) Argumentos Ilegales (Validaciones manuales de lógica como fechas o duplicados)
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<?> manejarArgumentoIlegal(IllegalArgumentException ex) {
 
-    // 8) Cualquier otra excepción no controlada
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "Error en la solicitud");
+        body.put("message", ex.getMessage()); // Aquí saldrá: "No se puede reservar la misma..."
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    // 9) Cualquier otra excepción no controlada
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> manejarExcepcionGenerica(Exception ex) {
 
