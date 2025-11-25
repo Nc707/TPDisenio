@@ -30,4 +30,12 @@ public class Reserva {
     @OneToOne(mappedBy = "reserva", cascade = CascadeType.ALL)
     private Estadia estadia;
 
+    @Column(name = "apellido_reserva", length = 50, nullable = false)
+    private String apellidoReserva;
+
+    @Column(name = "nombre_reserva", length = 50, nullable = false)
+    private String nombreReserva;
+
+    @Column(name = "telefono_reserva", length = 30, nullable = false)
+    private String telefonoReserva;
 }

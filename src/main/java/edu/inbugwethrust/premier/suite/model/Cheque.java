@@ -2,6 +2,7 @@ package edu.inbugwethrust.premier.suite.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "cheque")

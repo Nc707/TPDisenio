@@ -17,7 +17,4 @@ public class PersonaFisica extends ResponsableDePago {
     private Long idPersonaFisica;
 
     private boolean estadoPersonaFisica;
-
-    @OneToOne(mappedBy = "personaFisica")
-    private Huesped huesped;
 }

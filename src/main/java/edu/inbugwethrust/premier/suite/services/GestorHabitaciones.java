@@ -28,4 +28,13 @@ public class GestorHabitaciones implements IGestorHabitaciones {
 		return habitacionRepository.findAll();
 	}
 
+	/**
+     * Devuelve la habitación por su número (id) o lanza IllegalArgumentException
+     * si no existe.
+     */
+    public Habitacion obtenerPorNumero(Integer numeroHabitacion) {
+        return habitacionRepository.findById(numeroHabitacion)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "No existe la habitación con número: " + numeroHabitacion));
+    }
 }
