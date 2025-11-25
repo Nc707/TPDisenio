@@ -21,4 +21,8 @@ public class Estadia {
     @OneToOne
     @JoinColumn(name = "id_reserva", nullable = false, unique = true)
     private Reserva reserva;    
+
+    @OneToMany
+    @JoinColumn(name = "id_servicios_adicionales", nullable = true, unique = false)
+    private List<ServiciosAdicioaneles> serviciosAdicioaneles;
 }

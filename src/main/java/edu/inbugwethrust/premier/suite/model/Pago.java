@@ -17,6 +17,10 @@ public abstract class Pago {
 
     private Double importe;
 
+    private Double vuelto;
+    
+    private Divisa divisa;
+
     private LocalDate fechaPago;
 
     private boolean valido;
