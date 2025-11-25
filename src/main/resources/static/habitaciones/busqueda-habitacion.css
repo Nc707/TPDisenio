@@ -1,6 +1,5 @@
 /* --- busqueda-habitacion.css --- */
 @charset "UTF-8";
-
 /* Contenedor principal para alinear leyenda y formulario de búsqueda */
 .busqueda-container {
   display: flex;
@@ -58,23 +57,26 @@
 .status-fuera_de_servicio { background-color:  var(--fuera-de-servicio-color); border-color: var(--border-color); }
 .status-seleccionada { background-color:  var(--seleccionada-color); border-color: var(--border-color); }
 
+/* 2. Estilos de la Grilla (Tabla) + contenedor con scroll interno */
 .grilla-container {
+  /* variables */
   --border-color: #C0C0C0;
   --head-border-color: #C0C0C0;
   --head-bg-color: #A8C6FA;
   --scrollbar-thumb-color: #A8C6FA;
   --scrollbar-track-color: #f1f1f1;
-}
 
-/* 2. Estilos de la Grilla (Tabla) */
-.grilla-container {
-  max-height: 500px; /* Altura máxima antes de hacer scroll */
-  overflow: auto; /* Habilita scrollbars si la tabla es muy grande */
+  /* tamaño / scroll */
+  max-height: 500px;          /* alto máximo antes del scroll vertical */
+  overflow-y: auto;
+  overflow-x: auto;           /* scroll horizontal interno */
   border: 1px solid var(--border-color);
-  max-width: 100%;
+  width: 75vw;                /* ocupa 75% del ancho de la ventana */
+  max-width: 1200px;          /* límite máximo para monitores grandes */
   display: block;
+  margin: 0 auto;             /* grilla centrada */
 
-  /* Variables para Firefox */
+  /* Scrollbar para Firefox */
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-track-color);
 }
@@ -87,7 +89,7 @@
   text-align: center;
 }
 
-.grilla-habitaciones th {
+.grilla-habitaciones th{
   border: 1px solid var(--head-border-color);
   padding: 6px 4px;
   min-width: 40px;
@@ -102,15 +104,14 @@
   padding: 6px 4px;
   min-width: 40px;
   height: 30px;
-  box-sizing: border-box;
+  box-sizing: border-box; /* Asegura que el padding no rompa el layout */
   text-align: center;
   vertical-align: middle;
 }
 
-/* Columna de fechas sticky */
 .grilla-habitaciones tbody th {
-  background-color: #f3f5f7;
-  position: sticky;
+  background-color: #f3f5f7; /* Fondo para la celda de la fecha */
+  position: sticky; /* Columna de fecha fija */
   left: 0;
   z-index: 30;
   min-width: 80px;
@@ -126,7 +127,7 @@
 .grilla-habitaciones thead th {
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 10; /* Capa base para el header */
   background-color: var(--head-bg-color);
   border: 1px solid var(--border-color);
 
@@ -135,7 +136,7 @@
   -webkit-user-select: none;
 }
 
-/* Esquina "Fecha" */
+/* 2. LA ESQUINA "FECHA" (El Rey Absoluto) */
 .grilla-habitaciones thead tr:first-child th:first-child {
   position: sticky;
   top: 0;
@@ -146,24 +147,27 @@
   border-bottom: 1px solid #999;
 }
 
-/* Categorías (fila 1, excepto la primera celda) */
+/* 3. LAS CATEGORÍAS: (Ej: "Doble Estándar") - Primera Fila */
 .grilla-habitaciones thead tr:first-child th:not(:first-child) {
   left: auto !important;
   z-index: 10;
 }
 
-/* Números de habitación (segunda fila) */
+/* 4. LOS NÚMEROS: (Ej: "106", "107") - Segunda Fila */
 .grilla-habitaciones thead tr:nth-child(2) th {
   top: 30px;
-  left: auto !important;
+  left: auto !important; /* Evita que el 106 se meta debajo de Fecha */
   z-index: 10;
 }
 
-/* 3. Estilos de Checkbox (si se usan labels custom, por ahora solo se ocultan) */
+/* 3. Estilos de Checkbox */
+
+/* Ocultamos el checkbox real */
 .grilla-habitaciones input[type="checkbox"] {
   display: none;
 }
 
+/* Estilizamos el 'label' para que parezca el círculo 'Libre' */
 .grilla-habitaciones .checkbox-label {
   display: inline-block;
   width: 18px;
@@ -182,9 +186,9 @@
   vertical-align: middle;
 }
 
-/* Cuando el checkbox está seleccionado (si se usara con label) */
+/* Cuando el checkbox está seleccionado (checked) */
 .grilla-habitaciones input[type="checkbox"]:checked + .checkbox-label {
-  background-color: #A8C6FA;
+  background-color: #A8C6FA; /* Color 'Seleccionada' */
   box-shadow: 0 0 5px 2px rgba(161, 200, 233, 0.7);
 }
 
@@ -220,87 +224,57 @@
   width: 100%;
 }
 
-#form-seleccion {
-  width: 100%;
-  max-width: 100%;
-}
-
 /* ----------------------------------------------------------- */
 /* Estilos de la Barra de Desplazamiento (Scrollbar)           */
 /* ----------------------------------------------------------- */
 
+/* 2. Ancho y Alto de la barra (Chrome/Edge/Safari) */
 .grilla-container::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
+  width: 12px;  /* scroll vertical */
+  height: 12px; /* scroll horizontal */
 }
 
+/* 3. El riel de fondo (Track) */
 .grilla-container::-webkit-scrollbar-track {
   background: var(--scrollbar-track-color);
   border-radius: 4px;
   border: 1px solid #e0e0e0;
 }
 
+/* 4. El deslizador (Thumb) */
 .grilla-container::-webkit-scrollbar-thumb {
   background-color: var(--scrollbar-thumb-color);
   border-radius: 6px;
   border: 3px solid var(--scrollbar-track-color);
 }
 
+/* 5. Efecto Hover en el deslizador */
 .grilla-container::-webkit-scrollbar-thumb:hover {
   background-color: #7a9bc9;
 }
 
+/* 6. La esquina donde se cruzan las barras (Corner) */
 .grilla-container::-webkit-scrollbar-corner {
   background: var(--scrollbar-track-color);
 }
 
 /* --- Nuevos estilos para selección por rango --- */
 
-/* La celda entera debe parecer interactiva solo si está LIBRE */
+/* La celda entera debe parecer interactiva */
 .celda-interactiva {
+  cursor: pointer;
   transition: background-color 0.2s;
 }
 
-.celda-interactiva[data-estado="LIBRE"] {
-  cursor: pointer;
-}
-
-.celda-interactiva:not([data-estado="LIBRE"]) {
-  cursor: default;
-}
-
-/* Hover solo sobre LIBRE */
-.celda-interactiva[data-estado="LIBRE"]:hover .cell-content {
-  background-color: rgba(168, 198, 250, 0.3);
+/* Efecto hover solo si la celda tiene contenido LIBRE dentro */
+.celda-interactiva:hover .cell-content[data-estado="LIBRE"] {
+  background-color: rgba(168, 198, 250, 0.3); /* Azul muy suave */
   border-radius: 4px;
-}
-
-/* Variables de colores según modo de acción */
-
-/* RESERVAR: azul */
-body[data-modo="RESERVAR"] {
-  --seleccion-start-color: #003b73;
-  --seleccion-range-bg: rgba(168, 198, 250, 0.5);
-  --seleccion-range-circle-color: #A8C6FA;
-}
-
-/* OCUPAR: naranja */
-body[data-modo="OCUPAR"] {
-  --seleccion-start-color: #7a3e00;
-  --seleccion-range-bg: rgba(255, 179, 71, 0.5);
-  --seleccion-range-circle-color: #FFB347;
-}
-
-/* DISPONIBILIDAD: sin selección especial */
-body[data-modo="DISPONIBILIDAD"] {
-  --seleccion-start-color: transparent;
-  --seleccion-range-bg: transparent;
-  --seleccion-range-circle-color: inherit;
 }
 
 /* ESTADO: Primer click (Inicio del rango) */
 .selection-start .status-circle {
-  background-color: var(--seleccion-start-color, #003b73) !important;
+  background-color: #003b73 !important; /* Azul oscuro */
   border-color: #000;
   transform: scale(1.2);
   box-shadow: 0 0 5px rgba(0,0,0,0.5);
@@ -308,19 +282,130 @@ body[data-modo="DISPONIBILIDAD"] {
 
 /* ESTADO: Dentro del rango seleccionado */
 .in-range {
-  background-color: var(--seleccion-range-bg, rgba(168, 198, 250, 0.5)) !important;
+  background-color: rgba(168, 198, 250, 0.5) !important;
 }
 
+/* Cuando está seleccionado, cambiamos el círculo a azul */
 .in-range .status-circle {
-  background-color: var(--seleccion-range-circle-color, var(--seleccionada-color)) !important;
+  background-color: var(--seleccionada-color) !important;
   border-color: var(--border-color);
 }
 
-/* Modo solo disponibilidad: sin cursor ni highlight */
-body[data-modo="DISPONIBILIDAD"] .celda-interactiva {
-  cursor: default;
+#form-seleccion {
+  width: 100%;
+  max-width: 100%;
 }
 
-body[data-modo="DISPONIBILIDAD"] .celda-interactiva:hover .cell-content {
-  background-color: transparent;
+/* ------------------ RESUMEN + DATOS HUÉSPED -------------------- */
+
+.hidden {
+  display: none !important;
+}
+
+/* Sección resumen (tabla tipo / ingreso / egreso) */
+#seccion-resumen,
+#seccion-datos-huesped {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.resumen-wrapper {
+  width: 70%;
+  max-height: 350px;
+  overflow-y: auto;
+  border: 1px solid #d3d3d3;
+  margin-top: 25px;
+}
+
+.tabla-resumen {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabla-resumen th {
+  background: #A8C6FA;
+  padding: 8px;
+  border: 1px solid #bfcde6;
+  text-align: center;
+}
+
+.tabla-resumen td {
+  background: #f8f8f8;
+  padding: 8px;
+  border: 1px solid #dcdcdc;
+  font-size: 14px;
+  text-align: center;
+}
+
+.botones-resumen {
+  width: 70%;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+/* Form datos huésped (pantalla final) */
+#seccion-datos-huesped h1 {
+  margin-top: 40px;
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.datos-huesped-form {
+  width: 90%;
+  max-width: 1100px;
+  margin-top: 20px;
+}
+
+.datos-huesped-form h2 {
+  font-size: 20px;
+  margin-bottom: 35px;
+  text-align: left;
+  margin-left: 40px;
+}
+
+.fila-campos {
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+  margin: 0 40px;
+}
+
+.fila-campos .form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.datos-huesped-form label {
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.datos-huesped-form input {
+  padding: 7px 10px;
+  font-size: 14px;
+  border: 1px solid #b3b3b3;
+  border-radius: 3px;
+}
+
+.botonera-final {
+  width: 100%;
+  margin-top: 80px;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 100px;
+}
+
+.botonera-final button {
+  min-width: 130px;
+}
+
+.mensaje-error {
+  color: #c0392b;
+  margin-bottom: 15px;
+  font-size: 15px;
+  text-align: center;
 }
