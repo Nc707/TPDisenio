@@ -34,7 +34,42 @@ public class ReservaHabitacionService implements IReservaHabitacionService {
         this.gestorFichaEvento = gestorFichaEvento;
         this.gestorReservas = gestorReservas;
     }
+    
+    /*
+     * //Falta agregarle a este metodo la validacion interna de que no puede haber dos reservas para
+     * la misma habitacion en fechas que se solapen Ese metodo no corresponder a este metodo, puede
+     * ser un metodo aparte u corresponder a otra entidad
+    @Override
+    @Transactional
+    public void registrarReserva(ConfirmacionReservaDTO dto) {
+        // 1. Validaciones básicas
+        Objects.requireNonNull(dto);
+        
+        // 2. Mapa para guardar las habitaciones ya validadas y no ir a BD dos veces
+        // Key: NumeroHabitacion, Value: Entidad Habitacion
+        Map<Integer, Habitacion> habitacionesValidadas = new HashMap<>();
 
+        // 3. BUCLE DE VALIDACIÓN (Responsabilidad del Service)
+        for (SeleccionHabitacionDTO sel : dto.getHabitacionesSeleccionadas()) {
+            
+            // a) Traer entidad
+            Habitacion habitacion = gestorHabitaciones.obtenerPorNumero(sel.getNumeroHabitacion());
+
+            // b) Calcular fechas
+            LocalDateTime inicio = sel.getFechaIngreso().atTime(12, 0);
+            LocalDateTime fin = sel.getFechaEgreso().atTime(10, 0);
+
+            // c) EL SERVICE LLAMA A LA VALIDACIÓN (Tu requerimiento)
+            gestorFichaEvento.validarDisponibilidad(habitacion, inicio, fin);
+
+            // d) Guardamos la habitación para pasársela al Gestor de Reservas
+            habitacionesValidadas.put(sel.getNumeroHabitacion(), habitacion);
+        }
+
+        // 4. DELEGACIÓN DE CREACIÓN (Aquí ya está todo validado)
+        // Pasamos el DTO y el Mapa de habitaciones reales
+        gestorReservas.crearYPersistir(dto, habitacionesValidadas);
+    }*/
 @Override
 @Transactional
 public void registrarReserva(ConfirmacionReservaDTO confirmacionReservaDTO) {
