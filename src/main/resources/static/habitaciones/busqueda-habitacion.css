@@ -9,6 +9,7 @@
   margin-bottom: 20px;
   border-bottom: 1px solid #e0e6ed;
   padding-bottom: 20px;
+  padding-left: 150px;
 }
 
 /* 1. Estilos de la Leyenda */
@@ -57,6 +58,13 @@
 .status-fuera_de_servicio { background-color:  var(--fuera-de-servicio-color); border-color: var(--border-color); }
 .status-seleccionada { background-color:  var(--seleccionada-color); border-color: var(--border-color); }
 
+#seccion-busqueda-grilla, 
+#form-seleccion {
+  width: 100%;
+  max-width: 100%; /* Obliga a no exceder el ancho del padre (.main-content) */
+  box-sizing: border-box;
+}
+
 /* 2. Estilos de la Grilla (Tabla) + contenedor con scroll interno */
 .grilla-container {
   /* variables */
@@ -67,14 +75,18 @@
   --scrollbar-track-color: #f1f1f1;
 
   /* tamaño / scroll */
-  max-height: 500px;          /* alto máximo antes del scroll vertical */
+ max-height: 500px;
   overflow-y: auto;
-  overflow-x: auto;           /* scroll horizontal interno */
+  overflow-x: auto;
   border: 1px solid var(--border-color);
-  width: 75vw;                /* ocupa 75% del ancho de la ventana */
-  max-width: 1200px;          /* límite máximo para monitores grandes */
+  
+  /* CAMBIOS AQUÍ: */
+  width: 100%;       /* Ocupa todo el ancho disponible del padre (.main-content) */
+  max-width: 100%;
+  /* max-width: 1200px;  <-- Puedes mantener esto o quitarlo si quieres que use toda la pantalla */
+  
   display: block;
-  margin: 0 auto;             /* grilla centrada */
+  margin: 0 auto;       /* grilla centrada */
 
   /* Scrollbar para Firefox */
   scrollbar-width: thin;
@@ -220,7 +232,9 @@
   align-items: center;
   flex-wrap: wrap;
   justify-content: space-between;
-  min-width: 0;
+  
+  /* CAMBIO IMPORTANTE: */
+  min-width: 0; /* Permite que el flex item se encoja y active el scroll interno */
   width: 100%;
 }
 
