@@ -1,169 +1,351 @@
+// --- seleccion-rango.js ---
+
 document.addEventListener('DOMContentLoaded', () => {
-    let seleccionInicio = null; // Guarda el primer clic: { habitacion, fecha, elemento }
+  const modoAccion = document.body.dataset.modo || 'RESERVAR';
+  const esSoloDisponibilidad = (modoAccion === 'DISPONIBILIDAD');
 
-    const celdas = document.querySelectorAll('.celda-interactiva');
-    const btnLimpiar = document.getElementById('reset-btn');
+  const celdas = document.querySelectorAll('.celda-interactiva');
+  const btnLimpiar = document.getElementById('reset-btn');
+  const formSeleccion = document.getElementById('form-seleccion');
+  const btnSiguiente = document.getElementById('btn-siguiente');
 
-    // --- 1. Lógica de "Click Fuera" (Cancelar modo selección) ---
-    document.addEventListener('click', (e) => {
-        // Si el clic NO fue dentro de una celda interactiva Y hay una selección iniciada
-        const clicEnCelda = e.target.closest('.celda-interactiva');
-        
-        if (!clicEnCelda && seleccionInicio) {
-            console.log("Clic fuera detectado: Cancelando modo selección.");
-            limpiarEstiloInicio();
-            seleccionInicio = null;
-        }
+  // Secciones para el flujo de RESERVAR
+  const seccionBusqueda = document.getElementById('seccion-busqueda-grilla');
+  const seccionResumen = document.getElementById('seccion-resumen');
+  const seccionDatos = document.getElementById('seccion-datos-huesped');
+
+  const tbodyResumen = document.getElementById('tbody-resumen');
+  const btnResumenCancelar = document.getElementById('btn-resumen-cancelar');
+  const btnResumenAceptar = document.getElementById('btn-resumen-aceptar');
+
+  const formReservaFinal = document.getElementById('form-reserva-final');
+  const msgErrorHuesped = document.getElementById('mensaje-error-huesped');
+  const inputApellido = document.getElementById('apellido');
+  const inputNombre = document.getElementById('nombre');
+  const inputTelefono = document.getElementById('telefono');
+  const btnFinalCancelar = document.getElementById('btn-final-cancelar');
+
+  // 👉 Leyenda (para ocultarla en la pantalla final)
+  const leyendaContainer = document.querySelector('.leyenda-container');
+
+  // Si es solo disponibilidad, no hay selección
+  if (esSoloDisponibilidad || !formSeleccion) {
+    return;
+  }
+
+  // --- Estado selección por rango ---
+  let seleccionInicio = null; // { habitacion, fecha }
+  let seleccionDTO = [];      // array de SeleccionHabitacionDTO extendido (con tipoHabitacion)
+
+  // ------------------------------------------------------------------
+  // Helpers visuales
+  // ------------------------------------------------------------------
+  function limpiarSeleccionVisualTotal() {
+    celdas.forEach(td => {
+      td.classList.remove('in-range', 'selection-start');
+      const checkbox = td.querySelector('input[type="checkbox"]');
+      if (checkbox) checkbox.checked = false;
+    });
+  }
+
+  function limpiarSeleccionVisualHabitacion(habitacion) {
+    const tdsHab = document.querySelectorAll(
+      '.celda-interactiva[data-habitacion="' + habitacion + '"]'
+    );
+    tdsHab.forEach(td => {
+      td.classList.remove('in-range', 'selection-start');
+      const checkbox = td.querySelector('input[type="checkbox"]');
+      if (checkbox) checkbox.checked = false;
+    });
+  }
+
+  function aplicarRangoSeleccion(habitacion, fechaDesde, fechaHasta) {
+    const tdsHab = document.querySelectorAll(
+      '.celda-interactiva[data-habitacion="' + habitacion + '"]'
+    );
+
+    const inicio = fechaDesde < fechaHasta ? fechaDesde : fechaHasta;
+    const fin = fechaDesde < fechaHasta ? fechaHasta : fechaDesde;
+
+    tdsHab.forEach(td => {
+      const f = td.dataset.fecha;
+      const checkbox = td.querySelector('input[type="checkbox"]');
+      if (f >= inicio && f <= fin && td.dataset.estado === 'LIBRE') {
+        td.classList.add('in-range');
+        if (checkbox) checkbox.checked = true;
+      } else {
+        td.classList.remove('in-range', 'selection-start');
+        if (checkbox) checkbox.checked = false;
+      }
     });
 
-    // --- 2. Lógica del Botón LIMPIAR (Reset total) ---
-    if (btnLimpiar) {
-        btnLimpiar.addEventListener('click', () => {
-            limpiarTodo();
-        });
+    const selectorInicio =
+      '.celda-interactiva[data-habitacion="' +
+      habitacion +
+      '"][data-fecha="' +
+      inicio +
+      '"]';
+    const celdaInicio = document.querySelector(selectorInicio);
+    if (celdaInicio) {
+      celdaInicio.classList.add('selection-start');
     }
+  }
 
-    // --- 3. Lógica de Clic en Celdas ---
-    celdas.forEach(celda => {
-        celda.addEventListener('click', (e) => {
-            // Detenemos la propagación para que este clic no dispare el listener del document inmediatamente
-            // (Aunque la lógica de closest() arriba ya lo maneja, esto es doble seguridad)
-            // e.stopPropagation(); 
+  // Construye DTOs a partir de celdas in-range
+  function construirSeleccionDTO() {
+    const seleccionPorHabitacion = {}; // { hab: { tipoHabitacion, fechas[] } }
 
-            const contenido = celda.querySelector('.cell-content');
-            const estado = contenido.getAttribute('data-estado');
-            const habitacion = celda.getAttribute('data-habitacion');
-            const fechaStr = celda.getAttribute('data-fecha');
-
-            // Validación básica: No se puede clicar en ocupado
-            if (estado !== 'LIBRE') {
-                alert("No puedes seleccionar una fecha ocupada.");
-                return;
-            }
-
-            // --- A. PRIMER CLIC (Inicio de un rango nuevo) ---
-            if (!seleccionInicio) {
-                
-                // REGLA NUEVA: Si esta habitación ya tenía algo seleccionado, lo borramos.
-                // (Porque las reservas deben ser consecutivas, no puede haber 2 rangos en la misma hab)
-                limpiarSeleccionDeHabitacion(habitacion);
-
-                // También limpiamos cualquier "inicio" visual huérfano de otra habitación
-                limpiarEstiloInicio(); 
-
-                seleccionInicio = {
-                    habitacion: habitacion,
-                    fecha: new Date(fechaStr),
-                    elemento: celda
-                };
-                
-                // Marcar visualmente el inicio (círculo oscuro)
-                celda.classList.add('selection-start');
-                return;
-            }
-
-            // --- B. SEGUNDO CLIC (Fin del rango) ---
-            
-            // Validar que sea la MISMA habitación
-            if (habitacion !== seleccionInicio.habitacion) {
-                // Si el usuario cambia de carril (habitación), asumimos que quiere
-                // empezar de nuevo en esta nueva habitación.
-                
-                limpiarEstiloInicio();
-                
-                // Limpiamos lo que hubiera en ESTA nueva habitación
-                limpiarSeleccionDeHabitacion(habitacion);
-
-                // Iniciamos la selección aquí
-                seleccionInicio = {
-                    habitacion: habitacion,
-                    fecha: new Date(fechaStr),
-                    elemento: celda
-                };
-                celda.classList.add('selection-start');
-                return;
-            }
-
-            // Calcular rango (ordenar fecha inicio y fin)
-            const fechaFin = new Date(fechaStr);
-            const fechaInicio = seleccionInicio.fecha;
-
-            let start = fechaInicio < fechaFin ? fechaInicio : fechaFin;
-            let end = fechaInicio < fechaFin ? fechaFin : fechaInicio;
-
-            // Validar y Marcar
-            if (validarYMarcarRango(habitacion, start, end)) {
-                // Éxito
-                limpiarEstiloInicio();
-                seleccionInicio = null; // Reseteamos para permitir seleccionar otra habitación distinta
-            } else {
-                alert("El rango seleccionado contiene fechas no disponibles.");
-                limpiarEstiloInicio();
-                seleccionInicio = null;
-            }
-        });
+    const seleccionadas = document.querySelectorAll('.celda-interactiva.in-range');
+    seleccionadas.forEach(td => {
+      const hab = td.dataset.habitacion;
+      const fecha = td.dataset.fecha;
+      const tipo = td.dataset.tipo || '';
+      if (!seleccionPorHabitacion[hab]) {
+        seleccionPorHabitacion[hab] = {
+          tipoHabitacion: tipo,
+          fechas: []
+        };
+      }
+      seleccionPorHabitacion[hab].fechas.push(fecha);
     });
 
-    // --- Funciones Auxiliares ---
+    const resultado = [];
+    Object.keys(seleccionPorHabitacion).forEach(hab => {
+      const info = seleccionPorHabitacion[hab];
+      const fechasOrdenadas = info.fechas.slice().sort(); // yyyy-MM-dd
+      const fechaIngreso = fechasOrdenadas[0];
+      const fechaEgreso = fechasOrdenadas[fechasOrdenadas.length - 1];
 
-    function limpiarTodo() {
-        document.querySelectorAll('.hidden-checkbox').forEach(cb => cb.checked = false);
-        document.querySelectorAll('.in-range').forEach(el => el.classList.remove('in-range'));
-        limpiarEstiloInicio();
-        seleccionInicio = null;
+      resultado.push({
+        numeroHabitacion: parseInt(hab, 10),
+        fechaIngreso: fechaIngreso,
+        fechaEgreso: fechaEgreso,
+        tipoHabitacion: info.tipoHabitacion
+      });
+    });
+
+    return resultado;
+  }
+
+  // Formato "Día, dd/mm/aaaa, hh:mmhs"
+  function formatearFechaConHora(fechaISO, horaTexto) {
+    const fecha = new Date(fechaISO + 'T00:00:00');
+    const opciones = {
+      weekday: 'long',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    };
+    let texto = fecha.toLocaleDateString('es-AR', opciones);
+    texto = texto.charAt(0).toUpperCase() + texto.slice(1); // capitalizar
+    return `${texto}, ${horaTexto}`;
+  }
+
+  // Render de la tabla de resumen
+  function renderResumen() {
+    if (!tbodyResumen) return;
+    tbodyResumen.innerHTML = '';
+
+    seleccionDTO.forEach(sel => {
+      const tr = document.createElement('tr');
+
+      const tdTipo = document.createElement('td');
+      tdTipo.textContent = sel.tipoHabitacion || '';
+
+      const tdIngreso = document.createElement('td');
+      tdIngreso.textContent = formatearFechaConHora(sel.fechaIngreso, '12:00hs');
+
+      const tdEgreso = document.createElement('td');
+      tdEgreso.textContent = formatearFechaConHora(sel.fechaEgreso, '10:00hs');
+
+      tr.appendChild(tdTipo);
+      tr.appendChild(tdIngreso);
+      tr.appendChild(tdEgreso);
+
+      tbodyResumen.appendChild(tr);
+    });
+  }
+
+  // ------------------------------------------------------------------
+  // Listeners de celdas (selección por rango)
+  // ------------------------------------------------------------------
+  celdas.forEach(td => {
+    td.addEventListener('click', () => {
+      const estado = td.dataset.estado;
+      if (estado !== 'LIBRE') return;
+
+      const habitacion = td.dataset.habitacion;
+      const fecha = td.dataset.fecha;
+
+      if (!seleccionInicio) {
+        seleccionInicio = { habitacion, fecha };
+        limpiarSeleccionVisualHabitacion(habitacion);
+        aplicarRangoSeleccion(habitacion, fecha, fecha);
+        return;
+      }
+
+      if (seleccionInicio.habitacion !== habitacion) {
+        seleccionInicio = { habitacion, fecha };
+        limpiarSeleccionVisualHabitacion(habitacion);
+        aplicarRangoSeleccion(habitacion, fecha, fecha);
+        return;
+      }
+
+      const fechaInicio = seleccionInicio.fecha;
+      aplicarRangoSeleccion(habitacion, fechaInicio, fecha);
+      seleccionInicio = null;
+    });
+  });
+
+  // Click fuera de la grilla: cancela "inicio" pero deja el rango
+  document.addEventListener('click', (e) => {
+    const clicEnGrilla = e.target.closest('.grilla-container');
+    if (!clicEnGrilla && seleccionInicio) {
+      const sel = seleccionInicio;
+      const selector =
+        '.celda-interactiva[data-habitacion="' +
+        sel.habitacion +
+        '"][data-fecha="' +
+        sel.fecha +
+        '"]';
+      const celdaInicio = document.querySelector(selector);
+      if (celdaInicio) celdaInicio.classList.remove('selection-start');
+      seleccionInicio = null;
     }
+  });
 
-    /**
-     * Limpia la selección existente SOLO para una habitación específica.
-     * Útil para garantizar que solo haya un rango consecutivo por habitación.
-     */
-    function limpiarSeleccionDeHabitacion(nroHabitacion) {
-        // Buscamos todas las celdas de esta habitación
-        const celdasHab = document.querySelectorAll(`.celda-interactiva[data-habitacion="${nroHabitacion}"]`);
-        
-        celdasHab.forEach(celda => {
-            // Quitamos la clase visual
-            celda.classList.remove('in-range');
-            // Desmarcamos el checkbox
-            const checkbox = celda.querySelector('.hidden-checkbox');
-            if (checkbox) checkbox.checked = false;
-        });
-    }
+  // ------------------------------------------------------------------
+  // Botón LIMPIAR
+  // ------------------------------------------------------------------
+  if (btnLimpiar) {
+    btnLimpiar.addEventListener('click', () => {
+      limpiarSeleccionVisualTotal();
+      seleccionInicio = null;
+      seleccionDTO = [];
+      sessionStorage.removeItem('seleccionHabitaciones');
+      sessionStorage.removeItem('modoAccion');
+    });
+  }
 
-    function limpiarEstiloInicio() {
-        document.querySelectorAll('.selection-start').forEach(el => el.classList.remove('selection-start'));
-    }
+  // ------------------------------------------------------------------
+  // Submit del formulario de selección (SIGUIENTE)
+  // ------------------------------------------------------------------
+  if (formSeleccion && btnSiguiente) {
+    formSeleccion.addEventListener('submit', (e) => {
+      const dto = construirSeleccionDTO();
 
-    function validarYMarcarRango(nroHabitacion, dateStart, dateEnd) {
-        const celdasDeLaHabitacion = document.querySelectorAll(`.celda-interactiva[data-habitacion="${nroHabitacion}"]`);
-        let esValido = true;
-        let celdasASeleccionar = [];
+      if (dto.length === 0) {
+        alert('Debe seleccionar al menos una habitación para continuar.');
+        e.preventDefault();
+        return;
+      }
 
-        celdasDeLaHabitacion.forEach(celda => {
-            const fechaStr = celda.getAttribute('data-fecha');
-            const fechaCelda = new Date(fechaStr);
-            
-            if (fechaCelda >= dateStart && fechaCelda <= dateEnd) {
-                const contenido = celda.querySelector('.cell-content');
-                const estado = contenido.getAttribute('data-estado');
+      // Guardamos en sessionStorage para consistencia
+      sessionStorage.setItem('modoAccion', modoAccion);
+      sessionStorage.setItem('seleccionHabitaciones', JSON.stringify(dto));
 
-                if (estado !== 'LIBRE') {
-                    esValido = false;
-                } else {
-                    celdasASeleccionar.push(celda);
-                }
-            }
-        });
+      if (modoAccion === 'RESERVAR') {
+        // Interceptamos: mostramos RESUMEN
+        e.preventDefault();
+        seleccionDTO = dto;
+        renderResumen();
 
-        if (esValido) {
-            celdasASeleccionar.forEach(celda => {
-                celda.classList.add('in-range');
-                const checkbox = celda.querySelector('.hidden-checkbox');
-                if (checkbox) checkbox.checked = true;
-            });
-            return true;
-        } else {
-            return false;
-        }
-    }
+        if (seccionBusqueda) seccionBusqueda.classList.add('hidden');
+        if (seccionResumen) seccionResumen.classList.remove('hidden');
+      } else {
+        // OCUPAR: se deja enviar el form normalmente
+      }
+    });
+  }
+
+  // ------------------------------------------------------------------
+  // RESUMEN: RECHAZAR (CU 7.A)
+  // ------------------------------------------------------------------
+  if (btnResumenCancelar) {
+    btnResumenCancelar.addEventListener('click', () => {
+      // Se deshacen operaciones sobre la grilla
+      limpiarSeleccionVisualTotal();
+      seleccionDTO = [];
+      sessionStorage.removeItem('seleccionHabitaciones');
+
+      if (seccionResumen) seccionResumen.classList.add('hidden');
+      if (seccionBusqueda) seccionBusqueda.classList.remove('hidden');
+      if (leyendaContainer) leyendaContainer.classList.remove('hidden');
+    });
+  }
+
+  // ------------------------------------------------------------------
+  // RESUMEN: ACEPTAR → mostrar datos huésped (CU 8)
+  // ------------------------------------------------------------------
+  if (btnResumenAceptar) {
+    btnResumenAceptar.addEventListener('click', () => {
+      if (seccionResumen) seccionResumen.classList.add('hidden');
+      if (seccionDatos) seccionDatos.classList.remove('hidden');
+      if (leyendaContainer) leyendaContainer.classList.add('hidden'); // ocultar leyenda
+      if (inputApellido) inputApellido.focus();
+    });
+  }
+
+  // ------------------------------------------------------------------
+  // FORM HUÉSPED: cancelar (volver al resumen)
+  // ------------------------------------------------------------------
+  if (btnFinalCancelar && seccionDatos && seccionResumen) {
+    btnFinalCancelar.addEventListener('click', () => {
+      seccionDatos.classList.add('hidden');
+      seccionResumen.classList.remove('hidden');
+      if (leyendaContainer) leyendaContainer.classList.remove('hidden'); // mostrar leyenda otra vez
+    });
+  }
+
+  // ------------------------------------------------------------------
+  // FORM HUÉSPED: validar y enviar (CU 9 y 9.A)
+  // ------------------------------------------------------------------
+  if (formReservaFinal) {
+    formReservaFinal.addEventListener('submit', (e) => {
+      const apellido = inputApellido ? inputApellido.value.trim() : '';
+      const nombre = inputNombre ? inputNombre.value.trim() : '';
+      const telefono = inputTelefono ? inputTelefono.value.trim() : '';
+
+      const faltantes = [];
+      if (!apellido) faltantes.push(inputApellido);
+      if (!nombre) faltantes.push(inputNombre);
+      if (!telefono) faltantes.push(inputTelefono);
+
+      if (faltantes.length > 0) {
+        e.preventDefault();
+        if (msgErrorHuesped) msgErrorHuesped.classList.remove('hidden');
+        if (faltantes[0]) faltantes[0].focus(); // primer campo faltante
+        return;
+      }
+
+      // Agregamos los DTO como inputs hidden para el backend (SeleccionHabitacionDTO)
+      seleccionDTO.forEach((sel, index) => {
+        const base = `selecciones[${index}]`;
+
+        const inputHab = document.createElement('input');
+        inputHab.type = 'hidden';
+        inputHab.name = `${base}.numeroHabitacion`;
+        inputHab.value = sel.numeroHabitacion;
+        formReservaFinal.appendChild(inputHab);
+
+        const inputIng = document.createElement('input');
+        inputIng.type = 'hidden';
+        inputIng.name = `${base}.fechaIngreso`;
+        inputIng.value = sel.fechaIngreso;
+        formReservaFinal.appendChild(inputIng);
+
+        const inputEgr = document.createElement('input');
+        inputEgr.type = 'hidden';
+        inputEgr.name = `${base}.fechaEgreso`;
+        inputEgr.value = sel.fechaEgreso;
+        formReservaFinal.appendChild(inputEgr);
+      });
+
+      // Limpiamos storage
+      sessionStorage.removeItem('seleccionHabitaciones');
+      sessionStorage.removeItem('modoAccion');
+      // Se deja enviar el form a /reservas/confirmar
+    });
+  }
+
 });

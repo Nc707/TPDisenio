@@ -3,133 +3,206 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout.html}">
 <head>
-  <title>Reservar Habitaciones</title>
-  <link rel="stylesheet" th:href="@{busqueda-habitacion.css}">
+    <title>Reservar Habitaciones</title>
+    <link rel="stylesheet" th:href="@{busqueda-habitacion.css}">
 </head>
-<body>
+<body th:attr="data-modo=${modoAccion}">
 
-  <div class="top-bar" layout:fragment="top-bar-content">
+<div class="top-bar" layout:fragment="top-bar-content">
     Premier
-  </div>
-  
-  <div class="form-container" layout:fragment="content">
+</div>
+
+<div class="form-container" layout:fragment="content">
     <aside class="leyenda-container">
-    <h2>Leyenda</h2>
-		<ul class="leyenda">
-	        <li><span class="status-circle status-seleccionada"></span>Seleccionada</li>
-	        <li><span class="status-circle status-fuera_de_servicio"></span>Fuera de servicio</li>
-	        <li><span class="status-circle status-reservada"></span>Reservadas</li>
-	        <li><span class="status-circle status-ocupada"></span>Ocupada</li>
-	        <li><span class="status-circle status-libre"></span>Libre</li>
-	      </ul>
-     </aside>
-     <div class="main-content">
-    <h1 th:text="${modoAccion == 'RESERVAR'} ? 'Reservar Habitaciones' : 'Ocupar Habitación'">
-      Reservar Habitaciones
-    </h1>
-		
-    <div class="busqueda-container">
-      
-      
+        <h2>Leyenda</h2>
+        <ul class="leyenda">
+            <li><span class="status-circle status-seleccionada"></span>Seleccionada</li>
+            <li><span class="status-circle status-fuera_de_servicio"></span>Fuera de servicio</li>
+            <li><span class="status-circle status-reservada"></span>Reservadas</li>
+            <li><span class="status-circle status-ocupada"></span>Ocupada</li>
+            <li><span class="status-circle status-libre"></span>Libre</li>
+        </ul>
+    </aside>
 
-      <form id="form-busqueda" 
-      th:action="@{/habitaciones/buscar}" 
-      th:object="${busquedaDTO}" 
-      method="get">
-        <input type="hidden" name="accion" th:value="${modoAccion}" />
+    <div class="main-content">
 
-        <div class="form-row">
-          <div class="form-group">
-            <label for="fecha-desde">Fecha desde</label>
-            <input type="date" id="fecha-desde" th:field="*{fechaInicio}">
-          </div>
-          <div class="form-group">
-            <label for="fecha-hasta">Fecha hasta</label>
-            <input type="date" id="fecha-hasta" th:field="*{fechaFin}">
-          </div>
-          <button type="submit" class="btn-primary">BUSCAR</button>
-        </div>
-      </form>
-    </div>
+        <!-- SECCIÓN 1: BUSQUEDA + GRILLA -->
+        <div id="seccion-busqueda-grilla">
+            <h1 th:text="${modoAccion == 'RESERVAR'} ? 'Reservar Habitaciones'
+                      : (${modoAccion == 'OCUPAR'} ? 'Ocupar Habitación' : 'Disponibilidad de Habitaciones')">
+                Reservar Habitaciones
+            </h1>
 
-    <form id="form-seleccion" 
-          th:action="${modoAccion == 'RESERVAR'} ? @{/reservas/crear-reserva} : @{/checkin/ocupar-habitacion}" 
-          method="post" 
-          th:if="${calendario.mapaDisponibilidad != null and not #maps.isEmpty(calendario.mapaDisponibilidad)}">
+            <div class="busqueda-container">
+                <form id="form-busqueda"
+                      th:action="@{/habitaciones/buscar}"
+                      th:object="${busquedaDTO}"
+                      method="get">
+                    <input type="hidden" name="accion" th:value="${modoAccion}" />
 
-      <div class="grilla-container">
-        <table class="grilla-habitaciones">
-          <thead>
-            <tr>
-              <th rowspan="2">Fecha</th> <th th:each="entry : ${calendario.habitacionesAgrupadas}" 
-                  th:colspan="${#lists.size(entry.value)}" 
-                  th:text="${entry.key}">
-                Doble Superior
-              </th>
-            </tr>
-            
-            <tr>
-              <th:block th:each="entry : ${calendario.habitacionesAgrupadas}">
-                <th th:each="hab : ${entry.value}" 
-                    th:text="${hab.numeroHabitacion}">
-                  101
-                </th>
-              </th:block>
-            </tr>
-          </thead>
-          
-          <tbody>
-  <tr th:each="fecha : ${calendario.fechas}">
-    
-    <th th:text="${#temporals.format(fecha, 'dd/MM/yyyy')}"
-        th:data-fecha="${fecha}"> 04/11/2025
-    </th>
-    
-    <th:block th:each="entry : ${calendario.habitacionesAgrupadas}">
-      <td th:each="hab : ${entry.value}"
-          class="celda-interactiva"
-          th:data-habitacion="${hab.numeroHabitacion}"
-          th:data-fecha="${fecha}"
-          th:with="estado=${calendario.mapaDisponibilidad.get(fecha).get(hab.numeroHabitacion)}">
-        
-        <div class="cell-content" 
-             th:attr="data-estado=${estado.toString()}">
-
-          <th:block th:if="${estado == T(edu.inbugwethrust.premier.suite.model.EstadoHabitacion).LIBRE}">
-            <input type="checkbox" 
-                   class="hidden-checkbox"
-                   th:id="'chk_' + ${hab.numeroHabitacion} + '_' + ${fecha}"
-                   name="celdasSeleccionadas"
-                   th:value="${hab.numeroHabitacion} + '_' + ${fecha}" />
-            
-            <div class="status-circle status-libre"></div>
-          </th:block>
-
-          <th:block th:unless="${estado == T(edu.inbugwethrust.premier.suite.model.EstadoHabitacion).LIBRE}">
-            <div class="status-circle" 
-                 th:classappend="'status-' + ${estado.toString().toLowerCase()}">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="fecha-desde">Fecha desde</label>
+                            <input type="date" id="fecha-desde" th:field="*{fechaInicio}">
+                        </div>
+                        <div class="form-group">
+                            <label for="fecha-hasta">Fecha hasta</label>
+                            <input type="date" id="fecha-hasta" th:field="*{fechaFin}">
+                        </div>
+                        <button type="submit" class="btn-primary">BUSCAR</button>
+                    </div>
+                </form>
             </div>
-          </th:block>
 
+            <form id="form-seleccion"
+                  th:action="@{/reservas/confirmar}"
+                  method="post"
+                  th:if="${calendario.mapaDisponibilidad != null and not #maps.isEmpty(calendario.mapaDisponibilidad)}">
+
+                <div class="grilla-container">
+                    <table class="grilla-habitaciones">
+                        <thead>
+                        <tr>
+                            <th rowspan="2">Fecha</th>
+                            <th th:each="entry : ${calendario.habitacionesAgrupadas}"
+                                th:colspan="${#lists.size(entry.value)}"
+                                th:text="${entry.key}">
+                                Doble Superior
+                            </th>
+                        </tr>
+
+                        <tr>
+                            <th:block th:each="entry : ${calendario.habitacionesAgrupadas}">
+                                <th th:each="hab : ${entry.value}"
+                                    th:text="${hab.numeroHabitacion}">
+                                    101
+                                </th>
+                            </th:block>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr th:each="fecha : ${calendario.fechas}">
+
+                            <th th:text="${#temporals.format(fecha, 'dd/MM/yyyy')}"
+                                th:data-fecha="${fecha}">
+                                04/11/2025
+                            </th>
+
+                            <th:block th:each="entry : ${calendario.habitacionesAgrupadas}">
+                                <td th:each="hab : ${entry.value}"
+                                    class="celda-interactiva"
+                                    th:data-habitacion="${hab.numeroHabitacion}"
+                                    th:data-fecha="${fecha}"
+                                    th:with="estado=${calendario.mapaDisponibilidad.get(fecha).get(hab.numeroHabitacion)}"
+                                    th:attr="data-estado=${estado.toString()}, data-tipo=${entry.key}">
+
+                                    <div class="cell-content"
+                                         th:attr="data-estado=${estado.toString()}">
+
+                                        <th:block th:if="${estado == T(edu.inbugwethrust.premier.suite.model.EstadoHabitacion).LIBRE}">
+                                            <input type="checkbox"
+                                                   class="hidden-checkbox"
+                                                   th:id="'chk_' + ${hab.numeroHabitacion} + '_' + ${fecha}"
+                                                   name="celdasSeleccionadas"
+                                                   th:value="${hab.numeroHabitacion} + '_' + ${fecha}" />
+
+                                            <div class="status-circle status-libre"></div>
+                                        </th:block>
+
+                                        <th:block th:unless="${estado == T(edu.inbugwethrust.premier.suite.model.EstadoHabitacion).LIBRE}">
+                                            <div class="status-circle"
+                                                 th:classappend="' status-' + ${estado.toString().toLowerCase()}">
+                                            </div>
+                                        </th:block>
+
+                                    </div>
+                                </td>
+                            </th:block>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </form>
+
+            <!-- Botones inferiores: se ocultan en modo DISPONIBILIDAD -->
+            <div class="botones-inferiores" th:if="${modoAccion != 'DISPONIBILIDAD'}">
+                <button type="button" class="btn-secondary" id="open-modal-btn">CANCELAR</button>
+                <button type="button" class="btn-secondary" id="reset-btn">LIMPIAR</button>
+                <button type="submit" class="btn-primary" id="btn-siguiente" form="form-seleccion">
+                    SIGUIENTE</button>
+            </div>
         </div>
-      </td>
-    </th:block>
-  </tr>
-</tbody>
-        </table>
-      </div>
-    </form> 
-    <div class="botones-inferiores">
-        <button type="button" class="btn-secondary" id="open-modal-btn">CANCELAR</button>
-        <button type="button" class="btn-secondary" id="reset-btn">LIMPIAR</button>
-        <button type="submit" class="btn-primary">SIGUIENTE</button>
-      </div>
+
+        <!-- SECCIÓN 2: RESUMEN (solo RESERVAR) -->
+        <div id="seccion-resumen" class="hidden" th:if="${modoAccion == 'RESERVAR'}">
+            <h1>Reservar Habitaciones</h1>
+
+            <div class="resumen-wrapper">
+                <table class="tabla-resumen">
+                    <thead>
+                    <tr>
+                        <th>Tipo de Habitaciones</th>
+                        <th>Ingreso</th>
+                        <th>Egreso</th>
+                    </tr>
+                    </thead>
+                    <tbody id="tbody-resumen">
+                    <!-- filas cargadas desde JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="botones-resumen">
+                <button type="button" class="btn-secondary" id="btn-resumen-cancelar">CANCELAR</button>
+                <button type="button" class="btn-primary" id="btn-resumen-aceptar">ACEPTAR</button>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 3: DATOS HUÉSPED (solo RESERVAR) -->
+        <div id="seccion-datos-huesped" class="hidden" th:if="${modoAccion == 'RESERVAR'}">
+            <h1>Reservar Habitaciones</h1>
+
+            <div class="datos-huesped-form">
+                <h2>Reservar a nombre de:</h2>
+
+                <div id="mensaje-error-huesped" class="mensaje-error hidden">
+                    Debe completar todos los campos obligatorios.
+                </div>
+
+                <form id="form-reserva-final" th:action="@{/reservas/confirmar}" method="post">
+
+                    <div class="fila-campos">
+                        <div class="form-group">
+                            <label for="apellido">Apellido *</label>
+                            <input type="text" id="apellido" name="apellido" placeholder="APELLIDO">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="nombre">Nombre *</label>
+                            <input type="text" id="nombre" name="nombre" placeholder="NOMBRE">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="telefono">Teléfono *</label>
+                            <input type="text" id="telefono" name="telefono" placeholder="0000000000">
+                        </div>
+                    </div>
+
+                    <!-- Inputs hidden con SeleccionHabitacionDTO se agregan por JS -->
+
+                    <div class="botonera-final">
+                        <button type="button" class="btn-secondary" id="btn-final-cancelar">CANCELAR</button>
+                        <button type="submit" class="btn-primary">ACEPTAR</button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
     </div>
-    </div> <!--div layout:fragment="modals" th:include="~{fragments/modal-cancelar :: modal-cancelar}">
-    </div -->
+</div>
 
-  <script layout:fragment="scripts" th:src="seleccion-rango.js"></script>
-</body>
-
+<script layout:fragment="scripts" th:src="@{seleccion-rango.js}"></script>
 </body>
 </html>
