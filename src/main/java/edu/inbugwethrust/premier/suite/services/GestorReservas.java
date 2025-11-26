@@ -49,4 +49,16 @@ public class GestorReservas {
     public Reserva guardar(Reserva reserva) {
         return reservaDAO.save(reserva);
     }
+
+    /**
+     * Marca la reserva como EN_CURSO (check-in iniciado) y la persiste.
+     */
+    public void marcarReservaComoEnCurso(Reserva reserva) {
+        if (reserva == null) {
+            throw new IllegalArgumentException("La reserva no puede ser nula");
+        }
+
+        reserva.setEstadoReserva(EstadoReserva.EFECTUADA);
+        reservaDAO.save(reserva);
+    }
 }

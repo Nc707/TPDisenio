@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import edu.inbugwethrust.premier.suite.model.FichaEvento;
+import edu.inbugwethrust.premier.suite.model.Habitacion;
 
 @Repository
 public interface FichaEventoDAO extends JpaRepository<FichaEvento, Integer> {
@@ -27,4 +28,14 @@ public interface FichaEventoDAO extends JpaRepository<FichaEvento, Integer> {
 	List<FichaEvento> findByFechaEvento(
 			@Param("fechaInicio")LocalDateTime fechaInicio,
 			@Param("fechaFin")LocalDateTime fechaFin);
+	
+	/**
+     * Devuelve todos los eventos que se solapan con el rango [inicio, fin]
+     * para una habitación dada.
+     */
+    List<FichaEvento> findByHabitacionAndFechaFinGreaterThanEqualAndFechaInicioLessThanEqual(
+            Habitacion habitacion,
+            LocalDateTime inicio,
+            LocalDateTime fin
+    );
 }

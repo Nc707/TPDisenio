@@ -143,6 +143,35 @@ public class GestorHuespedes implements IGestorHuespedes {
           }
           return huespedMapper.toDTO(huesped);
         }  
+
+    @Override
+    public Huesped obtenerPorId(Long idDocumento) {
+        if (idDocumento == null) {
+            throw new IllegalArgumentException("El id de huésped no puede ser nulo");
+        }
+
+        // Interpretamos el Long como número de documento (DNI)
+        String numeroDocumento = String.valueOf(idDocumento);
+
+        return buscar_por_doc(TipoDni.DNI, numeroDocumento)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "No se encontró huésped con DNI " + numeroDocumento));
+    }
+
+    @Override
+    public List<Huesped> obtenerPorIds(List<Long> idsDocumento) {
+        if (idsDocumento == null || idsDocumento.isEmpty()) {
+            return List.of();
+        }
+
+        List<Huesped> resultado = new java.util.ArrayList<>();
+        for (Long id : idsDocumento) {
+            if (id != null) {
+                resultado.add(obtenerPorId(id));
+            }
+        }
+        return resultado;
+    }
 }
     
   

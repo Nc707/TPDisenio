@@ -27,7 +27,7 @@ public class Reserva {
     @OneToMany(mappedBy = "reserva", cascade = CascadeType.ALL)
     private List<FichaEvento> listaFichaEventos = new ArrayList<>();
 
-    @OneToOne(mappedBy = "reserva", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "reserva")
     private Estadia estadia;
 
     @Column(name = "apellido_reserva", length = 50, nullable = false)
@@ -38,4 +38,15 @@ public class Reserva {
 
     @Column(name = "telefono_reserva", length = 30, nullable = false)
     private String telefonoReserva;
+
+        // (Opcional) helpers para mantener la bidireccionalidad
+    public void agregarFichaEvento(FichaEvento ficha) {
+        listaFichaEventos.add(ficha);
+        ficha.setReserva(this);
+    }
+
+    public void quitarFichaEvento(FichaEvento ficha) {
+        listaFichaEventos.remove(ficha);
+        ficha.setReserva(null);
+    }
 }
