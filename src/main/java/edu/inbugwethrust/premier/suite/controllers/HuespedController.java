@@ -78,35 +78,67 @@ public class HuespedController {
     // -------------------------------------------------
 
     @GetMapping("/buscar")
-    public String mostrarFormularioBusqueda(Model model) {
+    public String mostrarFormularioBusqueda(
+            // Parámetros de control de flujo
+            @RequestParam(name = "accion", defaultValue = "BUSCAR") String accion,
+            
+            // Parámetros de contexto "Ocupar" (pueden venir nulos si es una búsqueda normal)
+            @RequestParam(name = "numeroHabitacion", required = false) Integer numeroHabitacion,
+            @RequestParam(name = "fechaIngreso", required = false) String fechaIngreso,
+            @RequestParam(name = "fechaEgreso", required = false) String fechaEgreso,
+            
+            Model model) {
+
         if (!model.containsAttribute("busquedaHuespedDTO")) {
             model.addAttribute("busquedaHuespedDTO", new BusquedaHuespedDTO());
         }
+        
+        // Pasamos estos datos a la vista para que Thymeleaf los meta en hidden inputs
+        model.addAttribute("accion", accion);
+        model.addAttribute("numeroHabitacion", numeroHabitacion);
+        model.addAttribute("fechaIngreso", fechaIngreso);
+        model.addAttribute("fechaEgreso", fechaEgreso);
+
         return "buscar-huesped-page";
     }
     
     @GetMapping("/resultados")
     public String buscarHuespedes(
-            @ModelAttribute("busquedaHuespedDTO") BusquedaHuespedDTO dto, 
+            @ModelAttribute("busquedaHuespedDTO") BusquedaHuespedDTO dto,
+            
+            // Capturamos los mismos params para mantener el contexto
+            @RequestParam(name = "accion", defaultValue = "BUSCAR") String accion,
+            @RequestParam(name = "numeroHabitacion", required = false) Integer numeroHabitacion,
+            @RequestParam(name = "fechaIngreso", required = false) String fechaIngreso,
+            @RequestParam(name = "fechaEgreso", required = false) String fechaEgreso,
+            
             Model model,
             RedirectAttributes redirectAttributes) {
-        
         
         List<HuespedDTO> listaResultados = gestorHuespedes.buscar_huespedes(dto);
         
         if (listaResultados.isEmpty()) {
-            // 3. Agregamos el mensaje "Flash" (vive solo una petición)
-            redirectAttributes.addFlashAttribute("mensajeToast", "No se encontraron resultados con esos criterios. Intente nuevamente.");
-            redirectAttributes.addFlashAttribute("tipoToast", "warning"); // Opcional: para cambiar color
+            redirectAttributes.addFlashAttribute("mensajeToast", "No se encontraron resultados.");
+            redirectAttributes.addFlashAttribute("tipoToast", "warning");
             
-            // 4. Redirigimos AL FORMULARIO DE BÚSQUEDA (no a la tabla vacía)
+            // IMPORTANTE: Al redirigir, debemos pegar los parámetros de nuevo 
+            // para no perder el hilo de la habitación que estamos ocupando.
+            redirectAttributes.addAttribute("accion", accion);
+            if (numeroHabitacion != null) redirectAttributes.addAttribute("numeroHabitacion", numeroHabitacion);
+            if (fechaIngreso != null) redirectAttributes.addAttribute("fechaIngreso", fechaIngreso);
+            if (fechaEgreso != null) redirectAttributes.addAttribute("fechaEgreso", fechaEgreso);
+            
             return "redirect:/huespedes/buscar"; 
         }
         
-        // 2. Pasamos la lista a la vista
         model.addAttribute("huespedes", listaResultados);
         
-        // 3. Vamos a la nueva vista (que crearemos abajo)
+        // Pasamos de nuevo el contexto a la vista de resultados
+        model.addAttribute("accion", accion);
+        model.addAttribute("numeroHabitacion", numeroHabitacion);
+        model.addAttribute("fechaIngreso", fechaIngreso);
+        model.addAttribute("fechaEgreso", fechaEgreso);
+        
         return "resultados-huesped-page";
     }
     /**

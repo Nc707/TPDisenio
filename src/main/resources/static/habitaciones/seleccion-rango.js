@@ -252,8 +252,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
 				if (seccionBusqueda) seccionBusqueda.classList.add('hidden');
 				if (seccionResumen) seccionResumen.classList.remove('hidden');
-			} else {
-				// OCUPAR: se deja enviar el form normalmente
+			} else if (modoAccion === 'OCUPAR') {
+				e.preventDefault();
+
+				sessionStorage.setItem('colaOcupacion', JSON.stringify(dto));
+
+				sessionStorage.setItem('indiceOcupacionActual', '0');
+
+				// 3. Obtener la PRIMERA habitación para procesar
+				const primeraHabitacion = dto[0];
+
+				// 4. Construir la URL de redirección al Buscador de Huéspedes
+				// Usamos URLSearchParams para generar el query string limpio
+				// Ajusta '/huespedes/buscar' a la ruta real de tu controlador de huéspedes
+				const params = new URLSearchParams({
+					accion: 'OCUPAR', // El @RequestParam que pediste
+					numeroHabitacion: primeraHabitacion.numeroHabitacion,
+					fechaIngreso: primeraHabitacion.fechaIngreso,
+					fechaEgreso: primeraHabitacion.fechaEgreso
+				});
+
+				// URL final ej: /huespedes/buscar?accion=OCUPAR&numeroHabitacion=101&fechaIngreso=2025-11-26...
+				window.location.href = `/huespedes/buscar?${params.toString()}`;
 			}
 		});
 	}

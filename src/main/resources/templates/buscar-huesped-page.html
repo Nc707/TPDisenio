@@ -15,9 +15,17 @@
     <div class="form-container" layout:fragment="content">
         
         <h1 class="titulo-principal">Buscar Huésped</h1>
+    
 
         <form th:action="@{/huespedes/resultados}" th:object="${busquedaHuespedDTO}" method="get">
-            
+          <input type="hidden" name="accion" th:value="${accion}" />
+			    <input type="hidden" name="numeroHabitacion" th:value="${numeroHabitacion}" />
+			    <input type="hidden" name="fechaIngreso" th:value="${fechaIngreso}" />
+			    <input type="hidden" name="fechaEgreso" th:value="${fechaEgreso}" />
+			
+			    <div th:if="${accion == 'OCUPAR'}" class="alert-info-contexto">
+			        <p>Seleccionando huésped para Habitación: <strong th:text="${numeroHabitacion}">101</strong></p>
+			    </div>
             <div class="search-grid">
                 
                 <div class="input-group">
