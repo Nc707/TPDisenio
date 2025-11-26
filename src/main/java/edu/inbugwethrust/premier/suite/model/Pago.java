@@ -19,7 +19,7 @@ public abstract class Pago {
 
     private Double vuelto;
     
-    private Divisa divisa;
+    //private Divisa divisa;
 
     private LocalDate fechaPago;
 

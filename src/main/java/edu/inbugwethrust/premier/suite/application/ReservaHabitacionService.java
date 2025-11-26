@@ -84,9 +84,9 @@ public void registrarReserva(ConfirmacionReservaDTO confirmacionReservaDTO) {
         LocalDate fechaEgreso    = seleccionHab.getFechaEgreso();
 
         // Regla de negocio: coherencia de fechas (esto sí queda en el servicio)
-        if (fechaEgreso.isBefore(fechaIngreso)) {
+        if (!fechaEgreso.isAfter(fechaIngreso)) {
             throw new IllegalArgumentException(
-                    "La fecha de egreso no puede ser anterior a la fecha de ingreso.");
+                    "La fecha de egreso debe ser posterior a la fecha de ingreso.");
         }
 
         Habitacion habitacion = gestorHabitaciones.obtenerPorNumero(numeroHabitacion);

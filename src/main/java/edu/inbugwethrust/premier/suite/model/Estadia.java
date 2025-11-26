@@ -2,6 +2,8 @@ package edu.inbugwethrust.premier.suite.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -22,7 +24,6 @@ public class Estadia {
     @JoinColumn(name = "id_reserva", nullable = false, unique = true)
     private Reserva reserva;    
 
-    @OneToMany
-    @JoinColumn(name = "id_servicios_adicionales", nullable = true, unique = false)
-    private List<ServiciosAdicioaneles> serviciosAdicioaneles;
+    @OneToMany(mappedBy = "estadia", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ServiciosAdicionales> serviciosAdicionales = new ArrayList<>();
 }
