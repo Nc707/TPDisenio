@@ -18,11 +18,4 @@ public class TipoHabitacion {
 	Double costoNoche;
 	int maximoHuespedes;
 	
-	@ElementCollection
-    @CollectionTable(
-	name = "tipo_habitacion_distribuciones",
-	joinColumns = @JoinColumn(name = "tipo_habitacion_nombre")
-	)
-    @Column(name = "distribucion")
-	String[] distribucionesPosibles;
 }
