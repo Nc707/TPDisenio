@@ -70,17 +70,43 @@ public class OcuparHabitacionService implements IOcuparHabitacionService {
     Map<Integer, Habitacion> mapaHabitaciones =
         gestorHabitaciones.obtenerMapaPorNumeros(nrosHabitacion);
 
+    // Set para controlar que un mismo huésped no esté en múltiples habitaciones a la vez
+    Set<IdentificacionHuespedDTO> acompanantesUsadosGlobal = new HashSet<>();
+
+    for (OcupacionHabitacionDTO dto : listaOcupaciones) {
+      // A. Validar fechas (Ingreso vs Egreso)
+      validarDatosBasicos(dto);
+
+      // B. Obtener la entidad habitación real
+      Habitacion habitacion = mapaHabitaciones.get(dto.getNumeroHabitacion());
+
+      // Validación extra: verificar que la habitación exista en BDD
+      if (habitacion == null) {
+        throw new IllegalArgumentException(
+            "La habitación número " + dto.getNumeroHabitacion() + " no existe.");
+      }
+
+      // C. Validar Capacidad (DTO vs Entidad Habitacion)
+      validarCapacidadHabitacion(dto, habitacion);
+
+      // D. Validar unicidad de acompañantes en el request
+      aplicarReglasAcompanantes(dto, acompanantesUsadosGlobal);
+    }
+
+
+
     // 3. PRE-CARGA DE HUÉSPEDES (Map<Long, Huesped>) --- ¡NUEVO! ---
     List<IdentificacionHuespedDTO> todosLosIdsHuespedes = new ArrayList<>();
 
     for (OcupacionHabitacionDTO dto : listaOcupaciones) {
-       
+
       if (dto.getIdsAcompanantes() != null) {
         todosLosIdsHuespedes.addAll(dto.getIdsAcompanantes());
       }
     }
-    
-    
+
+
+
     // Obtenemos el mapa (Key: ID, Value: Entidad)
     Map<HuespedID, Huesped> mapaHuespedes = gestorHuespedes.obtenerMapaPorIds(todosLosIdsHuespedes);
 
