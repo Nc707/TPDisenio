@@ -48,16 +48,6 @@ public class FichaEvento {
     private Estadia estadia;
 
     /**
-     * Huésped responsable de esta habitación en este evento (para OCUPACION).
-     */
-    @ManyToOne
-    @JoinColumns({
-        @JoinColumn(name = "huesped_resp_tipo_doc", referencedColumnName = "tipoDocumento"),
-        @JoinColumn(name = "huesped_resp_num_doc",  referencedColumnName = "numeroDocumento")
-    })
-    private Huesped huespedResponsable;
-
-    /**
      * Lista de acompañantes de la habitación durante este evento (OCUPACION).
      */
     @ManyToMany

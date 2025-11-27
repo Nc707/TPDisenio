@@ -1,7 +1,10 @@
 package edu.inbugwethrust.premier.suite.services;
 
+import java.util.HashSet;
 import java.util.List;
-
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,6 +39,12 @@ public class GestorHabitaciones implements IGestorHabitaciones {
         return habitacionRepository.findById(numeroHabitacion)
                 .orElseThrow(() -> new IllegalArgumentException(
                         "No existe la habitación con número: " + numeroHabitacion));
+    }
+    
+    public Map<Integer, Habitacion> obtenerMapaPorNumeros(Set<Integer> numerosHabitaciones) {
+      Map<Integer,Habitacion> habitaciones = numerosHabitaciones.stream().distinct()
+          .map(this::obtenerPorNumero).collect(Collectors.toMap(Habitacion::getNumero, h -> h));
+      return habitaciones;
     }
 	
 	

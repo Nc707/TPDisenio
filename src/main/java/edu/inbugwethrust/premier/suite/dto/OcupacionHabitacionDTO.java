@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
-
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -48,16 +48,12 @@ public class OcupacionHabitacionDTO {
     private LocalDate fechaEgreso;
 
     /**
-     * Identificador del huésped responsable de la habitación.
-     */
-    @NotNull(message = "El huésped responsable es obligatorio")
-    private Long idHuespedResponsable;
-
-    /**
      * Identificadores de los acompañantes que ocuparán esta habitación.
      * Puede ser lista vacía si no hay acompañantes.
      */
-    private List<Long> idsAcompanantes = new ArrayList<>();
+    @Valid
+    @NotNull(message = "La lista de identificaciones de acompañantes no puede ser nula")
+    private List<IdentificacionHuespedDTO> idsAcompanantes = new ArrayList<>();
 
     /**
      * Indica si, en caso de existir reservas en el rango, el actor eligió "OCUPAR IGUAL".
