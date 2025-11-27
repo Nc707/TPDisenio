@@ -19,4 +19,7 @@ public class ServiciosAdicionales {
 
     private Double precio;
 
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "id_estadia", nullable = false)
+    private Estadia estadia;
 }
