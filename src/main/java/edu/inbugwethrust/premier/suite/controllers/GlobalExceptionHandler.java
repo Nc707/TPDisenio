@@ -14,10 +14,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import edu.inbugwethrust.premier.suite.services.exceptions.CuitVacioException;
-import edu.inbugwethrust.premier.suite.services.exceptions.HuespedDuplicadoException;
-import edu.inbugwethrust.premier.suite.services.exceptions.ReservaNoDisponibleException;
-
+import edu.inbugwethrust.premier.suite.services.exceptions.*;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -123,7 +120,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
     }
 
-    // 8) Argumentos Ilegales (Validaciones manuales de lógica como fechas o duplicados)
+    // 8) Habitaciones solapadas dentro de la misma solicitud de reserva
+    @ExceptionHandler(HabitacionesSolapadasEnReservaException.class)
+    public ResponseEntity<?> manejarHabitacionesSolapadas(HabitacionesSolapadasEnReservaException ex) {
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "Error en la solicitud de reserva");
+        body.put("message", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+
+    // 9) Argumentos Ilegales (Validaciones manuales de lógica como fechas o duplicados)
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<?> manejarArgumentoIlegal(IllegalArgumentException ex) {
 
@@ -136,7 +147,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 
-    // 9) Cualquier otra excepción no controlada
+    // 10) Cualquier otra excepción no controlada
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> manejarExcepcionGenerica(Exception ex) {
 

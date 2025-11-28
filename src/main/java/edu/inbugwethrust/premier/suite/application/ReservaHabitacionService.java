@@ -3,6 +3,9 @@ package edu.inbugwethrust.premier.suite.application;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,113 +38,77 @@ public class ReservaHabitacionService implements IReservaHabitacionService {
         this.gestorReservas = gestorReservas;
     }
     
-    /*
-     * //Falta agregarle a este metodo la validacion interna de que no puede haber dos reservas para
-     * la misma habitacion en fechas que se solapen Ese metodo no corresponder a este metodo, puede
-     * ser un metodo aparte u corresponder a otra entidad
     @Override
     @Transactional
-    public void registrarReserva(ConfirmacionReservaDTO dto) {
-        // 1. Validaciones básicas
-        Objects.requireNonNull(dto);
-        
-        // 2. Mapa para guardar las habitaciones ya validadas y no ir a BD dos veces
-        // Key: NumeroHabitacion, Value: Entidad Habitacion
-        Map<Integer, Habitacion> habitacionesValidadas = new HashMap<>();
+    public void registrarReserva(ConfirmacionReservaDTO confirmacionReservaDTO) {
 
-        // 3. BUCLE DE VALIDACIÓN (Responsabilidad del Service)
-        for (SeleccionHabitacionDTO sel : dto.getHabitacionesSeleccionadas()) {
-            
-            // a) Traer entidad
-            Habitacion habitacion = gestorHabitaciones.obtenerPorNumero(sel.getNumeroHabitacion());
+        // Defensa mínima: el DTO no puede ser nulo
+        Objects.requireNonNull(confirmacionReservaDTO,
+                "La confirmación de reserva no puede ser nula");
 
-            // b) Calcular fechas
-            LocalDateTime inicio = sel.getFechaIngreso().atTime(12, 0);
-            LocalDateTime fin = sel.getFechaEgreso().atTime(10, 0);
+        // Ya viene validado por Bean Validation en el controller
+        var habitacionesSeleccionadas = confirmacionReservaDTO.getHabitacionesSeleccionadas();
 
-            // c) EL SERVICE LLAMA A LA VALIDACIÓN (Tu requerimiento)
-            gestorFichaEvento.validarDisponibilidad(habitacion, inicio, fin);
+        // 1) Regla de negocio: NO permitir solapamientos internos para la misma habitación
+        gestorReservas.validarSolapamientosInternos(habitacionesSeleccionadas);
 
-            // d) Guardamos la habitación para pasársela al Gestor de Reservas
-            habitacionesValidadas.put(sel.getNumeroHabitacion(), habitacion);
+        // 2) Armar el Set de números de habitación para construir el mapa (evitar idas repetidas a BD)
+        Set<Integer> numerosHabitaciones = new HashSet<>();
+        for (SeleccionHabitacionDTO seleccion : habitacionesSeleccionadas) {
+            numerosHabitaciones.add(seleccion.getNumeroHabitacion());
         }
 
-        // 4. DELEGACIÓN DE CREACIÓN (Aquí ya está todo validado)
-        // Pasamos el DTO y el Mapa de habitaciones reales
-        gestorReservas.crearYPersistir(dto, habitacionesValidadas);
-    }*/
-@Override
-@Transactional
-public void registrarReserva(ConfirmacionReservaDTO confirmacionReservaDTO) {
+        // 3) Obtener el mapa de habitaciones reales desde el GestorHabitaciones
+        Map<Integer, Habitacion> mapaHabitaciones =
+                gestorHabitaciones.obtenerMapaPorNumeros(numerosHabitaciones);
 
-    // Defensa mínima: el DTO no puede ser nulo
-    Objects.requireNonNull(confirmacionReservaDTO,
-            "La confirmación de reserva no puede ser nula");
+        DatosHuespedReservaDTO datosHuesped = confirmacionReservaDTO.getDatosHuesped();
 
-    // Ya viene validado por Bean Validation en el controller
-    var habitacionesSeleccionadas = confirmacionReservaDTO.getHabitacionesSeleccionadas();
-// --- NUEVA VALIDACIÓN INTELIGENTE: Chequear solapamiento de fechas para la misma habitación ---
-    for (int i = 0; i < habitacionesSeleccionadas.size(); i++) {
-        for (int j = i + 1; j < habitacionesSeleccionadas.size(); j++) {
-            
-            var sel1 = habitacionesSeleccionadas.get(i);
-            var sel2 = habitacionesSeleccionadas.get(j);
+        // 4) Crear la Reserva con los datos del huésped
+        Reserva reserva = gestorReservas.crearNuevaReserva(
+                datosHuesped.getApellido(),
+                datosHuesped.getNombre(),
+                datosHuesped.getTelefono()
+        );
 
-            // Si es la misma habitación, verificamos si las fechas chocan
-            if (sel1.getNumeroHabitacion().equals(sel2.getNumeroHabitacion())) {
-                
-                // Lógica de intersección de rangos: (InicioA < FinB) y (FinA > InicioB)
-                boolean seSolapan = sel1.getFechaIngreso().isBefore(sel2.getFechaEgreso()) && 
-                                    sel1.getFechaEgreso().isAfter(sel2.getFechaIngreso());
+        // 5) Recorrer cada selección de habitación y crear la FichaEvento correspondiente
+        for (SeleccionHabitacionDTO seleccionHab : habitacionesSeleccionadas) {
 
-                if (seSolapan) {
-                    throw new IllegalArgumentException(
-                        "Error: Se intenta reservar la habitación " + sel1.getNumeroHabitacion() + 
-                        " dos veces en fechas superpuestas dentro de la misma solicitud.");
-                }
+            Integer numeroHabitacion = seleccionHab.getNumeroHabitacion();
+            LocalDate fechaIngreso   = seleccionHab.getFechaIngreso();
+            LocalDate fechaEgreso    = seleccionHab.getFechaEgreso();
+
+            // Regla de negocio: coherencia de fechas (esto lo dejamos en el Service)
+            if (!fechaEgreso.isAfter(fechaIngreso)) {
+                throw new IllegalArgumentException(
+                        "La fecha de egreso debe ser posterior a la fecha de ingreso.");
             }
+
+            Habitacion habitacion = mapaHabitaciones.get(numeroHabitacion);
+            if (habitacion == null) {
+                // Defensa extra, no debería pasar si el mapa está bien armado
+                throw new IllegalArgumentException(
+                        "No existe la habitación con número: " + numeroHabitacion);
+            }
+
+            LocalDateTime inicioReserva = fechaIngreso.atTime(12, 0);
+            LocalDateTime finReserva    = fechaEgreso.atTime(10, 0);
+
+            // Validación contra la disponibilidad real (BD) usando FichaEvento
+            gestorFichaEvento.validarDisponibilidad(habitacion, inicioReserva, finReserva);
+
+            String descripcion = generarDescripcionReserva(
+                    confirmacionReservaDTO, habitacion, fechaIngreso, fechaEgreso);
+
+            FichaEvento ficha = gestorFichaEvento.crearFichaParaReserva(
+                    reserva, habitacion, inicioReserva, finReserva, descripcion);
+
+            reserva.getListaFichaEventos().add(ficha);
         }
+
+        // 6) Persistir la Reserva (con sus fichas) usando el GestorReservas
+        gestorReservas.guardar(reserva);
     }
-    var datosHuesped = confirmacionReservaDTO.getDatosHuesped();
-
-    // 1) Crear la Reserva con los datos del huésped
-    Reserva reserva = gestorReservas.crearNuevaReserva(
-            datosHuesped.getApellido(),
-            datosHuesped.getNombre(),
-            datosHuesped.getTelefono()
-    );
-
-    // 2) Recorrer cada selección de habitación
-    for (SeleccionHabitacionDTO seleccionHab : habitacionesSeleccionadas) {
-
-        Integer numeroHabitacion = seleccionHab.getNumeroHabitacion();
-        LocalDate fechaIngreso   = seleccionHab.getFechaIngreso();
-        LocalDate fechaEgreso    = seleccionHab.getFechaEgreso();
-
-        // Regla de negocio: coherencia de fechas (esto sí queda en el servicio)
-        if (!fechaEgreso.isAfter(fechaIngreso)) {
-            throw new IllegalArgumentException(
-                    "La fecha de egreso debe ser posterior a la fecha de ingreso.");
-        }
-
-        Habitacion habitacion = gestorHabitaciones.obtenerPorNumero(numeroHabitacion);
-
-        LocalDateTime inicioReserva = fechaIngreso.atTime(12, 0);
-        LocalDateTime finReserva    = fechaEgreso.atTime(10, 0);
-
-        gestorFichaEvento.validarDisponibilidad(habitacion, inicioReserva, finReserva);
-
-        String descripcion = generarDescripcionReserva(
-                confirmacionReservaDTO, habitacion, fechaIngreso, fechaEgreso);
-
-        FichaEvento ficha = gestorFichaEvento.crearFichaParaReserva(
-                reserva, habitacion, inicioReserva, finReserva, descripcion);
-
-        reserva.getListaFichaEventos().add(ficha);
-    }
-
-    gestorReservas.guardar(reserva);
-}
 
 
     /**

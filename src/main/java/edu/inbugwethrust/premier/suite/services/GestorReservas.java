@@ -20,6 +20,7 @@ import edu.inbugwethrust.premier.suite.model.HuespedID;
 import edu.inbugwethrust.premier.suite.model.Reserva;
 import edu.inbugwethrust.premier.suite.repositories.HuespedDAO;
 import edu.inbugwethrust.premier.suite.repositories.ReservaDAO;
+import edu.inbugwethrust.premier.suite.services.exceptions.HabitacionesSolapadasEnReservaException;
 
 @Service
 public class GestorReservas {
@@ -133,6 +134,45 @@ public class GestorReservas {
 
     return reserva;
   }
+
+    /**
+   * Valida que, dentro de una misma solicitud de reserva (lista de selecciones),
+   * no se intente reservar la misma habitación en rangos de fechas que se solapen.
+   *
+   * Regla de negocio:
+   *   - Para una misma habitación, los rangos [ingreso, egreso] no deben intersectarse.
+   *
+   * Lanza HabitacionesSolapadasEnReservaException si encuentra un solapamiento.
+   */
+  public void validarSolapamientosInternos(List<SeleccionHabitacionDTO> selecciones) {
+
+    if (selecciones == null || selecciones.size() <= 1) {
+      return; // Nada que validar
+    }
+
+    for (int i = 0; i < selecciones.size(); i++) {
+      SeleccionHabitacionDTO sel1 = selecciones.get(i);
+
+      for (int j = i + 1; j < selecciones.size(); j++) {
+        SeleccionHabitacionDTO sel2 = selecciones.get(j);
+
+        // Si es la misma habitación, verificamos si las fechas chocan
+        if (sel1.getNumeroHabitacion().equals(sel2.getNumeroHabitacion())) {
+
+          boolean seSolapan =
+              sel1.getFechaIngreso().isBefore(sel2.getFechaEgreso())
+                  && sel1.getFechaEgreso().isAfter(sel2.getFechaIngreso());
+
+          if (seSolapan) {
+            throw new HabitacionesSolapadasEnReservaException(
+                "Se intenta reservar la habitación " + sel1.getNumeroHabitacion()
+                    + " dos veces en fechas superpuestas dentro de la misma solicitud.");
+          }
+        }
+      }
+    }
+  }
+
 
   /**
    * Persiste la reserva (agregado raíz). Por cascade en listaFichaEventos se guardan también las
