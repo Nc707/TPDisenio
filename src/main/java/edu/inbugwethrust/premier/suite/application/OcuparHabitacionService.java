@@ -75,7 +75,7 @@ public class OcuparHabitacionService implements IOcuparHabitacionService {
 
     for (OcupacionHabitacionDTO dto : listaOcupaciones) {
       // A. Validar fechas (Ingreso vs Egreso)
-      validarDatosBasicos(dto);
+      validarFechas(dto);
 
       // B. Obtener la entidad habitación real
       Habitacion habitacion = mapaHabitaciones.get(dto.getNumeroHabitacion());
@@ -114,18 +114,19 @@ public class OcuparHabitacionService implements IOcuparHabitacionService {
     // 4. VALIDACIÓN GLOBAL (Pasa lista y mapa de habs)
     Reserva reserva =
         gestorFichaEvento.validarDisponibilidadGlobal(listaOcupaciones, mapaHabitaciones);
-
+    
+    Estadia estadia = gestorEstadia.crearEstadia(reserva, listaOcupaciones, mapaHabitaciones, mapaHuespedes);
     // 5. WALK-IN O RESERVA EXISTENTE
     if (reserva == null) {
       // Nota: Aquí también pasamos el mapaHuespedes para no volver a buscar al titular
       reserva =
-          gestorReservas.crearReservaWalkIn(listaOcupaciones, mapaHabitaciones, mapaHuespedes);
+          gestorReservas.crearReservaWalkIn(listaOcupaciones, mapaHabitaciones, mapaHuespedes, estadia);
     } else {
-      gestorReservas.marcarReservaComoEnCurso(reserva);
+      gestorReservas.marcarReservaComoEnCurso(reserva, estadia);
     }
 
     // 6. CREAR ESTADÍA (Aquí pasamos TODO: Reserva, DTOs, Habitaciones y Huéspedes)
-    gestorEstadia.crearYGuardarEstadia(reserva, listaOcupaciones, mapaHabitaciones, mapaHuespedes);
+    gestorEstadia.guardarEstadia(estadia);
   }
 
   // ========================
@@ -135,7 +136,7 @@ public class OcuparHabitacionService implements IOcuparHabitacionService {
   /**
    * Valida reglas básicas sobre fechas y campos obligatorios del DTO.
    */
-  private void validarDatosBasicos(OcupacionHabitacionDTO dto) {
+  private void validarFechas(OcupacionHabitacionDTO dto) {
 
     if (dto.getFechaIngreso() == null || dto.getFechaEgreso() == null) {
       throw new IllegalArgumentException("Las fechas de ingreso y egreso son obligatorias.");

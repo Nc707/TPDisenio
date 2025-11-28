@@ -62,7 +62,7 @@ public class GestorEstadia {
     return date.atStartOfDay().plusHours(10);
   }
 
-  public void crearYGuardarEstadia(Reserva reserva, List<OcupacionHabitacionDTO> dtos,
+  public Estadia crearEstadia(Reserva reserva, List<OcupacionHabitacionDTO> dtos,
       Map<Integer, Habitacion> mapaHabitaciones, Map<HuespedID, Huesped> mapaHuespedes) {
 
     Estadia estadia = new Estadia();
@@ -97,6 +97,12 @@ public class GestorEstadia {
       estadia.agregarFichaEvento(ficha);
     }
 
-    estadiaDAO.save(estadia);
+    return estadia;
   }
+  
+  public void guardarEstadia(Estadia estadia) {
+    estadiaDAO.save(estadia);
 }
+}
+
+  

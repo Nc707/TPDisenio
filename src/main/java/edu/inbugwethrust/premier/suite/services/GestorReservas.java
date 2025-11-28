@@ -10,6 +10,7 @@ import edu.inbugwethrust.premier.suite.dto.DatosHuespedReservaDTO;
 import edu.inbugwethrust.premier.suite.dto.OcupacionHabitacionDTO;
 import edu.inbugwethrust.premier.suite.dto.SeleccionHabitacionDTO;
 import edu.inbugwethrust.premier.suite.mappers.HuespedMapper;
+import edu.inbugwethrust.premier.suite.model.Estadia;
 import edu.inbugwethrust.premier.suite.model.EstadoHabitacion;
 import edu.inbugwethrust.premier.suite.model.EstadoReserva;
 import edu.inbugwethrust.premier.suite.model.FichaEvento;
@@ -80,7 +81,8 @@ public class GestorReservas {
 
   public Reserva crearReservaWalkIn(List<OcupacionHabitacionDTO> dtos,
       Map<Integer, Habitacion> mapaHabitaciones,
-      Map<HuespedID, Huesped> mapaHuespedes) {
+      Map<HuespedID, Huesped> mapaHuespedes,
+      Estadia estadia) {
 
     // 1. Obtener datos del titular (del primer DTO)
     OcupacionHabitacionDTO primerDto = dtos.get(0);
@@ -92,6 +94,7 @@ public class GestorReservas {
     reserva.setApellidoReserva(titular.getApellido());
     reserva.setNombreReserva(titular.getNombres());
     reserva.setTelefonoReserva(titular.getTelefono());
+    reserva.setEstadia(estadia);
 
     // 3. Generar las Fichas de Reserva (Espejo de la ocupación)
     for (OcupacionHabitacionDTO dto : dtos) {
@@ -142,12 +145,13 @@ public class GestorReservas {
   /**
    * Marca la reserva como EN_CURSO (check-in iniciado) y la persiste.
    */
-  public void marcarReservaComoEnCurso(Reserva reserva) {
+  public void marcarReservaComoEnCurso(Reserva reserva, Estadia estadia) {
     if (reserva == null) {
       throw new IllegalArgumentException("La reserva no puede ser nula");
     }
 
     reserva.setEstadoReserva(EstadoReserva.EFECTUADA);
+    reserva.setEstadia(estadia);
     reservaDAO.save(reserva);
   }
 }
