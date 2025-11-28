@@ -3,7 +3,7 @@ package edu.inbugwethrust.premier.suite.model;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
-
+ 
 @Entity
 @Table(name = "cheque")
 @Getter @Setter
@@ -16,5 +16,11 @@ public class Cheque extends Pago {
 
     private String banco;
 
-    private String tipo;
+    @Enumerated(EnumType.STRING)
+    private TipoCheque tipo;
+
+    @Enumerated(EnumType.STRING)
+    private  EstadoCheque estadoCheque;
+
+    private String plazo;
 }

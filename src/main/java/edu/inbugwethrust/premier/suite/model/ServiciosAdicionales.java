@@ -15,11 +15,11 @@ public class ServiciosAdicionales {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String descripcion; // Ej: "Cena Romántica", "Lavandería"
+    private String descripcion; 
 
     private Double precio;
 
-@ManyToOne(fetch = FetchType.LAZY) 
-    @JoinColumn(name = "estadia_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "id_estadia", nullable = false)
     private Estadia estadia;
 }

@@ -20,14 +20,13 @@ public class Factura {
     private LocalDate fechaEmision;
 
     private Double importeTotal;
+    
+     @Enumerated(EnumType.STRING)
+    private TipoFactura tipoFactura;
 
-    // TODO: relación con responsable de pago (PersonaFisica / PersonaJuridica)
-    // Por ahora se comenta para no romper el arranque de la app.
-    //
-    // @OneToOne(optional = false)
-    // @JoinColumn(name = "id_responsable", nullable = false, unique = true)
-    // private ResponsableDePago responsable;
-
+     @Enumerated(EnumType.STRING)
+    private EstadoFactura estadoFactura;
+    
     @OneToMany(mappedBy = "factura", cascade = CascadeType.ALL)
     private List<Pago> pagos = new ArrayList<>();
 }
