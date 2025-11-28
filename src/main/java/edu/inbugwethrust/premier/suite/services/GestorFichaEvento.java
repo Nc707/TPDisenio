@@ -201,4 +201,18 @@ public class GestorFichaEvento implements IGestorFichaEvento {
     return ficha;
   }
 
+  public Reserva obtenerReservaParaOcupacion(OcupacionHabitacionDTO dto,
+                                           Habitacion habitacion) {
+
+      LocalDate fechaIngreso = dto.getFechaIngreso();
+      LocalDate fechaEgreso  = dto.getFechaEgreso();
+
+      LocalDateTime inicio = fechaIngreso.atTime(12, 0);
+      LocalDateTime fin    = fechaEgreso.atTime(10, 0);
+
+      // Reutilizás tu lógica de validación existente
+      // El último parámetro (forzarSobreReserva) lo podés poner en true
+      // para permitir devolver la Reserva sin lanzar excepción si hay RESERVADA.
+      return validarDisponibilidad(habitacion, inicio, fin, true);
+  }
 }

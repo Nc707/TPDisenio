@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import edu.inbugwethrust.premier.suite.application.IOcuparHabitacionService;
 import edu.inbugwethrust.premier.suite.dto.RegistrarOcupacionesRequestDTO;
+import edu.inbugwethrust.premier.suite.dto.ValidarOcupacionesRequestDTO;
+import edu.inbugwethrust.premier.suite.dto.ValidarOcupacionesResponseDTO;
+
 import jakarta.validation.Valid;
 
 /**
@@ -32,6 +35,23 @@ public class EstadiaController {
         this.ocuparHabitacionService = ocuparHabitacionService;
     }
 
+    /**
+     * CU15 – Paso 3:
+     * Validar selección de habitaciones + fechas sin persistir nada.
+     *
+     * El front envía una lista de habitaciones y rangos de fechas
+     * y recibe, para cada una, si es válida y si tiene reserva asociada.
+     */
+    @PostMapping("/validar-ocupaciones")
+    public ResponseEntity<ValidarOcupacionesResponseDTO> validarOcupaciones(
+            @Valid @RequestBody ValidarOcupacionesRequestDTO request) {
+
+        ValidarOcupacionesResponseDTO response =
+                ocuparHabitacionService.prevalidarOcupaciones(request);
+
+        return ResponseEntity.ok(response);
+    }
+        
     /**
      * Registra la ocupación de una o varias habitaciones para un huésped y sus acompañantes.
      *

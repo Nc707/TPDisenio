@@ -14,6 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 import edu.inbugwethrust.premier.suite.dto.IdentificacionHuespedDTO;
 import edu.inbugwethrust.premier.suite.dto.OcupacionHabitacionDTO;
 import edu.inbugwethrust.premier.suite.dto.RegistrarOcupacionesRequestDTO;
+import edu.inbugwethrust.premier.suite.dto.ResultadoValidacionHabitacionDTO;
+import edu.inbugwethrust.premier.suite.dto.SeleccionHabitacionOcupacionDTO;
+import edu.inbugwethrust.premier.suite.dto.ValidarOcupacionesRequestDTO;
+import edu.inbugwethrust.premier.suite.dto.ValidarOcupacionesResponseDTO;
 import edu.inbugwethrust.premier.suite.model.Estadia;
 import edu.inbugwethrust.premier.suite.model.Habitacion;
 import edu.inbugwethrust.premier.suite.model.Huesped;
@@ -45,6 +49,89 @@ public class OcuparHabitacionService implements IOcuparHabitacionService {
     this.gestorReservas = gestorReservas;
     this.gestorHuespedes = gestorHuespedes;
     this.gestorEstadia = gestorEstadia;
+  }
+
+
+    /**
+   * CU15 – Paso 3.
+   *
+   * Recibe solo habitaciones + fechas (sin acompañantes) y:
+   * - Reutiliza GestorEstadia.validarOcupaciones para chequear fechas y existencia.
+   * - Usa GestorFichaEvento para ver si hay reservas en el rango.
+   *
+   * NO persiste nada, solo informa al front qué habitaciones son válidas
+   * y si tienen una reserva asociada.
+   */
+  @Transactional(readOnly = true)
+  @Override
+  public ValidarOcupacionesResponseDTO prevalidarOcupaciones(ValidarOcupacionesRequestDTO request) {
+
+    Objects.requireNonNull(request, "El request de validación de ocupaciones no puede ser nulo");
+
+    // 1) Normalizar lista de selecciones
+    List<SeleccionHabitacionOcupacionDTO> selecciones = request.getOcupaciones();
+
+    // 2) Armar set de números de habitación
+    Set<Integer> numerosHabitacion = selecciones.stream()
+        .map(SeleccionHabitacionOcupacionDTO::getNumeroHabitacion)
+        .collect(Collectors.toSet());
+
+    // 3) Obtener mapa de habitaciones (según lo que ya tengas implementado)
+    Map<Integer, Habitacion> mapaHabitaciones =
+        gestorHabitaciones.obtenerMapaPorNumeros(numerosHabitacion);
+
+    // 4) Adaptar las selecciones "livianas" a OcupacionHabitacionDTO mínimos
+    List<OcupacionHabitacionDTO> ocupacionesMinimas = new ArrayList<>();
+
+    for (SeleccionHabitacionOcupacionDTO sel : selecciones) {
+      OcupacionHabitacionDTO dto = new OcupacionHabitacionDTO();
+      dto.setNumeroHabitacion(sel.getNumeroHabitacion());
+      dto.setFechaIngreso(sel.getFechaIngreso());
+      dto.setFechaEgreso(sel.getFechaEgreso());
+      // En el paso 3 NO hay acompañantes, ni forzarSobreReserva
+      dto.setIdsAcompanantes(new ArrayList<>());
+      dto.setForzarSobreReserva(false);
+      ocupacionesMinimas.add(dto);
+    }
+
+    // 5) Reutilizar las validaciones generales de GestorEstadia
+    //    (fechas válidas por habitación, existencia, capacidad – aquí 0 acompañantes)
+    gestorEstadia.validarOcupaciones(ocupacionesMinimas, mapaHabitaciones);
+
+    // 6) Para cada ocupación mínima, consultar disponibilidad y reserva
+    List<ResultadoValidacionHabitacionDTO> resultados = new ArrayList<>();
+
+    for (OcupacionHabitacionDTO dto : ocupacionesMinimas) {
+
+      Habitacion habitacion = mapaHabitaciones.get(dto.getNumeroHabitacion());
+
+      // Este método NO persiste nada, solo lee FichaEvento y
+      // devuelve una Reserva si hay días RESERVADA en el rango.
+      Reserva reserva = gestorFichaEvento.obtenerReservaParaOcupacion(dto, habitacion);
+
+      ResultadoValidacionHabitacionDTO res = new ResultadoValidacionHabitacionDTO();
+      res.setNumeroHabitacion(dto.getNumeroHabitacion());
+      res.setFechaIngreso(dto.getFechaIngreso());
+      res.setFechaEgreso(dto.getFechaEgreso());
+      res.setSeleccionValida(true);
+
+      if (reserva != null) {
+        res.setHayReserva(true);
+        res.setIdReserva(reserva.getIdReserva());
+        res.setApellidoReserva(reserva.getApellidoReserva());
+        res.setNombreReserva(reserva.getNombreReserva());
+        res.setTelefonoReserva(reserva.getTelefonoReserva());
+      } else {
+        res.setHayReserva(false);
+      }
+
+      resultados.add(res);
+    }
+
+    // 7) Armar response global
+    ValidarOcupacionesResponseDTO response = new ValidarOcupacionesResponseDTO();
+    response.setResultados(resultados);
+    return response;
   }
 
   /**
