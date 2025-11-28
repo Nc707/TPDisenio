@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	// --- Estado selección por rango ---
 	let seleccionInicio = null; // { habitacion, fecha }
-	let seleccionDTO = [];      // array de SeleccionHabitacionDTO extendido (con tipoHabitacion)
+	let seleccionDTO = [];      // array enriquecido con datos de EstadoHabitacionDTO
 
 	// ------------------------------------------------------------------
 	// Helpers visuales
@@ -69,8 +69,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 		tdsHab.forEach(td => {
 			const f = td.dataset.fecha;
+			// Nota: Asumimos que data-estado mapea al Enum EstadoHabitacion (ej: "LIBRE")
+			const estado = td.dataset.estado; 
 			const checkbox = td.querySelector('input[type="checkbox"]');
-			if (f >= inicio && f <= fin && td.dataset.estado === 'LIBRE') {
+			
+			if (f >= inicio && f <= fin && estado === 'LIBRE') {
 				td.classList.add('in-range');
 				if (checkbox) checkbox.checked = true;
 			} else {
@@ -92,17 +95,30 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	// Construye DTOs a partir de celdas in-range
+	// AHORA: Soporta la estructura de EstadoHabitacionDTO (idEstado, responsables)
 	function construirSeleccionDTO() {
-		const seleccionPorHabitacion = {}; // { hab: { tipoHabitacion, fechas[] } }
+		const seleccionPorHabitacion = {}; // { hab: { tipo, idEstado, responsable..., fechas[] } }
 
 		const seleccionadas = document.querySelectorAll('.celda-interactiva.in-range');
+		
 		seleccionadas.forEach(td => {
 			const hab = td.dataset.habitacion;
 			const fecha = td.dataset.fecha;
 			const tipo = td.dataset.tipo || '';
+			
+			// Nuevos datos provenientes de EstadoHabitacionDTO
+			// Se leen del dataset HTML (ej: data-id-estado="1", data-nombres-responsable="Juan")
+			const idEstado = td.dataset.idEstado || null;
+			const nombres = td.dataset.nombresResponsable || '';
+			const apellidos = td.dataset.apellidosResponsable || '';
+
 			if (!seleccionPorHabitacion[hab]) {
 				seleccionPorHabitacion[hab] = {
 					tipoHabitacion: tipo,
+					// Guardamos estos datos extra por si se necesitan en la UI futura
+					idEstado: idEstado,
+					nombresResponsable: nombres,
+					apellidosResponsable: apellidos,
 					fechas: []
 				};
 			}
@@ -120,7 +136,11 @@ document.addEventListener('DOMContentLoaded', () => {
 				numeroHabitacion: parseInt(hab, 10),
 				fechaIngreso: fechaIngreso,
 				fechaEgreso: fechaEgreso,
-				tipoHabitacion: info.tipoHabitacion
+				tipoHabitacion: info.tipoHabitacion,
+				// Campos extra del DTO (para uso interno del front o futura funcionalidad)
+				idEstado: info.idEstado,
+				nombresResponsable: info.nombresResponsable,
+				apellidosResponsable: info.apellidosResponsable
 			});
 		});
 
@@ -171,7 +191,10 @@ document.addEventListener('DOMContentLoaded', () => {
 	// ------------------------------------------------------------------
 	celdas.forEach(td => {
 		td.addEventListener('click', () => {
-			const estado = td.dataset.estado;
+			// Adaptado: Verifica el string del Enum (EstadoHabitacion.LIBRE)
+			const estado = td.dataset.estado; 
+			
+			// Mantenemos la lógica de solo seleccionar celdas LIBRES
 			if (estado !== 'LIBRE') return;
 
 			const habitacion = td.dataset.habitacion;
@@ -256,23 +279,19 @@ document.addEventListener('DOMContentLoaded', () => {
 				e.preventDefault();
 
 				sessionStorage.setItem('colaOcupacion', JSON.stringify(dto));
-
 				sessionStorage.setItem('indiceOcupacionActual', '0');
 
-				// 3. Obtener la PRIMERA habitación para procesar
+				// Obtener la PRIMERA habitación para procesar
 				const primeraHabitacion = dto[0];
 
-				// 4. Construir la URL de redirección al Buscador de Huéspedes
-				// Usamos URLSearchParams para generar el query string limpio
-				// Ajusta '/huespedes/buscar' a la ruta real de tu controlador de huéspedes
 				const params = new URLSearchParams({
-					accion: 'OCUPAR', // El @RequestParam que pediste
+					accion: 'OCUPAR', 
 					numeroHabitacion: primeraHabitacion.numeroHabitacion,
 					fechaIngreso: primeraHabitacion.fechaIngreso,
 					fechaEgreso: primeraHabitacion.fechaEgreso
+                    // Nota: No enviamos idEstado/Responsables en la URL, solo datos de búsqueda
 				});
 
-				// URL final ej: /huespedes/buscar?accion=OCUPAR&numeroHabitacion=101&fechaIngreso=2025-11-26...
 				window.location.href = `/huespedes/buscar?${params.toString()}`;
 			}
 		});
@@ -322,9 +341,8 @@ document.addEventListener('DOMContentLoaded', () => {
 	// ------------------------------------------------------------------
 	if (formReservaFinal) {
 		formReservaFinal.addEventListener('submit', async (e) => {
-			e.preventDefault(); // 1. Evitamos el envío tradicional del formulario
+			e.preventDefault(); 
 
-			// 2. Validación de campos (tu lógica actual)
 			const apellido = inputApellido ? inputApellido.value.trim() : '';
 			const nombre = inputNombre ? inputNombre.value.trim() : '';
 			const telefono = inputTelefono ? inputTelefono.value.trim() : '';
@@ -342,10 +360,9 @@ document.addEventListener('DOMContentLoaded', () => {
 				if (msgErrorHuesped) msgErrorHuesped.classList.add('hidden');
 			}
 
-			// 3. Construcción del JSON para ConfirmacionReservaDTO
-
-			// Mapeamos seleccionDTO para que coincida EXACTAMENTE con SeleccionHabitacionDTO del backend
-			// (Quitamos 'tipoHabitacion' si el DTO de backend no lo espera para evitar errores)
+			// Construcción del JSON para ConfirmacionReservaDTO
+			// IMPORTANTE: Mapeamos explícitamente solo lo que el backend de RESERVA espera.
+			// Ignoramos idEstado/Responsables aquí porque ConfirmacionReservaDTO no los usa.
 			const habitacionesPayload = seleccionDTO.map(sel => ({
 				numeroHabitacion: sel.numeroHabitacion,
 				fechaIngreso: sel.fechaIngreso,
@@ -368,7 +385,6 @@ document.addEventListener('DOMContentLoaded', () => {
 				'Accept': 'application/json'
 			};
 
-			// 5. Enviar petición al Endpoint
 			try {
 				const response = await fetch('/api/reservas/reservar', {
 					method: 'POST',
@@ -377,27 +393,21 @@ document.addEventListener('DOMContentLoaded', () => {
 				});
 
 				if (response.ok) {
-					// ÉXITO (Status 200-299)
 					const data = await response.json();
 					alert('¡Reserva creada con éxito!');
 
-					// Limpieza
 					sessionStorage.removeItem('seleccionHabitaciones');
 					sessionStorage.removeItem('modoAccion');
 
-					// Redirección (ajusta la URL a donde quieras ir tras reservar)
 					window.location.href = '/';
 				} else {
-					// ERROR (Status 400, 500, etc.)
 					const errorData = await response.json();
-					// Intentamos mostrar mensaje del backend o uno genérico
 					const msg = errorData.message || 'Ocurrió un error al procesar la reserva.';
 					alert('Error: ' + msg);
 					console.error('Error backend:', errorData);
 				}
 
 			} catch (error) {
-				// Error de red
 				console.error('Error de red:', error);
 				alert('No se pudo conectar con el servidor.');
 			}

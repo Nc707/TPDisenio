@@ -82,45 +82,52 @@
                         </thead>
 
                         <tbody>
-                        <tr th:each="fecha : ${calendario.fechas}">
+<tr th:each="fecha : ${calendario.fechas}">
 
-                            <th th:text="${#temporals.format(fecha, 'dd/MM/yyyy')}"
-                                th:data-fecha="${fecha}">
-                                04/11/2025
-                            </th>
+    <th th:text="${#temporals.format(fecha, 'dd/MM/yyyy')}"
+        th:data-fecha="${fecha}">
+        04/11/2025
+    </th>
 
-                            <th:block th:each="entry : ${calendario.habitacionesAgrupadas}">
-                                <td th:each="hab : ${entry.value}"
-                                    class="celda-interactiva"
-                                    th:data-habitacion="${hab.numeroHabitacion}"
-                                    th:data-fecha="${fecha}"
-                                    th:with="estado=${calendario.mapaDisponibilidad.get(fecha).get(hab.numeroHabitacion)}"
-                                    th:attr="data-estado=${estado.toString()}, data-tipo=${entry.key}">
+    <th:block th:each="entry : ${calendario.habitacionesAgrupadas}">
+        <td th:each="hab : ${entry.value}"
+            class="celda-interactiva"
+            th:data-habitacion="${hab.numeroHabitacion}"
+            th:data-fecha="${fecha}"
+            
+            th:with="estadoDTO=${calendario.mapaDisponibilidad.get(fecha).get(hab.numeroHabitacion)}"
+         
+            th:attr="data-estado=${estadoDTO.estado.toString()}, 
+                     data-tipo=${entry.key},
+                     data-id-estado=${estadoDTO.idEstado},
+                     data-nombres-responsable=${estadoDTO.nombresResponsable},
+                     data-apellidos-responsable=${estadoDTO.apellidosResponsable}">
 
-                                    <div class="cell-content"
-                                         th:attr="data-estado=${estado.toString()}">
+            <div class="cell-content"
+                 th:attr="data-estado=${estadoDTO.estado.toString()}">
 
-                                        <th:block th:if="${estado == T(edu.inbugwethrust.premier.suite.model.EstadoHabitacion).LIBRE}">
-                                            <input type="checkbox"
-                                                   class="hidden-checkbox"
-                                                   th:id="'chk_' + ${hab.numeroHabitacion} + '_' + ${fecha}"
-                                                   name="celdasSeleccionadas"
-                                                   th:value="${hab.numeroHabitacion} + '_' + ${fecha}" />
+                <th:block th:if="${estadoDTO.estado == T(edu.inbugwethrust.premier.suite.model.EstadoHabitacion).LIBRE}">
+                    <input type="checkbox"
+                           class="hidden-checkbox"
+                           th:id="'chk_' + ${hab.numeroHabitacion} + '_' + ${fecha}"
+                           name="celdasSeleccionadas"
+                           th:value="${hab.numeroHabitacion} + '_' + ${fecha}" />
 
-                                            <div class="status-circle status-libre"></div>
-                                        </th:block>
+                    <div class="status-circle status-libre"></div>
+                </th:block>
 
-                                        <th:block th:unless="${estado == T(edu.inbugwethrust.premier.suite.model.EstadoHabitacion).LIBRE}">
-                                            <div class="status-circle"
-                                                 th:classappend="' status-' + ${estado.toString().toLowerCase()}">
-                                            </div>
-                                        </th:block>
+                <th:block th:unless="${estadoDTO.estado == T(edu.inbugwethrust.premier.suite.model.EstadoHabitacion).LIBRE}">
+                    <div class="status-circle"
+                         th:classappend="' status-' + ${estadoDTO.estado.toString().toLowerCase()}">
+                         
+                         </div>
+                </th:block>
 
-                                    </div>
-                                </td>
-                            </th:block>
-                        </tr>
-                        </tbody>
+            </div>
+        </td>
+    </th:block>
+</tr>
+</tbody>
                     </table>
                 </div>
             </form>
