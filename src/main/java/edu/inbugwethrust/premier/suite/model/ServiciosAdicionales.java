@@ -13,7 +13,7 @@ public class ServiciosAdicionales {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long idServicio;
 
     private String descripcion; 
 
@@ -22,4 +22,6 @@ public class ServiciosAdicionales {
     @ManyToOne(optional = false)
     @JoinColumn(name = "id_estadia", nullable = false)
     private Estadia estadia;
+
+    private TipoServicio tipoServicio;
 }
