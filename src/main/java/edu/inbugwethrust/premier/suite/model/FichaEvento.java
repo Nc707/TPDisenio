@@ -60,5 +60,7 @@ public class FichaEvento {
         }
     )
     private List<Huesped> acompanantes = new ArrayList<>();
-    private Huesped responsable;
+    
+    //TODO: agregar responsable de la habitacion durante el evento
+    //private Huesped responsable;
 }

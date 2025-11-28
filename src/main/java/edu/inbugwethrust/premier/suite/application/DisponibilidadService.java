@@ -150,8 +150,10 @@ public class DisponibilidadService implements IDisponibilidadService {
     if (fichaGanadora.getReserva() != null) {
       nombre = fichaGanadora.getReserva().getNombreReserva();
       apellido = fichaGanadora.getReserva().getApellidoReserva();
-    } else if (fichaGanadora.getResponsable() != null) {
-      Huesped responsable = fichaGanadora.getResponsable();
+      
+      //TODO: modificar y poner el responsable cuando se agregue a la fichaEvento
+    } else if (fichaGanadora.getAcompanantes().getFirst() != null) {
+      Huesped responsable = fichaGanadora.getAcompanantes().getFirst();
       nombre = responsable.getNombres();
       apellido = responsable.getApellido();
     }

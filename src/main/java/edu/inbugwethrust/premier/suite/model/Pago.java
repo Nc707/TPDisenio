@@ -28,7 +28,8 @@ public class Pago {
     @JoinColumn(name = "id_factura", nullable = false)
     private  Factura factura;
     
-    private MetodoPago metodoDePago; 
+    //TODO agregar metodo de pago
+    //private MetodoPago metodoDePago; 
 }
 
 
