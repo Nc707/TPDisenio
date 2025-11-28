@@ -8,7 +8,7 @@ import lombok.*;
 @Table(name = "divisa")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor
-public class Divisa  {
+public class Divisa  extends MetodoPago{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

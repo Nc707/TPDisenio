@@ -1,5 +1,7 @@
 package edu.inbugwethrust.premier.suite.model;
 
-public class Efectivo extends MetodoPago {
+public abstract class MetodoPago {
+
+
 
 }

@@ -8,7 +8,7 @@ import java.time.LocalDate;
 @Table(name = "cheque")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor
-public class Cheque {
+public class Cheque extends MetodoPago {
 
     @Id
     private String numero;

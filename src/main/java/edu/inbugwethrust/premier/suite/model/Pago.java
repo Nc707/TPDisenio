@@ -28,20 +28,7 @@ public class Pago {
     @JoinColumn(name = "id_factura", nullable = false)
     private  Factura factura;
     
-    @ManyToOne 
-    @JoinColumn(name = "divisa_numero") 
-    private Divisa divisa;
-
-    @ManyToOne
-    @JoinColumn(name = "numero_tarjeta") 
-    private Tarjeta tarjeta;
-
-    @OneToOne
-    @JoinColumn(name = "numero_cheque")
-    private Cheque cheque;
-    
-    @Transient
-    private MetodoDePago metodoDePago; 
+    private MetodoPago metodoDePago; 
 }
 
 
