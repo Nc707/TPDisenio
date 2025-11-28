@@ -147,6 +147,53 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 
+    // 10) Excepciones específicas del CU15 "Ocupar habitación"
+        @ExceptionHandler(OcupacionFechasInvalidasException.class)
+    public ResponseEntity<?> manejarOcupacionFechasInvalidas(OcupacionFechasInvalidasException ex) {
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "Fechas de ocupación inválidas");
+        body.put("message", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+    @ExceptionHandler(CapacidadMaximaExcedidaException.class)
+    public ResponseEntity<?> manejarCapacidadMaximaExcedida(CapacidadMaximaExcedidaException ex) {
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "Capacidad máxima de habitación excedida");
+        body.put("message", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+    @ExceptionHandler(HuespedDuplicadoEnOcupacionException.class)
+    public ResponseEntity<?> manejarHuespedDuplicadoEnOcupacion(HuespedDuplicadoEnOcupacionException ex) {
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "Asignación inválida de huéspedes");
+        body.put("message", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+    @ExceptionHandler(HabitacionNoExisteException.class)
+    public ResponseEntity<?> manejarHabitacionNoExiste(HabitacionNoExisteException ex) {
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "Habitación inexistente");
+        body.put("message", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+
     // 10) Cualquier otra excepción no controlada
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> manejarExcepcionGenerica(Exception ex) {
