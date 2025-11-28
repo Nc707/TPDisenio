@@ -62,5 +62,7 @@ public class Huesped {
     @Column(nullable = false)
     private String nacionalidad;
 
-    //estadoHuesped
+    @Enumerated(EnumType.STRING)
+    private EstadoHuesped estadoHuesped;
+       
 }

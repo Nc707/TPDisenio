@@ -11,7 +11,7 @@ import lombok.*;
 public class NotaCredito {
  @Id
 @GeneratedValue(strategy = GenerationType.IDENTITY)
-private Long idNotaCredito;
+private Long numeroNotaCredito;
 
 private float IVA;
 

@@ -19,7 +19,7 @@ public class Habitacion {
 	@Id
 	int numero;
 	int piso;
-	
+
 	@ManyToOne
     @JoinColumn(name = "tipo_habitacion_id")
 	TipoHabitacion tipoHabitacion;
