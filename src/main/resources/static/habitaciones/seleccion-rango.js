@@ -275,24 +275,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
 				if (seccionBusqueda) seccionBusqueda.classList.add('hidden');
 				if (seccionResumen) seccionResumen.classList.remove('hidden');
-			} else if (modoAccion === 'OCUPAR') {
-				e.preventDefault();
+			} 			else if (modoAccion === 'OCUPAR') {
+			    e.preventDefault();
 
-				sessionStorage.setItem('colaOcupacion', JSON.stringify(dto));
-				sessionStorage.setItem('indiceOcupacionActual', '0');
+			    // 1. PREPARAR COLA DE OCUPACIÓN
+			    // Estructura basada en OcupacionHabitacionDTO + lista interna de IdentificacionHuespedDTO
+			    const colaOcupacion = dto.map(item => ({
+			        numeroHabitacion: item.numeroHabitacion,
+			        fechaIngreso: item.fechaIngreso,
+			        fechaEgreso: item.fechaEgreso,
+			        
+			        // Backend: List<IdentificacionHuespedDTO> idsAcompanantes
+			        // Inicializamos vacío. El primero que se agregue será considerado el responsable visualmente.
+			        idsAcompanantes: [], 
+			        
+			        forzarSobreReserva: false
+			    }));
 
-				// Obtener la PRIMERA habitación para procesar
-				const primeraHabitacion = dto[0];
+			    // 2. GUARDAR EN SESSION STORAGE
+			    sessionStorage.setItem('colaOcupacion', JSON.stringify(colaOcupacion));
+			    sessionStorage.setItem('indiceOcupacionActual', '0'); // Empezamos por la primera hab
 
-				const params = new URLSearchParams({
-					accion: 'OCUPAR', 
-					numeroHabitacion: primeraHabitacion.numeroHabitacion,
-					fechaIngreso: primeraHabitacion.fechaIngreso,
-					fechaEgreso: primeraHabitacion.fechaEgreso
-                    // Nota: No enviamos idEstado/Responsables en la URL, solo datos de búsqueda
-				});
+			    // 3. REDIRECCIONAR
+			    const primeraHab = colaOcupacion[0];
+			    const params = new URLSearchParams({
+			        accion: 'OCUPAR', 
+			        numeroHabitacion: primeraHab.numeroHabitacion,
+			        fechaIngreso: primeraHab.fechaIngreso,
+			        fechaEgreso: primeraHab.fechaEgreso
+			    });
 
-				window.location.href = `/huespedes/buscar?${params.toString()}`;
+			    window.location.href = `/huespedes/buscar?${params.toString()}`;
 			}
 		});
 	}

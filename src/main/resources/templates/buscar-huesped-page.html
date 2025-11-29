@@ -4,7 +4,7 @@
       layout:decorate="~{layout.html}">
 <head>
     <title>Buscar Huésped</title>
-    <link rel="stylesheet" href="buscar-huesped.css">
+    <link rel="stylesheet" th:href="buscar-huesped.css">
 </head>
 <body>
 
@@ -15,17 +15,22 @@
     <div class="form-container" layout:fragment="content">
         
         <h1 class="titulo-principal">Buscar Huésped</h1>
-    
 
         <form th:action="@{/huespedes/resultados}" th:object="${busquedaHuespedDTO}" method="get">
-          <input type="hidden" name="accion" th:value="${accion}" />
-			    <input type="hidden" name="numeroHabitacion" th:value="${numeroHabitacion}" />
-			    <input type="hidden" name="fechaIngreso" th:value="${fechaIngreso}" />
-			    <input type="hidden" name="fechaEgreso" th:value="${fechaEgreso}" />
-			
-			    <div th:if="${accion == 'OCUPAR'}" class="alert-info-contexto">
-			        <p>Seleccionando huésped para Habitación: <strong th:text="${numeroHabitacion}">101</strong></p>
-			    </div>
+            <input type="hidden" name="accion" th:value="${accion}" />
+            <input type="hidden" name="numeroHabitacion" th:value="${numeroHabitacion}" />
+            <input type="hidden" name="fechaIngreso" th:value="${fechaIngreso}" />
+            <input type="hidden" name="fechaEgreso" th:value="${fechaEgreso}" />
+            
+            <div th:if="${accion == 'OCUPAR'}" class="info-contexto-ocupacion">
+                <p>
+                    Ocupando Habitación: <strong class="numero-habitacion" th:text="${numeroHabitacion}">101</strong>
+                </p>
+                <p class="subtitulo-rol">
+                    Seleccionando: <span id="texto-rol-huesped" class="rol-destacado">Huésped</span>
+                </p>
+            </div>
+
             <div class="search-grid">
                 
                 <div class="input-group">
@@ -58,34 +63,20 @@
             </div>
 
             <div class="botones-footer">
-                <a th:href="@{/}" class="btn-custom btn-cancelar" style="text-decoration: none; display: inline-block; text-align: center; line-height: 20px;">CANCELAR</a>
-                
-                <button type="submit" class="btn-custom btn-buscar">BUSCAR</button>
+                <button type="button" id="btn-cancelar" class="btn-cancelar">CANCELAR</button>
+                <button type="submit" class="btn-buscar">BUSCAR</button>
             </div>
 
         </form>
     </div>
+
     <div id="toast-notification" 
          th:if="${mensajeToast}" 
          th:text="${mensajeToast}"
          class="show">
-         </div>
+    </div>
 
-
-    <script layout:fragment="scripts">
-        document.addEventListener('DOMContentLoaded', () => {
-            const toast = document.getElementById("toast-notification");
-            if (toast) {
-                // El CSS hace la animación de opacidad, 
-                // pero aquí lo removemos del HTML después de 4.5 segundos
-                // para limpiar la pantalla.
-                setTimeout(function(){ 
-                    toast.className = toast.className.replace("show", ""); 
-                    toast.style.display = 'none';
-                }, 4500);
-            }
-        });
-    </script>
+    <script layout:fragment="scripts" th:src="buscar-huesped.js"></script>
 
 </body>
 </html>
