@@ -50,32 +50,26 @@ function actualizarTextoRolOcupacion() {
     if (accion !== 'OCUPAR' || !spanRol) return;
 
     // 3. Leer datos del Wizard desde sessionStorage
-    const colaJson = sessionStorage.getItem('colaOcupacion');
-    const indiceStr = sessionStorage.getItem('indiceOcupacionActual');
+		const colaJson = sessionStorage.getItem('colaOcupacion');
+		    const indiceStr = sessionStorage.getItem('indiceOcupacionActual');
 
-    if (colaJson && indiceStr) {
-        try {
-            const cola = JSON.parse(colaJson);
-            const indice = parseInt(indiceStr);
-            const habitacionActual = cola[indice];
+		    if (colaJson && indiceStr) {
+		        try {
+		            const cola = JSON.parse(colaJson);
+		            const indice = parseInt(indiceStr);
+		            const habitacionActual = cola[indice];
 
-            if (habitacionActual) {
-                // Lógica de negocio Frontend:
-                // Si la lista de acompañantes está vacía o nula, el primero que buscamos es el Responsable.
-                // Si ya tiene elementos, estamos buscando Acompañantes.
-                const cantidadActuales = habitacionActual.idsAcompanantes ? habitacionActual.idsAcompanantes.length : 0;
-
-                if (cantidadActuales === 0) {
-                    spanRol.textContent = "Huésped Responsable";
-                    // Opcional: Cambiar estilo si es responsable
-                    spanRol.style.color = "#d35400"; // Naranja fuerte
-                } else {
-                    spanRol.textContent = "Acompañante";
-                    spanRol.style.color = "#27ae60"; // Verde para acompañantes
-                }
-            }
-        } catch (e) {
-            console.error("Error al leer el estado de ocupación:", e);
-        }
+		            if (habitacionActual) {
+		                // === CAMBIO AQUÍ ===
+		                // Verificamos si el campo OBJETO 'idHuespedResponsable' es nulo
+		                if (!habitacionActual.idHuespedResponsable) {
+		                    spanRol.textContent = "Huésped Responsable";
+		                    spanRol.style.color = "#d35400"; // Naranja
+		                } else {
+		                    spanRol.textContent = "Acompañante";
+		                    spanRol.style.color = "#27ae60"; // Verde
+		                }
+		            }
+		        } catch (e) { console.error(e); }
     }
 }

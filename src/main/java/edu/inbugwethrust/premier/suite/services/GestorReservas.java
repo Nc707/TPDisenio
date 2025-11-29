@@ -82,12 +82,12 @@ public class GestorReservas {
 
   public Reserva crearReservaWalkIn(List<OcupacionHabitacionDTO> dtos,
       Map<Integer, Habitacion> mapaHabitaciones,
-      Map<HuespedID, Huesped> mapaHuespedes,
+      Map<Integer, Huesped> mapaHuespedesResponsables,
       Estadia estadia) {
 
     // 1. Obtener datos del titular (del primer DTO)
     OcupacionHabitacionDTO primerDto = dtos.get(0);
-    Huesped titular = mapaHuespedes.get(mapper.toId(primerDto.getIdsAcompanantes().getFirst()));
+    Huesped titular = mapaHuespedesResponsables.get(primerDto.getNumeroHabitacion());
 
     // 2. Cabecera Reserva
     Reserva reserva = new Reserva();

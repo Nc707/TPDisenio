@@ -17,6 +17,7 @@ import edu.inbugwethrust.premier.suite.dto.ValidarOcupacionesRequestDTO;
 import edu.inbugwethrust.premier.suite.dto.ValidarOcupacionesResponseDTO;
 
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Controller REST para operaciones relacionadas con la ocupación de habitaciones
@@ -24,6 +25,7 @@ import jakarta.validation.Valid;
  *
  * Implementa el caso de uso CU15 "Ocupar habitación".
  */
+@Slf4j
 @RestController
 @RequestMapping("/api/estadias")
 public class EstadiaController {
@@ -74,7 +76,8 @@ public class EstadiaController {
     @PostMapping("/ocupar")
     public ResponseEntity<?> registrarOcupaciones(
             @Valid @RequestBody RegistrarOcupacionesRequestDTO request) {
-
+        
+        log.info("Recibida solicitud para registrar ocupaciones: {}", request);
         // Si hay errores de validación en el DTO, @Valid dispara
         // MethodArgumentNotValidException y lo maneja GlobalExceptionHandler.
         ocuparHabitacionService.registrarOcupaciones(request);

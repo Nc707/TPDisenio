@@ -52,7 +52,10 @@ public class OcupacionHabitacionDTO {
      * Puede ser lista vacía si no hay acompañantes.
      */
     @Valid
-    @NotNull(message = "La lista de identificaciones de acompañantes no puede ser nula")
+    @NotNull(message = "La identificación del huésped responsable no puede ser nula")
+    private IdentificacionHuespedDTO idHuespedResponsable;
+    
+    @Valid
     private List<IdentificacionHuespedDTO> idsAcompanantes = new ArrayList<>();
 
     /**

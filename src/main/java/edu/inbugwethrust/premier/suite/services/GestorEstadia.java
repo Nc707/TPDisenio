@@ -191,7 +191,8 @@ public class GestorEstadia {
   // =========================================================
 
   public Estadia crearEstadia(Reserva reserva, List<OcupacionHabitacionDTO> dtos,
-      Map<Integer, Habitacion> mapaHabitaciones, Map<HuespedID, Huesped> mapaHuespedes) {
+      Map<Integer, Habitacion> mapaHabitaciones, Map<HuespedID, Huesped> mapaHuespedes,
+      Map<Integer, Huesped> mapaHuespedesResponsables) {
 
     Estadia estadia = new Estadia();
     estadia.setReserva(reserva);
@@ -210,6 +211,8 @@ public class GestorEstadia {
       ficha.setEstado(EstadoHabitacion.OCUPADA);
       ficha.setDescripcion("Ocupación - Check-in realizado");
       ficha.setCancelado(false);
+      // 3. Asignar Huesped Responsable
+      ficha.setResponsable(mapaHuespedesResponsables.get(dto.getNumeroHabitacion()));
 
       if (dto.getIdsAcompanantes() != null && !dto.getIdsAcompanantes().isEmpty()) {
         List<Huesped> listaAcompanantes = new ArrayList<>();

@@ -8,38 +8,43 @@ const gestorOcupacion = {
      * Guarda el huésped seleccionado en la habitación actual en memoria (sessionStorage).
      * Luego muestra el modal de decisión.
      */
-    agregarHuespedSeleccionado: function(tipoDoc, nroDoc) {
-        const colaJson = sessionStorage.getItem('colaOcupacion');
-        const idxStr = sessionStorage.getItem('indiceOcupacionActual');
+		agregarHuespedSeleccionado: function(tipoDoc, nroDoc) {
+		        const colaJson = sessionStorage.getItem('colaOcupacion');
+		        const idxStr = sessionStorage.getItem('indiceOcupacionActual');
 
-        if (!colaJson || !idxStr) {
-            console.error("No hay sesión de ocupación activa.");
-            return;
-        }
+		        if (!colaJson || !idxStr) return;
 
-        const cola = JSON.parse(colaJson);
-        const idx = parseInt(idxStr);
+		        const cola = JSON.parse(colaJson);
+		        const idx = parseInt(idxStr);
 
-        if (cola[idx]) {
-            // Creamos el objeto DTO del huésped
-            const huespedDTO = {
-                tipoDocumento: tipoDoc,
-                numeroDocumento: nroDoc
-            };
+		        if (cola[idx]) {
+		            // Creamos el DTO de Identificación
+		            const huespedDTO = {
+		                tipoDocumento: tipoDoc,
+		                numeroDocumento: nroDoc
+		            };
 
-            // Agregamos a la lista de acompañantes de esa habitación
-            if (!cola[idx].idsAcompanantes) {
-                cola[idx].idsAcompanantes = [];
-            }
-            cola[idx].idsAcompanantes.push(huespedDTO);
+		            // === CAMBIO AQUÍ ===
+		            if (!cola[idx].idHuespedResponsable) {
+		                // Si no hay responsable asignado, este ES el responsable
+		                cola[idx].idHuespedResponsable = huespedDTO;
+		                console.log("Asignado como Responsable");
+		            } else {
+		                // Si ya hay responsable, este es un acompañante
+		                if (!cola[idx].idsAcompanantes) {
+		                    cola[idx].idsAcompanantes = [];
+		                }
+		                cola[idx].idsAcompanantes.push(huespedDTO);
+		                console.log("Asignado como Acompañante");
+		            }
 
-            // Guardamos cambios
-            sessionStorage.setItem('colaOcupacion', JSON.stringify(cola));
+		            // Guardamos cambios
+		            sessionStorage.setItem('colaOcupacion', JSON.stringify(cola));
 
-            // Mostramos el modal
-            this.mostrarModalAccion();
-        }
-    },
+		            // Mostramos el modal
+		            this.mostrarModalAccion();
+		        }
+		    },
 
     mostrarModalAccion: function() {
         const modal = document.getElementById('modal-accion');
@@ -101,18 +106,23 @@ const gestorOcupacion = {
     /**
      * Botón "SALIR": Finaliza el proceso y envía al Backend.
      */
-    finalizarSalir: async function() {
-        const cola = JSON.parse(sessionStorage.getItem('colaOcupacion') || '[]');
+		finalizarSalir: async function() {
+		        const cola = JSON.parse(sessionStorage.getItem('colaOcupacion') || '[]');
 
-        if (cola.length === 0) {
-            alert("No hay datos para procesar.");
-            return;
-        }
+		        if (cola.length === 0) {
+		            alert("No hay datos para procesar.");
+		            return;
+		        }
 
-        const payload = {
-            ocupaciones: cola
-        };
+		        // Validación simple Frontend
+		        for (let i = 0; i < cola.length; i++) {
+		            if (!cola[i].idHuespedResponsable) {
+		                alert(`La habitación ${cola[i].numeroHabitacion} no tiene un Huésped Responsable asignado.`);
+		                return;
+		            }
+		        }
 
+		        const payload = { ocupaciones: cola };
         try {
             const response = await fetch('/api/estadias/ocupar', {
                 method: 'POST',

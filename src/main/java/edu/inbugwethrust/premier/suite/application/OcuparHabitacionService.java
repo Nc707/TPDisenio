@@ -169,6 +169,11 @@ public class OcuparHabitacionService implements IOcuparHabitacionService {
 
     // 4) PRE-CARGA DE HUÉSPEDES (Map<HuespedID, Huesped>)
     List<IdentificacionHuespedDTO> todosLosIdsHuespedes = new ArrayList<>();
+    
+    Map<Integer, IdentificacionHuespedDTO> mapaIdsResponsables =
+        listaOcupaciones.stream().collect(Collectors.toMap(
+            OcupacionHabitacionDTO::getNumeroHabitacion, 
+            OcupacionHabitacionDTO::getIdHuespedResponsable));
 
     for (OcupacionHabitacionDTO dto : listaOcupaciones) {
       if (dto.getIdsAcompanantes() != null) {
@@ -178,6 +183,12 @@ public class OcuparHabitacionService implements IOcuparHabitacionService {
 
     Map<HuespedID, Huesped> mapaHuespedes =
         gestorHuespedes.obtenerMapaPorIds(todosLosIdsHuespedes);
+    
+    Map<Integer, Huesped> mapaHuespedesResponsables = mapaIdsResponsables.entrySet().stream()
+        .collect(Collectors.toMap(
+            Map.Entry::getKey, // 1. Mantenemos el Número de Habitación como clave
+            entry -> gestorHuespedes.obtenerPorId(entry.getValue()) // 2. Buscamos la entidad usando el DTO
+        ));
 
     // 5) VALIDACIÓN GLOBAL DE DISPONIBILIDAD (contra FichaEvento existentes)
     Reserva reserva =
@@ -185,14 +196,15 @@ public class OcuparHabitacionService implements IOcuparHabitacionService {
 
     // 6) CREAR ESTADÍA a partir de la (posible) reserva y las ocupaciones
     Estadia estadia = gestorEstadia.crearEstadia(reserva, listaOcupaciones,
-                                                 mapaHabitaciones, mapaHuespedes);
+                                                 mapaHabitaciones, mapaHuespedes,
+                                                 mapaHuespedesResponsables);
 
     // 7) WALK-IN O RESERVA EXISTENTE
     if (reserva == null) {
       // No había reserva previa, se crea una reserva "walk-in"
       reserva = gestorReservas.crearReservaWalkIn(listaOcupaciones,
                                                   mapaHabitaciones,
-                                                  mapaHuespedes,
+                                                  mapaHuespedesResponsables,
                                                   estadia);
     } else {
       // Había reserva previa, se marca como "en curso"

@@ -278,15 +278,16 @@ document.addEventListener('DOMContentLoaded', () => {
 			} 			else if (modoAccion === 'OCUPAR') {
 			    e.preventDefault();
 
-			    // 1. PREPARAR COLA DE OCUPACIÓN
-			    // Estructura basada en OcupacionHabitacionDTO + lista interna de IdentificacionHuespedDTO
+			    // 1. TRANSFORMAR EL DTO: Adaptado al nuevo OcupacionHabitacionDTO
 			    const colaOcupacion = dto.map(item => ({
 			        numeroHabitacion: item.numeroHabitacion,
 			        fechaIngreso: item.fechaIngreso,
 			        fechaEgreso: item.fechaEgreso,
 			        
-			        // Backend: List<IdentificacionHuespedDTO> idsAcompanantes
-			        // Inicializamos vacío. El primero que se agregue será considerado el responsable visualmente.
+			        // NUEVO CAMPO: Inicialmente nulo, se llenará con el primer seleccionado
+			        idHuespedResponsable: null, 
+			        
+			        // Lista para los siguientes (acompañantes)
 			        idsAcompanantes: [], 
 			        
 			        forzarSobreReserva: false
