@@ -423,3 +423,72 @@
   font-size: 15px;
   text-align: center;
 }
+/* Estilos adicionales para el Modal de Conflicto */
+.warning-header {
+    color: #f1c40f; /* Amarillo */
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+#lista-conflictos li strong {
+    color: #c0392b; /* Rojo oscuro para el número de habitación */
+}
+
+/* Reutilización de clases de modal (asegúrate que estén presentes) */
+.modal-overlay {
+    display: none;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center; align-items: center;
+}
+.modal-overlay.show { display: flex; }
+
+.modal-box {
+    background: white;
+    width: 500px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    font-family: sans-serif;
+    text-align: center;
+}
+
+.modal-header {
+    background-color: #2c3e50;
+    color: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+}
+
+.modal-footer {
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    background: #f9f9f9;
+}
+
+.btn-modal {
+    background-color: #5d8aa8;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 3px;
+}
+.btn-modal:hover { opacity: 0.9; }
+/* Asegura que el z-index sea muy alto para tapar todo */
+.modal-overlay {
+    z-index: 9999 !important; 
+}
+
+/* Asegura la visibilidad */
+.modal-overlay.show {
+    display: flex !important;
+}

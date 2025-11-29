@@ -136,8 +136,9 @@
             <div class="botones-inferiores" th:if="${modoAccion != 'DISPONIBILIDAD'}">
                 <button type="button" class="btn-secondary" id="open-modal-btn">CANCELAR</button>
                 <button type="button" class="btn-secondary" id="reset-btn">LIMPIAR</button>
-                <button type="submit" class="btn-primary" id="btn-siguiente" form="form-seleccion">
-                    SIGUIENTE</button>
+                <button type="button" class="btn-primary" id="btn-siguiente" form="form-seleccion">
+						    SIGUIENTE
+						</button>
             </div>
         </div>
 
@@ -209,7 +210,35 @@
 
     </div>
 </div>
+<div layout:fragment="modals">
+    <div id="modal-conflicto-reserva" class="modal-overlay">
+        <div class="modal-box" style="border-top: 5px solid #f1c40f;">
+            <div class="modal-header">
+                <div class="warning-header" style="display:flex; gap:10px; align-items:center; color:#f39c12;">
+                    <span style="font-size:1.5em;">⚠</span> 
+                    <span>HABITACIÓN RESERVADA</span>
+                </div>
+                <span>Premier</span>
+            </div>
+            
+            <div class="modal-content" style="text-align: left; font-size: 1rem;">
+                <p>Las siguientes habitaciones tienen reservas en las fechas seleccionadas:</p>
+                <ul id="lista-conflictos" style="background: #f9f9f9; padding: 15px; border-left: 3px solid #f1c40f; list-style: none;">
+                    </ul>
+                <p style="margin-top: 20px; font-weight: bold; text-align: center;">
+                    ¿Desea ocupar la habitación de todas formas?
+                </p>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn-modal" id="btn-conflicto-volver">VOLVER</button>
+                <button type="button" class="btn-modal" id="btn-conflicto-ocupar-igual" style="background-color: #f39c12; border:none;">OCUPAR IGUAL</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-<script layout:fragment="scripts" th:src="@{seleccion-rango.js}"></script>
-</body>
+<th:block layout:fragment="scripts">
+    <script th:src="seleccion-rango.js"></script>
+</th:block>
 </html>

@@ -1,431 +1,495 @@
 // --- seleccion-rango.js ---
+// Elementos del Modal de Conflicto
+	const modalConflicto = document.getElementById('modal-conflicto-reserva');
+    
+    // --- DEBUG ---
+    if (!modalConflicto) {
+        console.error("¡ERROR CRÍTICO! El JS no encuentra el div 'modal-conflicto-reserva'. Revisa el HTML.");
+    } else {
+        console.log("Modal de conflicto encontrado correctamente.");
+    }
 
 document.addEventListener('DOMContentLoaded', () => {
-	const modoAccion = document.body.dataset.modo || 'RESERVAR';
-	const esSoloDisponibilidad = (modoAccion === 'DISPONIBILIDAD');
+    const modoAccion = document.body.dataset.modo || 'RESERVAR';
+    const esSoloDisponibilidad = (modoAccion === 'DISPONIBILIDAD');
+    const esModoOcupar = (modoAccion === 'OCUPAR');
 
-	const celdas = document.querySelectorAll('.celda-interactiva');
-	const btnLimpiar = document.getElementById('reset-btn');
-	const formSeleccion = document.getElementById('form-seleccion');
-	const btnSiguiente = document.getElementById('btn-siguiente');
+    const celdas = document.querySelectorAll('.celda-interactiva');
+    const btnLimpiar = document.getElementById('reset-btn');
+    const formSeleccion = document.getElementById('form-seleccion');
+    const btnSiguiente = document.getElementById('btn-siguiente');
 
-	// Secciones para el flujo de RESERVAR
-	const seccionBusqueda = document.getElementById('seccion-busqueda-grilla');
-	const seccionResumen = document.getElementById('seccion-resumen');
-	const seccionDatos = document.getElementById('seccion-datos-huesped');
+    // Secciones para el flujo de RESERVAR
+    const seccionBusqueda = document.getElementById('seccion-busqueda-grilla');
+    const seccionResumen = document.getElementById('seccion-resumen');
+    const seccionDatos = document.getElementById('seccion-datos-huesped');
 
-	const tbodyResumen = document.getElementById('tbody-resumen');
-	const btnResumenCancelar = document.getElementById('btn-resumen-cancelar');
-	const btnResumenAceptar = document.getElementById('btn-resumen-aceptar');
+    const tbodyResumen = document.getElementById('tbody-resumen');
+    const btnResumenCancelar = document.getElementById('btn-resumen-cancelar');
+    const btnResumenAceptar = document.getElementById('btn-resumen-aceptar');
 
-	const formReservaFinal = document.getElementById('form-reserva-final');
-	const msgErrorHuesped = document.getElementById('mensaje-error-huesped');
-	const inputApellido = document.getElementById('apellido');
-	const inputNombre = document.getElementById('nombre');
-	const inputTelefono = document.getElementById('telefono');
-	const btnFinalCancelar = document.getElementById('btn-final-cancelar');
+    const formReservaFinal = document.getElementById('form-reserva-final');
+    const msgErrorHuesped = document.getElementById('mensaje-error-huesped');
+    const inputApellido = document.getElementById('apellido');
+    const inputNombre = document.getElementById('nombre');
+    const inputTelefono = document.getElementById('telefono');
+    const btnFinalCancelar = document.getElementById('btn-final-cancelar');
 
-	// 👉 Leyenda (para ocultarla en la pantalla final)
-	const leyendaContainer = document.querySelector('.leyenda-container');
+    // Elementos del Modal de Conflicto (Solo OCUPAR)
+    const modalConflicto = document.getElementById('modal-conflicto-reserva');
+    const listaConflictos = document.getElementById('lista-conflictos');
+    const btnConflictoVolver = document.getElementById('btn-conflicto-volver');
+    const btnConflictoOcuparIgual = document.getElementById('btn-conflicto-ocupar-igual');
 
-	// Si es solo disponibilidad, no hay selección
-	if (esSoloDisponibilidad || !formSeleccion) {
-		return;
-	}
+    // 👉 Leyenda
+    const leyendaContainer = document.querySelector('.leyenda-container');
 
-	// --- Estado selección por rango ---
-	let seleccionInicio = null; // { habitacion, fecha }
-	let seleccionDTO = [];      // array enriquecido con datos de EstadoHabitacionDTO
+    // Variable temporal para guardar la selección mientras el usuario decide en el modal
+    let dtoPendienteDeValidacion = null;
 
-	// ------------------------------------------------------------------
-	// Helpers visuales
-	// ------------------------------------------------------------------
-	function limpiarSeleccionVisualTotal() {
-		celdas.forEach(td => {
-			td.classList.remove('in-range', 'selection-start');
-			const checkbox = td.querySelector('input[type="checkbox"]');
-			if (checkbox) checkbox.checked = false;
-		});
-	}
+    // Si es solo disponibilidad, no hay selección
+    if (esSoloDisponibilidad || !formSeleccion) {
+        return;
+    }
 
-	function limpiarSeleccionVisualHabitacion(habitacion) {
-		const tdsHab = document.querySelectorAll(
-			'.celda-interactiva[data-habitacion="' + habitacion + '"]'
-		);
-		tdsHab.forEach(td => {
-			td.classList.remove('in-range', 'selection-start');
-			const checkbox = td.querySelector('input[type="checkbox"]');
-			if (checkbox) checkbox.checked = false;
-		});
-	}
+    // --- Estado selección por rango ---
+    let seleccionInicio = null; // { habitacion, fecha }
+    let seleccionDTO = [];      // array
 
-	function aplicarRangoSeleccion(habitacion, fechaDesde, fechaHasta) {
-		const tdsHab = document.querySelectorAll(
-			'.celda-interactiva[data-habitacion="' + habitacion + '"]'
-		);
+    // ------------------------------------------------------------------
+    // Helpers visuales
+    // ------------------------------------------------------------------
+    function limpiarSeleccionVisualTotal() {
+        celdas.forEach(td => {
+            td.classList.remove('in-range', 'selection-start');
+            const checkbox = td.querySelector('input[type="checkbox"]');
+            if (checkbox) checkbox.checked = false;
+        });
+    }
 
-		const inicio = fechaDesde < fechaHasta ? fechaDesde : fechaHasta;
-		const fin = fechaDesde < fechaHasta ? fechaHasta : fechaDesde;
+    function limpiarSeleccionVisualHabitacion(habitacion) {
+        const tdsHab = document.querySelectorAll(
+            '.celda-interactiva[data-habitacion="' + habitacion + '"]'
+        );
+        tdsHab.forEach(td => {
+            td.classList.remove('in-range', 'selection-start');
+            const checkbox = td.querySelector('input[type="checkbox"]');
+            if (checkbox) checkbox.checked = false;
+        });
+    }
 
-		tdsHab.forEach(td => {
-			const f = td.dataset.fecha;
-			// Nota: Asumimos que data-estado mapea al Enum EstadoHabitacion (ej: "LIBRE")
-			const estado = td.dataset.estado; 
-			const checkbox = td.querySelector('input[type="checkbox"]');
-			
-			if (f >= inicio && f <= fin && estado === 'LIBRE') {
-				td.classList.add('in-range');
-				if (checkbox) checkbox.checked = true;
-			} else {
-				td.classList.remove('in-range', 'selection-start');
-				if (checkbox) checkbox.checked = false;
-			}
-		});
+    function aplicarRangoSeleccion(habitacion, fechaDesde, fechaHasta) {
+        const tdsHab = document.querySelectorAll(
+            '.celda-interactiva[data-habitacion="' + habitacion + '"]'
+        );
 
-		const selectorInicio =
-			'.celda-interactiva[data-habitacion="' +
-			habitacion +
-			'"][data-fecha="' +
-			inicio +
-			'"]';
-		const celdaInicio = document.querySelector(selectorInicio);
-		if (celdaInicio) {
-			celdaInicio.classList.add('selection-start');
-		}
-	}
+        const inicio = fechaDesde < fechaHasta ? fechaDesde : fechaHasta;
+        const fin = fechaDesde < fechaHasta ? fechaHasta : fechaDesde;
 
-	// Construye DTOs a partir de celdas in-range
-	// AHORA: Soporta la estructura de EstadoHabitacionDTO (idEstado, responsables)
-	function construirSeleccionDTO() {
-		const seleccionPorHabitacion = {}; // { hab: { tipo, idEstado, responsable..., fechas[] } }
+        tdsHab.forEach(td => {
+            const f = td.dataset.fecha;
+            const estado = td.dataset.estado;
+            const checkbox = td.querySelector('input[type="checkbox"]');
 
-		const seleccionadas = document.querySelectorAll('.celda-interactiva.in-range');
-		
-		seleccionadas.forEach(td => {
-			const hab = td.dataset.habitacion;
-			const fecha = td.dataset.fecha;
-			const tipo = td.dataset.tipo || '';
-			
-			// Nuevos datos provenientes de EstadoHabitacionDTO
-			// Se leen del dataset HTML (ej: data-id-estado="1", data-nombres-responsable="Juan")
-			const idEstado = td.dataset.idEstado || null;
-			const nombres = td.dataset.nombresResponsable || '';
-			const apellidos = td.dataset.apellidosResponsable || '';
+            // LÓGICA DE PERMISOS VISUALES
+            let esSeleccionable = (estado === 'LIBRE');
+            if (esModoOcupar && estado === 'RESERVADA') {
+                esSeleccionable = true;
+            }
 
-			if (!seleccionPorHabitacion[hab]) {
-				seleccionPorHabitacion[hab] = {
-					tipoHabitacion: tipo,
-					// Guardamos estos datos extra por si se necesitan en la UI futura
-					idEstado: idEstado,
-					nombresResponsable: nombres,
-					apellidosResponsable: apellidos,
-					fechas: []
-				};
-			}
-			seleccionPorHabitacion[hab].fechas.push(fecha);
-		});
+            if (f >= inicio && f <= fin && esSeleccionable) {
+                td.classList.add('in-range');
+                if (checkbox) checkbox.checked = true;
+            } else {
+                td.classList.remove('in-range', 'selection-start');
+                if (checkbox) checkbox.checked = false;
+            }
+        });
 
-		const resultado = [];
-		Object.keys(seleccionPorHabitacion).forEach(hab => {
-			const info = seleccionPorHabitacion[hab];
-			const fechasOrdenadas = info.fechas.slice().sort(); // yyyy-MM-dd
-			const fechaIngreso = fechasOrdenadas[0];
-			const fechaEgreso = fechasOrdenadas[fechasOrdenadas.length - 1];
+        const selectorInicio =
+            '.celda-interactiva[data-habitacion="' +
+            habitacion +
+            '"][data-fecha="' +
+            inicio +
+            '"]';
+        const celdaInicio = document.querySelector(selectorInicio);
+        if (celdaInicio) {
+            celdaInicio.classList.add('selection-start');
+        }
+    }
 
-			resultado.push({
-				numeroHabitacion: parseInt(hab, 10),
-				fechaIngreso: fechaIngreso,
-				fechaEgreso: fechaEgreso,
-				tipoHabitacion: info.tipoHabitacion,
-				// Campos extra del DTO (para uso interno del front o futura funcionalidad)
-				idEstado: info.idEstado,
-				nombresResponsable: info.nombresResponsable,
-				apellidosResponsable: info.apellidosResponsable
-			});
-		});
+    // Construye DTOs a partir de celdas in-range
+    function construirSeleccionDTO() {
+        const seleccionPorHabitacion = {};
 
-		return resultado;
-	}
+        const seleccionadas = document.querySelectorAll('.celda-interactiva.in-range');
 
-	// Formato "Día, dd/mm/aaaa, hh:mmhs"
-	function formatearFechaConHora(fechaISO, horaTexto) {
-		const fecha = new Date(fechaISO + 'T00:00:00');
-		const opciones = {
-			weekday: 'long',
-			day: '2-digit',
-			month: '2-digit',
-			year: 'numeric'
-		};
-		let texto = fecha.toLocaleDateString('es-AR', opciones);
-		texto = texto.charAt(0).toUpperCase() + texto.slice(1); // capitalizar
-		return `${texto}, ${horaTexto}`;
-	}
+        seleccionadas.forEach(td => {
+            const hab = td.dataset.habitacion;
+            const fecha = td.dataset.fecha;
+            const tipo = td.dataset.tipo || '';
+            const idEstado = td.dataset.idEstado || null;
+            const nombres = td.dataset.nombresResponsable || '';
+            const apellidos = td.dataset.apellidosResponsable || '';
 
-	// Render de la tabla de resumen
-	function renderResumen() {
-		if (!tbodyResumen) return;
-		tbodyResumen.innerHTML = '';
+            if (!seleccionPorHabitacion[hab]) {
+                seleccionPorHabitacion[hab] = {
+                    tipoHabitacion: tipo,
+                    idEstado: idEstado,
+                    nombresResponsable: nombres,
+                    apellidosResponsable: apellidos,
+                    fechas: []
+                };
+            }
+            seleccionPorHabitacion[hab].fechas.push(fecha);
+        });
 
-		seleccionDTO.forEach(sel => {
-			const tr = document.createElement('tr');
+        const resultado = [];
+        Object.keys(seleccionPorHabitacion).forEach(hab => {
+            const info = seleccionPorHabitacion[hab];
+            const fechasOrdenadas = info.fechas.slice().sort(); // yyyy-MM-dd
+            
+            resultado.push({
+                numeroHabitacion: parseInt(hab, 10),
+                fechaIngreso: fechasOrdenadas[0],
+                fechaEgreso: fechasOrdenadas[fechasOrdenadas.length - 1],
+                tipoHabitacion: info.tipoHabitacion,
+                // Extra data
+                idEstado: info.idEstado,
+                nombresResponsable: info.nombresResponsable,
+                apellidosResponsable: info.apellidosResponsable
+            });
+        });
 
-			const tdTipo = document.createElement('td');
-			tdTipo.textContent = sel.tipoHabitacion || '';
+        return resultado;
+    }
 
-			const tdIngreso = document.createElement('td');
-			tdIngreso.textContent = formatearFechaConHora(sel.fechaIngreso, '12:00hs');
+    // Formato fecha visual
+    function formatearFechaConHora(fechaISO, horaTexto) {
+        const fecha = new Date(fechaISO + 'T00:00:00');
+        const opciones = { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' };
+        let texto = fecha.toLocaleDateString('es-AR', opciones);
+        texto = texto.charAt(0).toUpperCase() + texto.slice(1);
+        return `${texto}, ${horaTexto}`;
+    }
+    
+    function formatearFechaCorta(fechaISO) {
+        if (!fechaISO) return '';
+        const parts = fechaISO.split('-');
+        return `${parts[2]}/${parts[1]}`;
+    }
 
-			const tdEgreso = document.createElement('td');
-			tdEgreso.textContent = formatearFechaConHora(sel.fechaEgreso, '10:00hs');
+    // Render de la tabla de resumen
+    function renderResumen() {
+        if (!tbodyResumen) return;
+        tbodyResumen.innerHTML = '';
 
-			tr.appendChild(tdTipo);
-			tr.appendChild(tdIngreso);
-			tr.appendChild(tdEgreso);
+        seleccionDTO.forEach(sel => {
+            const tr = document.createElement('tr');
+            const tdTipo = document.createElement('td'); tdTipo.textContent = sel.tipoHabitacion || '';
+            const tdIngreso = document.createElement('td'); tdIngreso.textContent = formatearFechaConHora(sel.fechaIngreso, '12:00hs');
+            const tdEgreso = document.createElement('td'); tdEgreso.textContent = formatearFechaConHora(sel.fechaEgreso, '10:00hs');
 
-			tbodyResumen.appendChild(tr);
-		});
-	}
+            tr.appendChild(tdTipo); tr.appendChild(tdIngreso); tr.appendChild(tdEgreso);
+            tbodyResumen.appendChild(tr);
+        });
+    }
 
-	// ------------------------------------------------------------------
-	// Listeners de celdas (selección por rango)
-	// ------------------------------------------------------------------
-	celdas.forEach(td => {
-		td.addEventListener('click', () => {
-			// Adaptado: Verifica el string del Enum (EstadoHabitacion.LIBRE)
-			const estado = td.dataset.estado; 
-			
-			// Mantenemos la lógica de solo seleccionar celdas LIBRES
-			if (estado !== 'LIBRE') return;
+    // ------------------------------------------------------------------
+    // Listeners de celdas (selección por rango)
+    // ------------------------------------------------------------------
+    celdas.forEach(td => {
+        td.addEventListener('click', () => {
+            const estado = td.dataset.estado;
 
-			const habitacion = td.dataset.habitacion;
-			const fecha = td.dataset.fecha;
+            // VALIDACIÓN DE CLICK:
+            // RESERVAR -> Solo LIBRE
+            // OCUPAR -> LIBRE o RESERVADA
+            let esClickValido = false;
+            if (estado === 'LIBRE') esClickValido = true;
+            else if (esModoOcupar && estado === 'RESERVADA') esClickValido = true;
 
-			if (!seleccionInicio) {
-				seleccionInicio = { habitacion, fecha };
-				limpiarSeleccionVisualHabitacion(habitacion);
-				aplicarRangoSeleccion(habitacion, fecha, fecha);
-				return;
-			}
+            if (!esClickValido) return;
 
-			if (seleccionInicio.habitacion !== habitacion) {
-				seleccionInicio = { habitacion, fecha };
-				limpiarSeleccionVisualHabitacion(habitacion);
-				aplicarRangoSeleccion(habitacion, fecha, fecha);
-				return;
-			}
+            const habitacion = td.dataset.habitacion;
+            const fecha = td.dataset.fecha;
 
-			const fechaInicio = seleccionInicio.fecha;
-			aplicarRangoSeleccion(habitacion, fechaInicio, fecha);
-			seleccionInicio = null;
-		});
-	});
+            if (!seleccionInicio) {
+                seleccionInicio = { habitacion, fecha };
+                limpiarSeleccionVisualHabitacion(habitacion);
+                aplicarRangoSeleccion(habitacion, fecha, fecha);
+                return;
+            }
 
-	// Click fuera de la grilla: cancela "inicio" pero deja el rango
-	document.addEventListener('click', (e) => {
-		const clicEnGrilla = e.target.closest('.grilla-container');
-		if (!clicEnGrilla && seleccionInicio) {
-			const sel = seleccionInicio;
-			const selector =
-				'.celda-interactiva[data-habitacion="' +
-				sel.habitacion +
-				'"][data-fecha="' +
-				sel.fecha +
-				'"]';
-			const celdaInicio = document.querySelector(selector);
-			if (celdaInicio) celdaInicio.classList.remove('selection-start');
-			seleccionInicio = null;
-		}
-	});
+            if (seleccionInicio.habitacion !== habitacion) {
+                seleccionInicio = { habitacion, fecha };
+                limpiarSeleccionVisualHabitacion(habitacion);
+                aplicarRangoSeleccion(habitacion, fecha, fecha);
+                return;
+            }
 
-	// ------------------------------------------------------------------
-	// Botón LIMPIAR
-	// ------------------------------------------------------------------
-	if (btnLimpiar) {
-		btnLimpiar.addEventListener('click', () => {
-			limpiarSeleccionVisualTotal();
-			seleccionInicio = null;
-			seleccionDTO = [];
-			sessionStorage.removeItem('seleccionHabitaciones');
-			sessionStorage.removeItem('modoAccion');
-		});
-	}
+            const fechaInicio = seleccionInicio.fecha;
+            aplicarRangoSeleccion(habitacion, fechaInicio, fecha);
+            seleccionInicio = null;
+        });
+    });
 
-	// ------------------------------------------------------------------
-	// Submit del formulario de selección (SIGUIENTE)
-	// ------------------------------------------------------------------
-	if (formSeleccion && btnSiguiente) {
-		formSeleccion.addEventListener('submit', (e) => {
-			const dto = construirSeleccionDTO();
+    document.addEventListener('click', (e) => {
+        const clicEnGrilla = e.target.closest('.grilla-container');
+        if (!clicEnGrilla && seleccionInicio) {
+            const sel = seleccionInicio;
+            const selector = `.celda-interactiva[data-habitacion="${sel.habitacion}"][data-fecha="${sel.fecha}"]`;
+            const celdaInicio = document.querySelector(selector);
+            if (celdaInicio) celdaInicio.classList.remove('selection-start');
+            seleccionInicio = null;
+        }
+    });
 
-			if (dto.length === 0) {
-				alert('Debe seleccionar al menos una habitación para continuar.');
-				e.preventDefault();
-				return;
-			}
+    if (btnLimpiar) {
+        btnLimpiar.addEventListener('click', () => {
+            limpiarSeleccionVisualTotal();
+            seleccionInicio = null;
+            seleccionDTO = [];
+            sessionStorage.removeItem('seleccionHabitaciones');
+            sessionStorage.removeItem('modoAccion');
+        });
+    }
 
-			// Guardamos en sessionStorage para consistencia
-			sessionStorage.setItem('modoAccion', modoAccion);
-			sessionStorage.setItem('seleccionHabitaciones', JSON.stringify(dto));
+		// ------------------------------------------------------------------
+			// BOTÓN SIGUIENTE (VALIDACIÓN FRONTEND)
+			// ------------------------------------------------------------------
+			if (btnSiguiente) {
+				btnSiguiente.addEventListener('click', (e) => {
+					// Prevenir comportamiento nativo (aunque sea type="button")
+					e.preventDefault(); 
 
-			if (modoAccion === 'RESERVAR') {
-				// Interceptamos: mostramos RESUMEN
-				e.preventDefault();
-				seleccionDTO = dto;
-				renderResumen();
+					console.log("--> Click en Siguiente. Modo:", modoAccion);
 
-				if (seccionBusqueda) seccionBusqueda.classList.add('hidden');
-				if (seccionResumen) seccionResumen.classList.remove('hidden');
-			} 			else if (modoAccion === 'OCUPAR') {
-			    e.preventDefault();
+					// 1. Construir DTO General
+					const dto = construirSeleccionDTO();
+					if (dto.length === 0) {
+						alert('Debe seleccionar al menos una habitación.');
+						return;
+					}
 
-			    // 1. TRANSFORMAR EL DTO: Adaptado al nuevo OcupacionHabitacionDTO
-			    const colaOcupacion = dto.map(item => ({
-			        numeroHabitacion: item.numeroHabitacion,
-			        fechaIngreso: item.fechaIngreso,
-			        fechaEgreso: item.fechaEgreso,
-			        
-			        // NUEVO CAMPO: Inicialmente nulo, se llenará con el primer seleccionado
-			        idHuespedResponsable: null, 
-			        
-			        // Lista para los siguientes (acompañantes)
-			        idsAcompanantes: [], 
-			        
-			        forzarSobreReserva: false
-			    }));
+					// 2. Guardar estado común
+					sessionStorage.setItem('modoAccion', modoAccion);
 
-			    // 2. GUARDAR EN SESSION STORAGE
-			    sessionStorage.setItem('colaOcupacion', JSON.stringify(colaOcupacion));
-			    sessionStorage.setItem('indiceOcupacionActual', '0'); // Empezamos por la primera hab
+					// === CASO 1: RESERVAR ===
+					if (modoAccion === 'RESERVAR') {
+						sessionStorage.setItem('seleccionHabitaciones', JSON.stringify(dto));
+						seleccionDTO = dto;
+						renderResumen();
+						
+						if (seccionBusqueda) seccionBusqueda.classList.add('hidden');
+						if (seccionResumen) seccionResumen.classList.remove('hidden');
+					} 
 
-			    // 3. REDIRECCIONAR
-			    const primeraHab = colaOcupacion[0];
-			    const params = new URLSearchParams({
-			        accion: 'OCUPAR', 
-			        numeroHabitacion: primeraHab.numeroHabitacion,
-			        fechaIngreso: primeraHab.fechaIngreso,
-			        fechaEgreso: primeraHab.fechaEgreso
-			    });
+					// === CASO 2: OCUPAR (VALIDACIÓN EN FRONTEND) ===
+					else if (modoAccion === 'OCUPAR') {
+						console.log("--> Validando conflictos localmente...");
 
-			    window.location.href = `/huespedes/buscar?${params.toString()}`;
-			}
-		});
-	}
+						// A. Escaneamos el DOM buscando celdas RESERVADAS dentro de la selección
+						const celdasConflictivas = document.querySelectorAll('.celda-interactiva.in-range[data-estado="RESERVADA"]');
+						const conflictosDetectados = [];
+						const habitacionesProcesadas = new Set();
 
-	// ------------------------------------------------------------------
-	// RESUMEN: RECHAZAR (CU 7.A)
-	// ------------------------------------------------------------------
-	if (btnResumenCancelar) {
-		btnResumenCancelar.addEventListener('click', () => {
-			// Se deshacen operaciones sobre la grilla
-			limpiarSeleccionVisualTotal();
-			seleccionDTO = [];
-			sessionStorage.removeItem('seleccionHabitaciones');
+						celdasConflictivas.forEach(td => {
+							const hab = td.dataset.habitacion;
+							
+							// Evitamos duplicar la misma habitación varias veces
+							if (!habitacionesProcesadas.has(hab)) {
+								habitacionesProcesadas.add(hab);
 
-			if (seccionResumen) seccionResumen.classList.add('hidden');
-			if (seccionBusqueda) seccionBusqueda.classList.remove('hidden');
-			if (leyendaContainer) leyendaContainer.classList.remove('hidden');
-		});
-	}
+								// Recuperamos datos del HTML (inyectados por Thymeleaf)
+								// Nota: Usamos valores por defecto si el atributo está vacío
+								conflictosDetectados.push({
+									numeroHabitacion: hab,
+									seleccionValida: false, // Flag para lógica interna
+									
+									// Datos visuales para el modal
+									apellidoReserva: td.dataset.apellidosResponsable || 'Huésped',
+									nombreReserva: td.dataset.nombresResponsable || 'Desconocido',
+									
+									// Fechas (Simplificación: tomamos la fecha de la celda clicada como referencia visual)
+									// Opcional: Podrías buscar min/max fecha de este grupo si quisieras exactitud
+									fechaIngreso: td.dataset.fecha, 
+									fechaEgreso: td.dataset.fecha 
+								});
+							}
+						});
 
-	// ------------------------------------------------------------------
-	// RESUMEN: ACEPTAR → mostrar datos huésped (CU 8)
-	// ------------------------------------------------------------------
-	if (btnResumenAceptar) {
-		btnResumenAceptar.addEventListener('click', () => {
-			if (seccionResumen) seccionResumen.classList.add('hidden');
-			if (seccionDatos) seccionDatos.classList.remove('hidden');
-			if (leyendaContainer) leyendaContainer.classList.add('hidden'); // ocultar leyenda
-			if (inputApellido) inputApellido.focus();
-		});
-	}
-
-	// ------------------------------------------------------------------
-	// FORM HUÉSPED: cancelar (volver al resumen)
-	// ------------------------------------------------------------------
-	if (btnFinalCancelar && seccionDatos && seccionResumen) {
-		btnFinalCancelar.addEventListener('click', () => {
-			seccionDatos.classList.add('hidden');
-			seccionResumen.classList.remove('hidden');
-			if (leyendaContainer) leyendaContainer.classList.remove('hidden'); // mostrar leyenda otra vez
-		});
-	}
-
-	// ------------------------------------------------------------------
-	// FORM HUÉSPED: Integración con Backend REST (JSON)
-	// ------------------------------------------------------------------
-	if (formReservaFinal) {
-		formReservaFinal.addEventListener('submit', async (e) => {
-			e.preventDefault(); 
-
-			const apellido = inputApellido ? inputApellido.value.trim() : '';
-			const nombre = inputNombre ? inputNombre.value.trim() : '';
-			const telefono = inputTelefono ? inputTelefono.value.trim() : '';
-
-			const faltantes = [];
-			if (!apellido) faltantes.push(inputApellido);
-			if (!nombre) faltantes.push(inputNombre);
-			if (!telefono) faltantes.push(inputTelefono);
-
-			if (faltantes.length > 0) {
-				if (msgErrorHuesped) msgErrorHuesped.classList.remove('hidden');
-				if (faltantes[0]) faltantes[0].focus();
-				return;
-			} else {
-				if (msgErrorHuesped) msgErrorHuesped.classList.add('hidden');
-			}
-
-			// Construcción del JSON para ConfirmacionReservaDTO
-			// IMPORTANTE: Mapeamos explícitamente solo lo que el backend de RESERVA espera.
-			// Ignoramos idEstado/Responsables aquí porque ConfirmacionReservaDTO no los usa.
-			const habitacionesPayload = seleccionDTO.map(sel => ({
-				numeroHabitacion: sel.numeroHabitacion,
-				fechaIngreso: sel.fechaIngreso,
-				fechaEgreso: sel.fechaEgreso
-			}));
-
-			const datosHuespedPayload = {
-				apellido: apellido,
-				nombre: nombre,
-				telefono: telefono
-			};
-
-			const payloadFinal = {
-				habitacionesSeleccionadas: habitacionesPayload,
-				datosHuesped: datosHuespedPayload
-			};
-
-			const headers = {
-				'Content-Type': 'application/json',
-				'Accept': 'application/json'
-			};
-
-			try {
-				const response = await fetch('/api/reservas/reservar', {
-					method: 'POST',
-					headers: headers,
-					body: JSON.stringify(payloadFinal)
+						// B. Decisión
+						if (conflictosDetectados.length > 0) {
+							console.warn("--> Conflictos encontrados en FRONTEND:", conflictosDetectados);
+							
+							// Guardamos el DTO original para usarlo si el usuario da "Ocupar Igual"
+							dtoPendienteDeValidacion = dto;
+							
+							// Mostramos el modal SIN ir al backend
+							mostrarModalConflicto(conflictosDetectados);
+						
+						} else {
+							console.log("--> Sin conflictos locales. Avanzando...");
+							// Si no hay celdas reservadas seleccionadas, avanzamos directo
+							iniciarFlujoOcupacion(dto, false);
+						}
+					} 
 				});
-
-				if (response.ok) {
-					const data = await response.json();
-					alert('¡Reserva creada con éxito!');
-
-					sessionStorage.removeItem('seleccionHabitaciones');
-					sessionStorage.removeItem('modoAccion');
-
-					window.location.href = '/';
-				} else {
-					const errorData = await response.json();
-					const msg = errorData.message || 'Ocurrió un error al procesar la reserva.';
-					alert('Error: ' + msg);
-					console.error('Error backend:', errorData);
-				}
-
-			} catch (error) {
-				console.error('Error de red:', error);
-				alert('No se pudo conectar con el servidor.');
 			}
-		});
-	}
+    // --- FUNCIONES DE SOPORTE PARA OCUPAR ---
 
+    function mostrarModalConflicto(conflictos) {
+        if (!listaConflictos || !modalConflicto) return;
+        listaConflictos.innerHTML = '';
+        
+        conflictos.forEach(c => {
+            const li = document.createElement('li');
+            li.style.marginBottom = '10px';
+            li.style.borderBottom = '1px solid #ddd';
+            li.style.paddingBottom = '5px';
+            li.innerHTML = `
+                <strong>Habitación ${c.numeroHabitacion}</strong>: 
+                Reservada por ${c.apellidoReserva || 'Desconocido'}, ${c.nombreReserva || ''} 
+                <br>
+                <small>(${formatearFechaCorta(c.fechaIngreso)} - ${formatearFechaCorta(c.fechaEgreso)})</small>
+            `;
+            listaConflictos.appendChild(li);
+        });
+
+        modalConflicto.classList.add('show');
+    }
+
+    function cerrarModalConflicto() {
+        if (modalConflicto) modalConflicto.classList.remove('show');
+        dtoPendienteDeValidacion = null;
+    }
+
+    function iniciarFlujoOcupacion(dto, forzarReserva) {
+        // Transformamos al DTO final que espera el Wizard (OcupacionHabitacionDTO)
+        const colaOcupacion = dto.map(item => ({
+            numeroHabitacion: item.numeroHabitacion,
+            fechaIngreso: item.fechaIngreso,
+            fechaEgreso: item.fechaEgreso,
+            
+            // Responsable inicialmente nulo
+            idHuespedResponsable: null,
+            // Lista de acompañantes vacía
+            idsAcompanantes: [],
+            // Flag de sobre-reserva
+            forzarSobreReserva: forzarReserva
+        }));
+
+        sessionStorage.setItem('colaOcupacion', JSON.stringify(colaOcupacion));
+        sessionStorage.setItem('indiceOcupacionActual', '0');
+
+        const primeraHab = colaOcupacion[0];
+        const params = new URLSearchParams({
+            accion: 'OCUPAR', 
+            numeroHabitacion: primeraHab.numeroHabitacion,
+            fechaIngreso: primeraHab.fechaIngreso,
+            fechaEgreso: primeraHab.fechaEgreso
+        });
+
+        window.location.href = `/huespedes/buscar?${params.toString()}`;
+    }
+
+    // --- LISTENERS MODAL CONFLICTO ---
+    if (btnConflictoVolver) {
+        btnConflictoVolver.addEventListener('click', () => {
+            cerrarModalConflicto();
+        });
+    }
+
+    if (btnConflictoOcuparIgual) {
+        btnConflictoOcuparIgual.addEventListener('click', () => {
+            if (dtoPendienteDeValidacion) {
+                iniciarFlujoOcupacion(dtoPendienteDeValidacion, true); // true = forzar
+            }
+        });
+    }
+
+    // ------------------------------------------------------------------
+    // RESTO DE LISTENERS (RESERVAR)
+    // ------------------------------------------------------------------
+    if (btnResumenCancelar) {
+        btnResumenCancelar.addEventListener('click', () => {
+            limpiarSeleccionVisualTotal();
+            seleccionDTO = [];
+            sessionStorage.removeItem('seleccionHabitaciones');
+            if (seccionResumen) seccionResumen.classList.add('hidden');
+            if (seccionBusqueda) seccionBusqueda.classList.remove('hidden');
+            if (leyendaContainer) leyendaContainer.classList.remove('hidden');
+        });
+    }
+
+    if (btnResumenAceptar) {
+        btnResumenAceptar.addEventListener('click', () => {
+            if (seccionResumen) seccionResumen.classList.add('hidden');
+            if (seccionDatos) seccionDatos.classList.remove('hidden');
+            if (leyendaContainer) leyendaContainer.classList.add('hidden');
+            if (inputApellido) inputApellido.focus();
+        });
+    }
+
+    if (btnFinalCancelar && seccionDatos && seccionResumen) {
+        btnFinalCancelar.addEventListener('click', () => {
+            seccionDatos.classList.add('hidden');
+            seccionResumen.classList.remove('hidden');
+            if (leyendaContainer) leyendaContainer.classList.remove('hidden');
+        });
+    }
+
+    if (formReservaFinal) {
+        formReservaFinal.addEventListener('submit', async (e) => {
+            e.preventDefault(); 
+            const apellido = inputApellido ? inputApellido.value.trim() : '';
+            const nombre = inputNombre ? inputNombre.value.trim() : '';
+            const telefono = inputTelefono ? inputTelefono.value.trim() : '';
+            const faltantes = [];
+            if (!apellido) faltantes.push(inputApellido);
+            if (!nombre) faltantes.push(inputNombre);
+            if (!telefono) faltantes.push(inputTelefono);
+
+            if (faltantes.length > 0) {
+                if (msgErrorHuesped) msgErrorHuesped.classList.remove('hidden');
+                if (faltantes[0]) faltantes[0].focus();
+                return;
+            } else {
+                if (msgErrorHuesped) msgErrorHuesped.classList.add('hidden');
+            }
+
+            const habitacionesPayload = seleccionDTO.map(sel => ({
+                numeroHabitacion: sel.numeroHabitacion,
+                fechaIngreso: sel.fechaIngreso,
+                fechaEgreso: sel.fechaEgreso
+            }));
+
+            const payloadFinal = {
+                habitacionesSeleccionadas: habitacionesPayload,
+                datosHuesped: { apellido, nombre, telefono }
+            };
+
+            try {
+                const response = await fetch('/api/reservas/reservar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify(payloadFinal)
+                });
+
+                if (response.ok) {
+                    alert('¡Reserva creada con éxito!');
+                    sessionStorage.removeItem('seleccionHabitaciones');
+                    sessionStorage.removeItem('modoAccion');
+                    window.location.href = '/';
+                } else {
+                    const errorData = await response.json();
+                    alert('Error: ' + (errorData.message || 'Error al procesar reserva.'));
+                }
+            } catch (error) {
+                console.error('Error de red:', error);
+                alert('No se pudo conectar con el servidor.');
+            }
+        });
+    }
 });

@@ -122,48 +122,55 @@ public class DisponibilidadService implements IDisponibilidadService {
    */
   private EstadoHabitacionDTO calcularEstadoDia(List<FichaEvento> eventos, LocalDate fecha) {
 
-    // 1. Encontrar la ficha dominante (Ej: Una OCUPACION tapa a una RESERVA si hubiera conflicto,
-    // o simplemente busca si hay algo ese día).
+    // 1. Encontrar la ficha dominante
     FichaEvento fichaGanadora = eventos.stream().filter(ficha -> {
-      LocalDate inicio = ficha.getFechaInicio().toLocalDate();
-      LocalDate fin = ficha.getFechaFin().toLocalDate();
-      // "fecha" debe estar dentro del rango [inicio, fin) o [inicio, fin] según tu regla de
-      // negocio.
-      // Usualmente checkout es a la mañana, así que < finFicha es correcto para pernocte.
-      return !fecha.isBefore(inicio) && fecha.isBefore(fin);
+        LocalDate inicio = ficha.getFechaInicio().toLocalDate();
+        LocalDate fin = ficha.getFechaFin().toLocalDate();
+        return !fecha.isBefore(inicio) && fecha.isBefore(fin);
     })
-        // Comparamos por el estado natural (Ordinal) o tu lógica de prioridad
-        .max(Comparator.comparing(FichaEvento::getEstado)).orElse(null);
+    .max(Comparator.comparing(FichaEvento::getEstado)).orElse(null);
 
     // 2. Si no hay ficha, está LIBRE
     if (fichaGanadora == null) {
-      // Nota: Asumo que LIBRE tiene un ID o usamos 0. Ajusta según tu Enum.
-      return new EstadoHabitacionDTO(EstadoHabitacion.LIBRE, null, null,
-          EstadoHabitacion.LIBRE.ordinal());
+        return new EstadoHabitacionDTO(EstadoHabitacion.LIBRE, null, null,
+                EstadoHabitacion.LIBRE.ordinal());
     }
 
     // 3. Si hay ficha, extraemos datos
-    String nombre = null;
-    String apellido = null;
+    String nombre = "";   // Inicializamos vacíos por seguridad
+    String apellido = "";
 
-    // Validamos nulos para evitar NullPointerException si es un bloqueo administrativo sin reserva
+    // CASO A: Tiene Reserva asociada (Prioridad 1)
     if (fichaGanadora.getReserva() != null) {
-      nombre = fichaGanadora.getReserva().getNombreReserva();
-      apellido = fichaGanadora.getReserva().getApellidoReserva();
-      
-      //TODO: modificar y poner el responsable cuando se agregue a la fichaEvento
-    } else if (fichaGanadora.getAcompanantes().getFirst() != null) {
-      Huesped responsable = fichaGanadora.getAcompanantes().getFirst();
-      nombre = responsable.getNombres();
-      apellido = responsable.getApellido();
+        nombre = fichaGanadora.getReserva().getNombreReserva();
+        apellido = fichaGanadora.getReserva().getApellidoReserva();
+    } 
+    // CASO B: No tiene reserva, buscamos personas en la Ficha (Ocupación directa)
+    else {
+        // Intento 1: Buscar responsable directo
+        Huesped huespedEncontrado = fichaGanadora.getResponsable();
+
+        // Intento 2: Si no hay responsable, buscar en acompañantes
+        if (huespedEncontrado == null) {
+            List<Huesped> lista = fichaGanadora.getAcompanantes();
+            // VALIDACIÓN CLAVE: Que no sea nula Y que no esté vacía
+            if (lista != null && !lista.isEmpty()) {
+                huespedEncontrado = lista.getFirst();
+            }
+        }
+
+        // Si encontramos a alguien (sea responsable o acompañante), asignamos
+        if (huespedEncontrado != null) {
+            nombre = huespedEncontrado.getNombres();
+            apellido = huespedEncontrado.getApellido();
+        }
+        // Si no encontramos a nadie, nombre y apellido quedan como "" (vacíos)
     }
 
-    // Retornamos el DTO lleno
     return new EstadoHabitacionDTO(fichaGanadora.getEstado(), nombre, apellido,
-        fichaGanadora.getEstado().ordinal() // O fichaGanadora.getEstado().getId() si tu enum lo
-                                            // tiene
+            fichaGanadora.getEstado().ordinal()
     );
-  }
+}
 
   private List<LocalDate> construirFechas(BusquedaHabitacionDTO busquedaHabitacionDTO) {
     return busquedaHabitacionDTO.getFechaInicio()
