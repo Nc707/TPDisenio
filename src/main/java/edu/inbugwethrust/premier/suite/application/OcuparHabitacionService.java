@@ -121,6 +121,7 @@ public class OcuparHabitacionService implements IOcuparHabitacionService {
         res.setApellidoReserva(reserva.getApellidoReserva());
         res.setNombreReserva(reserva.getNombreReserva());
         res.setTelefonoReserva(reserva.getTelefonoReserva());
+        gestorFichaEvento.completarRangoReservaParaHabitacion(res, reserva, habitacion, dto);
       } else {
         res.setHayReserva(false);
       }
