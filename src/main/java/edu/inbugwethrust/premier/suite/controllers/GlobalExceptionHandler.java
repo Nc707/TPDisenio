@@ -192,6 +192,17 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
+    @ExceptionHandler(MultiplesReservasEnRangoException.class)
+    public ResponseEntity<Map<String, Object>> manejarMultiplesReservasEnRango(MultiplesReservasEnRangoException ex) {
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("error", "Conflicto de reservas");
+        body.put("message", ex.getMessage());
+        body.put("status", 409);
+        body.put("timestamp", LocalDateTime.now());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+    }
 
 
     // 10) Cualquier otra excepción no controlada
