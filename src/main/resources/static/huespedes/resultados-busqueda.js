@@ -1,67 +1,73 @@
 console.log("resultados-busqueda.js cargado");
 
 document.addEventListener('DOMContentLoaded', () => {
-    
+
     // =========================================================
-    // 1. LÓGICA DEL BOTÓN CANCELAR
+    // 1. LÓGICA DEL BOTÓN CANCELAR (Global)
     // =========================================================
     const btnCancelar = document.getElementById('btn-cancelar');
     
     if (btnCancelar) {
         btnCancelar.addEventListener('click', (e) => {
-            e.preventDefault(); // Por seguridad, aunque sea type="button"
-
-            // Verificamos el modo
-            const inputAccion = document.getElementById('input-accion');
-            const accion = inputAccion ? inputAccion.value : '';
-
-            // Si estábamos en medio del Wizard (OCUPAR), limpiamos la memoria
-            if (accion === 'OCUPAR') {
-                console.log("Cancelando proceso de ocupación. Limpiando sessionStorage...");
-                sessionStorage.removeItem('colaOcupacion');
-                sessionStorage.removeItem('indiceOcupacionActual');
-                sessionStorage.removeItem('modoAccion');
-                sessionStorage.removeItem('seleccionHabitaciones');
-            }
-
-            // En cualquier caso (Ocupar o Buscar normal), volvemos al Home
+            e.preventDefault(); 
+            // Limpieza de sesión si es necesario
+            sessionStorage.removeItem('colaOcupacion');
+            sessionStorage.removeItem('indiceOcupacionActual');
+            sessionStorage.removeItem('modoAccion');
+            sessionStorage.removeItem('seleccionHabitaciones');
+            
             window.location.href = '/';
         });
     }
 
     // =========================================================
-    // 2. LÓGICA DEL BOTÓN SIGUIENTE
+    // 2. LÓGICA DEL BOTÓN SIGUIENTE / ACEPTAR
     // =========================================================
     const btnSiguiente = document.getElementById('btn-siguiente');
     
     if (btnSiguiente) {
         btnSiguiente.addEventListener('click', (e) => {
-            // SIEMPRE prevenimos el submit porque /huespedes/seleccionar no existe
             e.preventDefault();
 
-            // Contexto
+            // --- A. OBTENER CONTEXTO (CORREGIDO) ---
+            let accion = 'BUSCAR';
             const inputAccion = document.getElementById('input-accion');
-            const accion = inputAccion ? inputAccion.value : '';
             
-            // Validar selección
+            if (inputAccion && inputAccion.value) {
+                // AQUÍ ESTÁ EL ARREGLO:
+                // Si viene "OCUPAR,OCUPAR", hacemos split por coma y tomamos el primero.
+                accion = inputAccion.value.split(',')[0].trim();
+            } else {
+                const params = new URLSearchParams(window.location.search);
+                if (params.get('accion')) {
+                    accion = params.get('accion').split(',')[0].trim();
+                }
+            }
+
+            console.log("Click en Siguiente. Modo detectado (limpio):", accion);
+
+            // B. Validar selección
             const seleccionado = document.querySelector('input[name="idSeleccionado"]:checked');
 
             if (!seleccionado) {
-                window.location.href = '/huespedes/formulario-alta';
-								return;
+                alert("Por favor, seleccione un huésped de la lista.");
+                return; 
             }
 
-            // Datos del huésped
             const tipoDoc = seleccionado.dataset.tipoDoc;
             const nroDoc = seleccionado.dataset.nroDoc;
 
+            // C. Decisión
             if (accion === 'OCUPAR') {
-                // === FLUJO 1: WIZARD OCUPAR ===
-                gestorOcupacion.agregarHuespedSeleccionado(tipoDoc, nroDoc);
+                // MODO WIZARD
+                if (typeof gestorOcupacion !== 'undefined') {
+                    gestorOcupacion.agregarHuespedSeleccionado(tipoDoc, nroDoc);
+                } else {
+                    alert("Error: No se cargó el gestor de ocupación.");
+                }
 
             } else {
-                // === FLUJO 2: MODO NORMAL (BÚSQUEDA) ===
-                // Redirigir a Editar
+                // MODO NORMAL
                 const urlEditar = `/huespedes/editar?tipoDocumento=${encodeURIComponent(tipoDoc)}&numeroDocumento=${encodeURIComponent(nroDoc)}`;
                 window.location.href = urlEditar;
             }

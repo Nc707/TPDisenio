@@ -43,6 +43,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 👉 Leyenda
     const leyendaContainer = document.querySelector('.leyenda-container');
+		
+		const btnCancelarPrincipal = document.getElementById('open-modal-btn');
+
+				    if (btnCancelarPrincipal) {
+				        btnCancelarPrincipal.addEventListener('click', (e) => {
+				            e.preventDefault();
+				            console.log("Cancelando y volviendo al inicio...");
+
+				            // 1. Limpiar memoria del navegador
+				            sessionStorage.removeItem('seleccionHabitaciones');
+				            sessionStorage.removeItem('modoAccion');
+				            sessionStorage.removeItem('colaOcupacion');
+				            sessionStorage.removeItem('indiceOcupacionActual');
+
+				            // 2. Limpiar visualmente la selección (opcional, pero buena práctica)
+				            limpiarSeleccionVisualTotal();
+
+				            // 3. Redirigir a la raíz
+				            window.location.href = '/';
+				        });
+				    }
 
     // Variable temporal para guardar la selección mientras el usuario decide en el modal
     let dtoPendienteDeValidacion = null;
@@ -254,6 +275,8 @@ document.addEventListener('DOMContentLoaded', () => {
             sessionStorage.removeItem('modoAccion');
         });
     }
+		
+		
 
 		// ------------------------------------------------------------------
 			// BOTÓN SIGUIENTE (VALIDACIÓN FRONTEND)
