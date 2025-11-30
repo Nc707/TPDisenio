@@ -194,8 +194,14 @@ public class GestorEstadia {
       Map<Integer, Habitacion> mapaHabitaciones, Map<HuespedID, Huesped> mapaHuespedes,
       Map<Integer, Huesped> mapaHuespedesResponsables) {
 
-    Estadia estadia = new Estadia();
-    estadia.setReserva(reserva);
+      // Si la reserva ya tiene una estadía asociada, la REUTILIZAMOS
+      if (reserva != null && reserva.getEstadia() != null) {
+        estadia = reserva.getEstadia();
+      } else {
+        // Si no, es el primer check-in para esta reserva o es un walk-in
+        estadia = new Estadia();
+        estadia.setReserva(reserva); // reserva puede ser null en walk-in
+      }
 
     for (OcupacionHabitacionDTO dto : dtos) {
 
