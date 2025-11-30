@@ -21,4 +21,6 @@ public class ResultadoValidacionHabitacionDTO {
     private String apellidoReserva;
     private String nombreReserva;
     private String telefonoReserva;
+    private LocalDate fechaInicioReserva;
+    private LocalDate fechaFinReserva;
 }

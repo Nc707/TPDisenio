@@ -17,6 +17,7 @@ import edu.inbugwethrust.premier.suite.services.exceptions.ReservaNoDisponibleEx
 import edu.inbugwethrust.premier.suite.dto.OcupacionHabitacionDTO;
 import edu.inbugwethrust.premier.suite.model.Estadia;
 import edu.inbugwethrust.premier.suite.model.Huesped;
+import edu.inbugwethrust.premier.suite.dto.ResultadoValidacionHabitacionDTO;
 
 @Service
 public class GestorFichaEvento implements IGestorFichaEvento {
@@ -215,4 +216,62 @@ public class GestorFichaEvento implements IGestorFichaEvento {
       // para permitir devolver la Reserva sin lanzar excepción si hay RESERVADA.
       return validarDisponibilidad(habitacion, inicio, fin, true);
   }
+  /**
+   * Dado un resultado de validación, una reserva y una habitación,
+   * calcula el tramo de días en que la reserva ocupa esa habitación,
+   * limitado al rango seleccionado por el conserje (dto).
+   *
+   * Completa en el DTO: fechaInicioReserva y fechaFinReserva.
+   */
+  public void completarRangoReservaParaHabitacion(ResultadoValidacionHabitacionDTO res,
+                                                  Reserva reserva,
+                                                  Habitacion habitacion,
+                                                  OcupacionHabitacionDTO dto) {
+
+      if (reserva == null || reserva.getListaFichaEventos() == null) {
+          return;
+      }
+
+      LocalDate seleccionInicio = dto.getFechaIngreso();
+      LocalDate seleccionFin    = dto.getFechaEgreso();
+
+      LocalDate inicioSolapado = null;
+      LocalDate finSolapado    = null;
+
+      for (FichaEvento evento : reserva.getListaFichaEventos()) {
+
+          if (evento.isCancelado()) {
+              continue;
+          }
+          if (evento.getHabitacion() == null
+                  || evento.getHabitacion().getNumero() != habitacion.getNumero()) {
+              continue;
+          }
+          if (evento.getEstado() != EstadoHabitacion.RESERVADA) {
+              continue;
+          }
+
+          LocalDate inicioReserva = evento.getFechaInicio().toLocalDate();
+          LocalDate finReserva    = evento.getFechaFin().toLocalDate();
+
+          // Intersección entre [inicioReserva, finReserva] y [seleccionInicio, seleccionFin]
+          LocalDate inicioInterseccion =
+                  inicioReserva.isAfter(seleccionInicio) ? inicioReserva : seleccionInicio;
+          LocalDate finInterseccion =
+                  finReserva.isBefore(seleccionFin) ? finReserva : seleccionFin;
+
+          if (!inicioInterseccion.isAfter(finInterseccion)) {
+              if (inicioSolapado == null || inicioInterseccion.isBefore(inicioSolapado)) {
+                  inicioSolapado = inicioInterseccion;
+              }
+              if (finSolapado == null || finInterseccion.isAfter(finSolapado)) {
+                  finSolapado = finInterseccion;
+              }
+          }
+      }
+
+      res.setFechaInicioReserva(inicioSolapado);
+      res.setFechaFinReserva(finSolapado);
+  }
+
 }
