@@ -150,13 +150,18 @@
             </form>
 
             <!-- Botones inferiores: se ocultan en modo DISPONIBILIDAD -->
-            <div class="botones-inferiores" th:if="${modoAccion != 'DISPONIBILIDAD'}">
-                <button type="button" class="btn-secondary" id="open-modal-btn">CANCELAR</button>
-                <button type="button" class="btn-secondary" id="reset-btn">LIMPIAR</button>
-                <button type="button" class="btn-primary" id="btn-siguiente" form="form-seleccion">
-						    SIGUIENTE
-						</button>
-            </div>
+            <div class="botones-inferiores">
+    
+    <button type="button" class="btn-secondary" id="open-modal-btn">CANCELAR</button>
+
+    <th:block th:if="${modoAccion != 'DISPONIBILIDAD'}">
+        <button type="button" class="btn-secondary" id="reset-btn">LIMPIAR</button>
+        <button type="button" class="btn-primary" id="btn-siguiente" form="form-seleccion">
+            SIGUIENTE
+        </button>
+    </th:block>
+
+</div>
         </div>
 
         <!-- SECCIÓN 2: RESUMEN (solo RESERVAR) -->
