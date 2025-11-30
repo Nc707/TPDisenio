@@ -611,3 +611,30 @@
     cursor: pointer; /* Muestra la 'manito' indicando que se puede hacer clic */
     /* O usa: cursor: default; si prefieres la flecha normal */
 }
+/* =========================================
+   CORRECCIÓN LISTAS EN LEYENDA
+   ========================================= */
+
+/* Afecta tanto a la lista de colores como a la de capacidades */
+.leyenda-container ul {
+    list-style: none;      /* Quita el puntito negro por defecto */
+    padding-left: 0;       /* Quita la sangría (lo pega a la izquierda) */
+    margin-left: 0;        /* Asegura que no haya margen izquierdo */
+    margin-bottom: 15px;   /* Un poco de espacio al final de cada lista */
+}
+
+/* Opcional: Un poco de aire entre cada ítem para que se lea mejor */
+.leyenda-container li {
+    margin-bottom: 5px;
+    text-align: left;      /* Alineación forzada a la izquierda */
+    font-size: 0.8rem;    /* Ajuste de tamaño si lo necesitas */
+}
+
+/* Asegurar que el título también esté alineado si no lo estaba */
+.leyenda-container h3 {
+    text-align: left;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    font-size: 1rem;       /* O el tamaño que prefieras */
+    font-weight: bold;
+}
