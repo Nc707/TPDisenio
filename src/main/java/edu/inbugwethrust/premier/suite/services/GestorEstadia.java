@@ -194,6 +194,7 @@ public class GestorEstadia {
       Map<Integer, Habitacion> mapaHabitaciones, Map<HuespedID, Huesped> mapaHuespedes,
       Map<Integer, Huesped> mapaHuespedesResponsables) {
 
+    Estadia estadia;
       // Si la reserva ya tiene una estadía asociada, la REUTILIZAMOS
       if (reserva != null && reserva.getEstadia() != null) {
         estadia = reserva.getEstadia();
