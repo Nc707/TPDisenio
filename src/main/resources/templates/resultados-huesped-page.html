@@ -60,8 +60,8 @@
             </div>
 
             <div class="footer-buttons">
-                <a th:href="@{/huespedes/buscar(accion=${accion}, numeroHabitacion=${numeroHabitacion}, fechaIngreso=${fechaIngreso}, fechaEgreso=${fechaEgreso})}" 
-                   class="btn-custom btn-cancelar">VOLVER</a>
+                <button type="button" id="btn-cancelar" class="btn-custom btn-cancelar">
+                	CANCELAR</button>
                 
                 <button type="submit" id="btn-siguiente" class="btn-custom btn-siguiente" 
                         th:disabled="${#lists.isEmpty(huespedes)}">

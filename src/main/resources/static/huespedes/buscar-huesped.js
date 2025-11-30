@@ -1,24 +1,45 @@
 document.addEventListener('DOMContentLoaded', () => {
     gestionarToast();
     actualizarTextoRolOcupacion();
+		
+		    configurarBotonCancelar();
 });
-document.addEventListener('DOMContentLoaded', () => {
-    // ... tu código existente (gestionarToast, etc.) ...
-
-    // Lógica del botón Cancelar
+function configurarBotonCancelar() {
     const btnCancelar = document.getElementById('btn-cancelar');
+    
     if (btnCancelar) {
         btnCancelar.addEventListener('click', (e) => {
-            e.preventDefault(); // Buena práctica, aunque sea type="button"
+            e.preventDefault(); 
             
-            // Opción A: Recargar la página tal cual está (mantiene parámetros de URL si los hay)
-            window.location.reload();
+            // Intentamos obtener el modo actual
+            let accion = 'BUSCAR'; // Default
+            
+            // 1. Desde el input hidden (si agregaste el id en el HTML)
+            const inputAccion = document.getElementById('input-accion');
+            if (inputAccion && inputAccion.value) {
+                accion = inputAccion.value;
+            } else {
+                // 2. Fallback: Desde la URL
+                const params = new URLSearchParams(window.location.search);
+                if (params.get('accion')) {
+                    accion = params.get('accion');
+                }
+            }
 
-            // Opción B (Alternativa): Si quisieras "limpiar" la búsqueda y recargar limpio:
-            // window.location.href = window.location.pathname; 
+            // Lógica de limpieza para el Wizard
+            if (accion === 'OCUPAR') {
+                console.log("Cancelando proceso de ocupación. Limpiando sessionStorage...");
+                sessionStorage.removeItem('colaOcupacion');
+                sessionStorage.removeItem('indiceOcupacionActual');
+                sessionStorage.removeItem('modoAccion');
+                sessionStorage.removeItem('seleccionHabitaciones');
+            }
+
+            // Redirección al inicio
+            window.location.href = '/';
         });
     }
-});
+}
 
 /**
  * Maneja la visualización y ocultamiento del mensaje Toast

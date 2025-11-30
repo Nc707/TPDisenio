@@ -18,6 +18,7 @@
 
         <form th:action="@{/huespedes/resultados}" th:object="${busquedaHuespedDTO}" method="get">
             <input type="hidden" name="accion" th:value="${accion}" />
+            <input type="hidden" id="input-accion" name="accion" th:value="${accion}" />
             <input type="hidden" name="numeroHabitacion" th:value="${numeroHabitacion}" />
             <input type="hidden" name="fechaIngreso" th:value="${fechaIngreso}" />
             <input type="hidden" name="fechaEgreso" th:value="${fechaEgreso}" />
