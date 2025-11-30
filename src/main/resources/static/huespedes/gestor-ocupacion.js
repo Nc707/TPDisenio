@@ -8,7 +8,11 @@ const gestorOcupacion = {
      * Guarda el huésped seleccionado en la habitación actual en memoria (sessionStorage).
      * Luego muestra el modal de decisión.
      */
-		agregarHuespedSeleccionado: function(tipoDoc, nroDoc) {
+		/**
+		     * Guarda el huésped seleccionado.
+		     * silenciarModal (boolean): Si es true, guarda los datos pero NO muestra el modal (útil para cargas masivas).
+		     */
+		    agregarHuespedSeleccionado: function(tipoDoc, nroDoc, silenciarModal = false) {
 		        const colaJson = sessionStorage.getItem('colaOcupacion');
 		        const idxStr = sessionStorage.getItem('indiceOcupacionActual');
 
@@ -18,31 +22,29 @@ const gestorOcupacion = {
 		        const idx = parseInt(idxStr);
 
 		        if (cola[idx]) {
-		            // Creamos el DTO de Identificación
 		            const huespedDTO = {
 		                tipoDocumento: tipoDoc,
 		                numeroDocumento: nroDoc
 		            };
 
-		            // === CAMBIO AQUÍ ===
+		            // Lógica Responsable vs Acompañante
 		            if (!cola[idx].idHuespedResponsable) {
-		                // Si no hay responsable asignado, este ES el responsable
 		                cola[idx].idHuespedResponsable = huespedDTO;
-		                console.log("Asignado como Responsable");
+		                console.log("Asignado como Responsable: " + nroDoc);
 		            } else {
-		                // Si ya hay responsable, este es un acompañante
 		                if (!cola[idx].idsAcompanantes) {
 		                    cola[idx].idsAcompanantes = [];
 		                }
 		                cola[idx].idsAcompanantes.push(huespedDTO);
-		                console.log("Asignado como Acompañante");
+		                console.log("Asignado como Acompañante: " + nroDoc);
 		            }
 
-		            // Guardamos cambios
 		            sessionStorage.setItem('colaOcupacion', JSON.stringify(cola));
 
-		            // Mostramos el modal
-		            this.mostrarModalAccion();
+		            // Solo mostramos el modal si NO se solicitó silenciarlo
+		            if (!silenciarModal) {
+		                this.mostrarModalAccion();
+		            }
 		        }
 		    },
 

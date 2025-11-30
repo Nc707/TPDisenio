@@ -24,13 +24,13 @@
             <input type="hidden" name="fechaEgreso" th:value="${fechaEgreso}" />
             
             <div class="table-scroll-container">
-                <table class="result-table">
+                <table class="result-table" id="tabla-resultados">
                     <thead>
                         <tr>
-                            <th>Apellido</th>
-                            <th>Nombre</th>
-                            <th>Tipo de documento</th>
-                            <th>Número de Documento</th>
+                            <th onclick="ordenarTabla(0)" class="sortable">Apellido <span class="sort-icon">⇅</span></th>
+                            <th onclick="ordenarTabla(1)" class="sortable">Nombre <span class="sort-icon">⇅</span></th>
+                            <th onclick="ordenarTabla(2)" class="sortable">Tipo Doc <span class="sort-icon">⇅</span></th>
+                            <th onclick="ordenarTabla(3)" class="sortable">Número Doc <span class="sort-icon">⇅</span></th>
                             <th style="width: 40px;"></th> 
                         </tr>
                     </thead>
@@ -41,12 +41,11 @@
                             <td th:text="${h.tipoDocumento}">DNI</td>
                             <td th:text="${h.numeroDocumento}">0000001</td>
                             <td class="radio-cell">
-                                <input type="radio" 
+                                <input type="checkbox" 
                                        name="idSeleccionado" 
                                        th:value="${h.tipoDocumento} + '_' + ${h.numeroDocumento}"
                                        th:data-tipo-doc="${h.tipoDocumento}"
-                                       th:data-nro-doc="${h.numeroDocumento}"
-                                       required>
+                                       th:data-nro-doc="${h.numeroDocumento}">
                             </td>
                         </tr>
                         
@@ -60,8 +59,7 @@
             </div>
 
             <div class="footer-buttons">
-                <button type="button" id="btn-cancelar" class="btn-custom btn-cancelar">
-                	CANCELAR</button>
+                <button type="button" id="btn-cancelar" class="btn-custom btn-cancelar">CANCELAR</button>
                 
                 <button type="submit" id="btn-siguiente" class="btn-custom btn-siguiente" 
                         th:disabled="${#lists.isEmpty(huespedes)}">
@@ -72,15 +70,10 @@
     </div>
 
     <div layout:fragment="modals">
-        
         <div id="modal-accion" class="modal-overlay">
             <div class="modal-box">
-                <div class="modal-header">
-                    <span>Premier</span>
-                </div>
-                <div class="modal-content">
-                    ¿Qué desea hacer ahora?
-                </div>
+                <div class="modal-header"><span>Premier</span></div>
+                <div class="modal-content">¿Qué desea hacer ahora?</div>
                 <div class="modal-footer">
                     <button type="button" class="btn-modal" onclick="gestorOcupacion.finalizarSalir()">SALIR</button>
                     <button type="button" class="btn-modal" onclick="gestorOcupacion.cargarOtraHabitacion()">CARGAR OTRA HABITACIÓN</button>
@@ -88,29 +81,9 @@
                 </div>
             </div>
         </div>
-
-        <div id="modal-error" class="modal-overlay">
-            <div class="modal-box" style="border-top: 5px solid #c0392b;">
-                <div class="modal-header">
-                    <div class="error-header"><span class="error-icon">X</span> ¡ERROR!</div>
-                    <span>Premier</span>
-                </div>
-                <div class="modal-content">
-                    No hay más habitaciones seleccionadas en la cola.
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-modal" onclick="document.getElementById('modal-error').classList.remove('show')">ACEPTAR</button>
-                </div>
-            </div>
-        </div>
-
         <script th:src="@{/huespedes/gestor-ocupacion.js}"></script>
         <script th:src="@{/huespedes/resultados-busqueda.js}"></script>
-
     </div>
-
-    <script layout:fragment="scripts">
-    </script>
 
 </body>
 </html>
