@@ -183,3 +183,8 @@ input[type="radio"] {
     display: flex;
     justify-content: flex-end; /* Alineado a la derecha por convención */
 }
+
+/* Esto afecta a todos los inputs dentro de tus grupos de formulario */
+.input-group input {
+    text-transform: uppercase;
+}
