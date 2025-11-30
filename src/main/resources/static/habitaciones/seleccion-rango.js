@@ -44,6 +44,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // 👉 Leyenda
     const leyendaContainer = document.querySelector('.leyenda-container');
 		
+		const modalEspera = document.getElementById('modal-espera');
+		
 		const btnCancelarPrincipal = document.getElementById('open-modal-btn');
 
 				    if (btnCancelarPrincipal) {
@@ -138,6 +140,35 @@ document.addEventListener('DOMContentLoaded', () => {
             celdaInicio.classList.add('selection-start');
         }
     }
+		function mostrarPantallaEsperaYRedirigir(dto, forzar) {
+		        if (!modalEspera) {
+		            // Fallback si no agregaste el HTML
+		            iniciarFlujoOcupacion(dto, forzar);
+		            return;
+		        }
+
+		        // 1. Mostrar el modal
+		        modalEspera.classList.add('show');
+
+		        // 2. Definir la función que reacciona a la tecla
+		        const alPresionarTecla = (e) => {
+		            // Evitar múltiples disparos
+		            document.removeEventListener('keydown', alPresionarTecla);
+		            document.removeEventListener('click', alPresionarTecla);
+		            
+		            console.log("Tecla presionada. Redirigiendo...");
+		            
+		            // 3. Ejecutar la lógica de redirección original
+		            iniciarFlujoOcupacion(dto, forzar);
+		        };
+
+		        // 3. Agregamos un pequeño delay para evitar que el "Enter" 
+		        // que usó el usuario para el botón active esto inmediatamente.
+		        setTimeout(() => {
+		            document.addEventListener('keydown', alPresionarTecla);
+		            document.addEventListener('click', alPresionarTecla); // También click por si usa mouse
+		        }, 500); 
+		    }
 
     // Construye DTOs a partir de celdas in-range
     function construirSeleccionDTO() {
@@ -355,7 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
 						} else {
 							console.log("--> Sin conflictos locales. Avanzando...");
 							// Si no hay celdas reservadas seleccionadas, avanzamos directo
-							iniciarFlujoOcupacion(dto, false);
+							mostrarPantallaEsperaYRedirigir(dto, false);
 						}
 					} 
 				});
@@ -424,13 +455,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (btnConflictoOcuparIgual) {
-        btnConflictoOcuparIgual.addEventListener('click', () => {
-            if (dtoPendienteDeValidacion) {
-                iniciarFlujoOcupacion(dtoPendienteDeValidacion, true); // true = forzar
-            }
-        });
-    }
+		// ------------------------------------------------------------------
+		    // EVENTO "OCUPAR IGUAL" (Modal Conflicto) - CORREGIDO
+		    // ------------------------------------------------------------------
+		    if (btnConflictoOcuparIgual) {
+		        btnConflictoOcuparIgual.addEventListener('click', () => {
+		            if (dtoPendienteDeValidacion) {
+		                // 1. Guardamos una COPIA de los datos antes de que se borren
+		                const datosParaProcesar = dtoPendienteDeValidacion;
+
+		                // 2. Cerramos el modal de conflicto (esto pone dtoPendienteDeValidacion en null)
+		                cerrarModalConflicto(); 
+
+		                // 3. Llamamos a la pantalla de espera pasando la COPIA de los datos
+		                mostrarPantallaEsperaYRedirigir(datosParaProcesar, true);
+		            }
+		        });
+		    }
 
     // ------------------------------------------------------------------
     // RESTO DE LISTENERS (RESERVAR)
