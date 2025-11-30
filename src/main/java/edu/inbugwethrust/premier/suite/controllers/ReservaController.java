@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 import edu.inbugwethrust.premier.suite.dto.ConfirmacionReservaDTO;
 import edu.inbugwethrust.premier.suite.application.IReservaHabitacionService;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/reservas")
 public class ReservaController {
@@ -32,6 +34,7 @@ public class ReservaController {
 
         // Si el DTO viene con errores de validación, @Valid dispara
         // MethodArgumentNotValidException y lo maneja tu GlobalExceptionHandler.
+        log.info("Recibiendo solicitud de reserva: {}", confirmacionReservaDTO);
         reservaHabitacionService.registrarReserva(confirmacionReservaDTO);
 
         Map<String, Object> body = new HashMap<>();

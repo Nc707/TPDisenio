@@ -171,50 +171,64 @@ document.addEventListener('DOMContentLoaded', () => {
 		    }
 
     // Construye DTOs a partir de celdas in-range
-    function construirSeleccionDTO() {
-        const seleccionPorHabitacion = {};
+		// Construye DTOs a partir de celdas in-range
+		    function construirSeleccionDTO() {
+		        const seleccionPorHabitacion = {};
+		        const seleccionadas = document.querySelectorAll('.celda-interactiva.in-range');
 
-        const seleccionadas = document.querySelectorAll('.celda-interactiva.in-range');
+		        seleccionadas.forEach(td => {
+		            const hab = td.dataset.habitacion;
+		            const fecha = td.dataset.fecha;
+		            const tipo = td.dataset.tipo || '';
+		            const idEstado = td.dataset.idEstado || null;
+		            const nombres = td.dataset.nombresResponsable || '';
+		            const apellidos = td.dataset.apellidosResponsable || '';
 
-        seleccionadas.forEach(td => {
-            const hab = td.dataset.habitacion;
-            const fecha = td.dataset.fecha;
-            const tipo = td.dataset.tipo || '';
-            const idEstado = td.dataset.idEstado || null;
-            const nombres = td.dataset.nombresResponsable || '';
-            const apellidos = td.dataset.apellidosResponsable || '';
+		            if (!seleccionPorHabitacion[hab]) {
+		                seleccionPorHabitacion[hab] = {
+		                    tipoHabitacion: tipo,
+		                    idEstado: idEstado,
+		                    nombresResponsable: nombres,
+		                    apellidosResponsable: apellidos,
+		                    fechas: []
+		                };
+		            }
+		            seleccionPorHabitacion[hab].fechas.push(fecha);
+		        });
 
-            if (!seleccionPorHabitacion[hab]) {
-                seleccionPorHabitacion[hab] = {
-                    tipoHabitacion: tipo,
-                    idEstado: idEstado,
-                    nombresResponsable: nombres,
-                    apellidosResponsable: apellidos,
-                    fechas: []
-                };
-            }
-            seleccionPorHabitacion[hab].fechas.push(fecha);
-        });
+		        const resultado = [];
+		        Object.keys(seleccionPorHabitacion).forEach(hab => {
+		            const info = seleccionPorHabitacion[hab];
+		            const fechasOrdenadas = info.fechas.slice().sort(); // yyyy-MM-dd
+		            
+		            // 1. Obtenemos la última fecha seleccionada
+		            const ultimaFechaStr = fechasOrdenadas[fechasOrdenadas.length - 1];
+		            
+		            // 2. Le sumamos 1 día para calcular el Egreso real
+		            // Agregamos 'T00:00:00' para asegurar que se interprete como hora local y evitar problemas de zona horaria
+		            const fechaObj = new Date(ultimaFechaStr + 'T00:00:00'); 
+		            fechaObj.setDate(fechaObj.getDate() + 1);
 
-        const resultado = [];
-        Object.keys(seleccionPorHabitacion).forEach(hab => {
-            const info = seleccionPorHabitacion[hab];
-            const fechasOrdenadas = info.fechas.slice().sort(); // yyyy-MM-dd
-            
-            resultado.push({
-                numeroHabitacion: parseInt(hab, 10),
-                fechaIngreso: fechasOrdenadas[0],
-                fechaEgreso: fechasOrdenadas[fechasOrdenadas.length - 1],
-                tipoHabitacion: info.tipoHabitacion,
-                // Extra data
-                idEstado: info.idEstado,
-                nombresResponsable: info.nombresResponsable,
-                apellidosResponsable: info.apellidosResponsable
-            });
-        });
+		            // 3. Formateamos de nuevo a YYYY-MM-DD
+		            const year = fechaObj.getFullYear();
+		            const month = String(fechaObj.getMonth() + 1).padStart(2, '0');
+		            const day = String(fechaObj.getDate()).padStart(2, '0');
+		            const fechaEgresoCalculada = `${year}-${month}-${day}`;
 
-        return resultado;
-    }
+		            resultado.push({
+		                numeroHabitacion: parseInt(hab, 10),
+		                fechaIngreso: fechasOrdenadas[0],
+		                fechaEgreso: fechaEgresoCalculada, // <--- AQUÍ USAMOS LA FECHA +1 DÍA
+		                tipoHabitacion: info.tipoHabitacion,
+		                // Extra data
+		                idEstado: info.idEstado,
+		                nombresResponsable: info.nombresResponsable,
+		                apellidosResponsable: info.apellidosResponsable
+		            });
+		        });
+
+		        return resultado;
+		    }
 
     // Formato fecha visual
     function formatearFechaConHora(fechaISO, horaTexto) {
@@ -250,41 +264,134 @@ document.addEventListener('DOMContentLoaded', () => {
     // ------------------------------------------------------------------
     // Listeners de celdas (selección por rango)
     // ------------------------------------------------------------------
-    celdas.forEach(td => {
-        td.addEventListener('click', () => {
-            const estado = td.dataset.estado;
+		function intentarAplicarRango(habitacion, f1, f2) {
+		        const tdsHab = document.querySelectorAll(`.celda-interactiva[data-habitacion="${habitacion}"]`);
+		        const inicio = f1 < f2 ? f1 : f2; 
+		        const fin = f1 < f2 ? f2 : f1;
 
-            // VALIDACIÓN DE CLICK:
-            // RESERVAR -> Solo LIBRE
-            // OCUPAR -> LIBRE o RESERVADA
-            let esClickValido = false;
-            if (estado === 'LIBRE') esClickValido = true;
-            else if (esModoOcupar && estado === 'RESERVADA') esClickValido = true;
+		        let rangoValido = true;
+		        let celdasEnRango = [];
 
-            if (!esClickValido) return;
+		        // 1. Escanear todo el rango
+		        tdsHab.forEach(td => {
+		            const f = td.dataset.fecha;
+		            
+		            if (f >= inicio && f <= fin) {
+		                const estado = td.dataset.estado;
+		                
+		                // Reglas de Disponibilidad según Modo
+		                let esCeldaUtil = false;
+		                if (modoAccion === 'RESERVAR') {
+		                    // En reservar, solo sirve lo que está 100% LIBRE
+		                    esCeldaUtil = (estado === 'LIBRE');
+		                } else if (modoAccion === 'OCUPAR') {
+		                    // En ocupar, podemos seleccionar LIBRE o RESERVADA
+		                    // (Pero NO ocupada o fuera de servicio)
+		                    esCeldaUtil = (estado === 'LIBRE' || estado === 'RESERVADA');
+		                }
 
-            const habitacion = td.dataset.habitacion;
-            const fecha = td.dataset.fecha;
+		                if (!esCeldaUtil) {
+		                    rangoValido = false;
+		                }
+		                
+		                celdasEnRango.push(td);
+		            }
+		        });
 
-            if (!seleccionInicio) {
-                seleccionInicio = { habitacion, fecha };
-                limpiarSeleccionVisualHabitacion(habitacion);
-                aplicarRangoSeleccion(habitacion, fecha, fecha);
-                return;
-            }
+		        // 2. Si falló, mostramos error y limpiamos
+		        if (!rangoValido) {
+		            alert("No se puede seleccionar este rango: hay días no disponibles en el medio.");
+		            limpiarSeleccionVisualTotal();
+		            return false;
+		        }
 
-            if (seleccionInicio.habitacion !== habitacion) {
-                seleccionInicio = { habitacion, fecha };
-                limpiarSeleccionVisualHabitacion(habitacion);
-                aplicarRangoSeleccion(habitacion, fecha, fecha);
-                return;
-            }
+		        // 3. Si pasó, pintamos
+		        celdasEnRango.forEach(td => {
+		            td.classList.add('in-range');
+		            const chk = td.querySelector('input');
+		            if (chk) chk.checked = true;
+		        });
 
-            const fechaInicio = seleccionInicio.fecha;
-            aplicarRangoSeleccion(habitacion, fechaInicio, fecha);
-            seleccionInicio = null;
-        });
-    });
+		        return true;
+		    }
+				celdas.forEach(td => {
+				        
+				        // A. DOBLE CLICK: Selección instantánea de un día
+				        td.addEventListener('dblclick', (e) => {
+				            e.preventDefault(); 
+				            const estado = td.dataset.estado;
+				            
+				            // Validación inicial
+				            let esValido = (estado === 'LIBRE');
+				            if (esModoOcupar && estado === 'RESERVADA') esValido = true;
+				            
+				            if (!esValido) return;
+
+				            const hab = td.dataset.habitacion;
+				            const fecha = td.dataset.fecha;
+
+				            // Limpiamos cualquier otra cosa
+				            limpiarSeleccionVisualTotal();
+				            
+				            // Aplicamos rango de 1 día (Inicio == Fin)
+				            intentarAplicarRango(hab, fecha, fecha);
+				            
+				            // Reseteamos puntero para que el próximo click empiece de cero
+				            seleccionInicio = null; 
+				        });
+
+				        // B. CLICK SIMPLE: Lógica de Rango
+				        td.addEventListener('click', () => {
+				            const estado = td.dataset.estado;
+				            
+				            // Validación inicial
+				            let esClickValido = (estado === 'LIBRE');
+				            if (esModoOcupar && estado === 'RESERVADA') esClickValido = true;
+
+				            if (!esClickValido) return;
+
+				            const hab = td.dataset.habitacion;
+				            const fecha = td.dataset.fecha;
+
+				            // CASO 1: Deseleccionar (Si toco algo ya pintado y NO estoy arrastrando)
+				            if (!seleccionInicio && td.classList.contains('in-range')) {
+				                limpiarSeleccionVisualTotal();
+				                return;
+				            }
+
+				            // CASO 2: Primer click (Inicio) O cambio de habitación
+				            if (!seleccionInicio || seleccionInicio.habitacion !== hab) {
+				                limpiarSeleccionVisualTotal(); // Borra la anterior
+				                
+				                seleccionInicio = { habitacion: hab, fecha: fecha };
+				                
+				                // Marcamos visualmente este primer cuadro
+				                td.classList.add('selection-start'); // Clase temporal para guiar al ojo
+				                td.classList.add('in-range'); 
+				                const chk = td.querySelector('input'); if(chk) chk.checked = true;
+				            } 
+				            
+				            // CASO 3: Segundo click (Fin del rango en la misma habitación)
+				            else {
+				                // Intentamos llenar el hueco
+				                intentarAplicarRango(hab, seleccionInicio.fecha, fecha);
+				                
+				                // Terminamos la acción
+				                seleccionInicio = null;
+				                
+				                // Limpiamos la marca de "inicio"
+				                document.querySelectorAll('.selection-start').forEach(el => el.classList.remove('selection-start'));
+				            }
+				        });
+				    });
+
+				    // Clic fuera de la grilla limpia todo (opcional, pero útil)
+				    document.addEventListener('click', (e) => {
+				        if (!e.target.closest('.grilla-container') && seleccionInicio) {
+				            limpiarSeleccionVisualTotal();
+				            seleccionInicio = null;
+				        }
+				    });
 
     document.addEventListener('click', (e) => {
         const clicEnGrilla = e.target.closest('.grilla-container');
