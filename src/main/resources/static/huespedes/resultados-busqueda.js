@@ -37,13 +37,11 @@ document.addEventListener('DOMContentLoaded', () => {
             // B. Obtener seleccionados
             const inputsSeleccionados = document.querySelectorAll('input[name="idSeleccionado"]:checked');
 
-            if (inputsSeleccionados.length === 0) {
-                alert("Por favor, seleccione al menos un huésped.");
-                return; 
-            }
-
             // C. Lógica según Modo
             if (accion === 'OCUPAR') {
+							  if(inputsSeleccionados.length === 0) {
+									return;
+								}
                 if (typeof gestorOcupacion !== 'undefined') {
                     
                     const listaHuespedes = Array.from(inputsSeleccionados);
@@ -67,6 +65,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert("Por favor seleccione solo un huésped para editar.");
                     return;
                 }
+								if (inputsSeleccionados.length === 0) {
+									window.location.href = 'formulario-alta';
+									return;
+								}
 
                 const seleccionado = inputsSeleccionados[0];
                 const urlEditar = `/huespedes/editar?tipoDocumento=${encodeURIComponent(seleccionado.dataset.tipoDoc)}&numeroDocumento=${encodeURIComponent(seleccionado.dataset.nroDoc)}`;
