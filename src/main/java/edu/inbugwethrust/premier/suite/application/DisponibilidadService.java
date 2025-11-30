@@ -148,27 +148,38 @@ public class DisponibilidadService implements IDisponibilidadService {
     // CASO B: No tiene reserva, buscamos personas en la Ficha (Ocupación directa)
     else {
         // Intento 1: Buscar responsable directo
-        Huesped huespedEncontrado = fichaGanadora.getResponsable();
-
-        // Intento 2: Si no hay responsable, buscar en acompañantes
-        if (huespedEncontrado == null) {
-            List<Huesped> lista = fichaGanadora.getAcompanantes();
-            // VALIDACIÓN CLAVE: Que no sea nula Y que no esté vacía
-            if (lista != null && !lista.isEmpty()) {
-                huespedEncontrado = lista.getFirst();
+        if(fichaGanadora.getEstadia()!= null && fichaGanadora.getEstadia().getReserva()!= null) {
+          nombre = fichaGanadora.getEstadia().getReserva().getNombreReserva();
+          apellido = fichaGanadora.getEstadia().getReserva().getApellidoReserva();
+        }else {
+          // Intento 2: Buscar cualquier huésped asociado a la ficha
+          Huesped huespedResponsable =
+              fichaGanadora.getResponsable();
+          if (huespedResponsable != null) {
+            nombre = huespedResponsable.getNombres();
+            apellido = huespedResponsable.getApellido();
+          } else {
+            Huesped primerHuesped = fichaGanadora.getAcompanantes().stream().findFirst().orElse(null);
+            if (primerHuesped != null) {
+              nombre = primerHuesped.getNombres();
+              apellido = primerHuesped.getApellido();
+          }
+            else {
+              nombre = "";
+              apellido = "";
             }
         }
 
-        // Si encontramos a alguien (sea responsable o acompañante), asignamos
-        if (huespedEncontrado != null) {
-            nombre = huespedEncontrado.getNombres();
-            apellido = huespedEncontrado.getApellido();
-        }
-        // Si no encontramos a nadie, nombre y apellido quedan como "" (vacíos)
     }
-
+    }
+    Long idReserva;
+    if (fichaGanadora.getReserva() != null) {
+      idReserva = fichaGanadora.getReserva().getIdReserva();
+    } else if(fichaGanadora.getEstadia() != null && fichaGanadora.getEstadia().getReserva() != null) {
+      idReserva = fichaGanadora.getEstadia().getReserva().getIdReserva();
+    } else {idReserva =  -1L;}
     return new EstadoHabitacionDTO(fichaGanadora.getEstado(), nombre, apellido,
-            fichaGanadora.getEstado().ordinal()
+            Math.toIntExact(idReserva)
     );
 }
 
