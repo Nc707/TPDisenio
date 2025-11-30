@@ -117,11 +117,20 @@
                 </th:block>
 
                 <th:block th:unless="${estadoDTO.estado == T(edu.inbugwethrust.premier.suite.model.EstadoHabitacion).LIBRE}">
-                    <div class="status-circle"
-                         th:classappend="' status-' + ${estadoDTO.estado.toString().toLowerCase()}">
-                         
-                         </div>
-                </th:block>
+    
+    <div class="cell-content-wrapper"> <div class="status-circle"
+             th:classappend="' status-' + ${estadoDTO.estado.toString().toLowerCase()}"
+             th:text="${estadoDTO.idEstado}"> </div>
+
+        <div class="custom-tooltip" 
+             th:if="${estadoDTO.nombresResponsable != null or estadoDTO.apellidosResponsable != null}">
+            <span th:text="${estadoDTO.apellidosResponsable}">Pérez</span>, 
+            <span th:text="${estadoDTO.nombresResponsable}">Juan</span>
+        </div>
+
+    </div>
+
+</th:block>
 
             </div>
         </td>

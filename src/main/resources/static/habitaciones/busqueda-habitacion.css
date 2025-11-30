@@ -525,3 +525,89 @@
     text-transform: uppercase;
     letter-spacing: 1px;
 }
+/* =========================================
+   ESTILOS PARA DATOS EN GRILLA (ID + TOOLTIP)
+   ========================================= */
+
+/* Necesario para posicionar el tooltip relativo a la celda */
+.cell-content-wrapper {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+/* Ajustes al círculo para mostrar el número */
+.status-circle {
+    /* Mantenemos tus dimensiones originales, asegúrate que sean suficientes */
+    width: 24px;  /* Ajusta si el número no entra */
+    height: 24px;
+    border-radius: 50%;
+    
+    /* Centrado del texto (ID) */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    /* Estilo del texto */
+    color: black;       /* Texto blanco para contraste */
+    font-size: 10px;    /* Letra pequeña para que entre */
+    font-weight: bold;
+    font-family: sans-serif;
+    
+    cursor: help; /* Cambia el cursor para indicar que hay info */
+}
+
+/* La viñeta (Tooltip) - Oculta por defecto */
+.custom-tooltip {
+    display: none; /* Oculto */
+    position: absolute;
+    bottom: 120%; /* Aparece justo arriba del círculo */
+    left: 50%;
+    transform: translateX(-50%); /* Centrado horizontalmente */
+    
+    /* Estilo visual de la viñeta */
+    background-color: #333;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap; /* Evita que el nombre se corte en dos líneas */
+    z-index: 100; /* Asegura que flote sobre otras celdas */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    pointer-events: none; /* Para que el mouse no interactúe con el tooltip */
+}
+
+/* Flechita decorativa del tooltip (opcional) */
+.custom-tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%; /* Abajo del tooltip */
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+}
+
+/* MOSTRAR EL TOOLTIP AL PASAR EL MOUSE */
+.cell-content-wrapper:hover .custom-tooltip {
+    display: block;
+    animation: fadeInTooltip 0.2s ease-in-out;
+}
+
+@keyframes fadeInTooltip {
+    from { opacity: 0; transform: translate(-50%, 5px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* Ajuste específico para que el texto sea legible en los colores claros si usas alguno */
+.status-libre { color: transparent; } /* En libre no mostramos nada */
+
+/* Sobrescribimos el cursor solo para las libres */
+.status-circle.status-libre {
+    cursor: pointer; /* Muestra la 'manito' indicando que se puede hacer clic */
+    /* O usa: cursor: default; si prefieres la flecha normal */
+}
