@@ -22,6 +22,6 @@ public class ServiciosAdicionales {
     @ManyToOne(optional = false)
     @JoinColumn(name = "id_estadia", nullable = false)
     private Estadia estadia;
-
+    @Enumerated(EnumType.STRING) 
     private TipoServicio tipoServicio;
 }

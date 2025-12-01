@@ -1,11 +1,4 @@
- 1. HABITACIONES Y TIPOS
--- =======================
-INSERT INTO tipo_habitacion (nombre, costo_noche, maximo_huespedes) VALUES ('Doble Superior', 90000.00, 2);
-
-INSERT INTO habitacion (numero, piso, tipo_habitacion_id) VALUES (101, 1, 'Doble Superior');
-INSERT INTO habitacion (numero, piso, tipo_habitacion_id) VALUES (102, 1, 'Doble Superior');
-
--- 2. HUÉSPEDES (Datos provistos corregidos para Huesped.java)
+-- 1. HUÉSPEDES (Datos provistos corregidos para Huesped.java)
 -- =======================
 -- Corrección: Se agrega 'estado_huesped' y se ajusta largo de documentos a 8 chars.
 

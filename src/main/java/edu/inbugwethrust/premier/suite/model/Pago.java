@@ -28,8 +28,9 @@ public class Pago {
     @JoinColumn(name = "id_factura", nullable = false)
     private  Factura factura;
     
-    //TODO agregar metodo de pago
-    //private MetodoPago metodoDePago; 
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "metodo_pago_id")
+    private MetodoPago metodoDePago; 
 }
 
 

@@ -9,8 +9,8 @@ import java.time.LocalDate;
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor
 public class Cheque extends MetodoPago {
-
-    @Id
+    
+    @Column(unique = true)
     private String numero;
 
     private LocalDate fechaCobro;

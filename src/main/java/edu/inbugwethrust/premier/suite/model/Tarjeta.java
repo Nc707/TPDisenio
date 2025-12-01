@@ -9,8 +9,8 @@ import lombok.*;
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor
 public class Tarjeta extends MetodoPago{
-
-    @Id
+    
+    @Column(unique = true)
     private String numero;
 
     private String banco;
