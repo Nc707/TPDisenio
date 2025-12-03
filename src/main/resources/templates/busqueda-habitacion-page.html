@@ -285,55 +285,65 @@
     <script th:src="seleccion-rango.js"></script>
 
     <!-- Validación de rango de fechas -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const formBusqueda = document.getElementById('form-busqueda');
-            const fechaDesde   = document.getElementById('fecha-desde');
-            const fechaHasta   = document.getElementById('fecha-hasta');
-            const errorFechas  = document.getElementById('mensaje-error-fechas');
+   <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const formBusqueda = document.getElementById('form-busqueda');
+        const fechaDesde   = document.getElementById('fecha-desde');
+        const fechaHasta   = document.getElementById('fecha-hasta');
+        const errorFechas  = document.getElementById('mensaje-error-fechas');
 
-            if (formBusqueda) {
-                formBusqueda.addEventListener('submit', function(e) {
-                    const desde = fechaDesde.value;
-                    const hasta = fechaHasta.value;
+        if (formBusqueda) {
+            formBusqueda.addEventListener('submit', function(e) {
+                const desde = fechaDesde.value;
+                const hasta = fechaHasta.value;
+                let mensaje = '';
 
-                    // Si falta una o ambas fechas: error "Ingrese ambas fechas."
-                    if (!desde || !hasta) {
-                        e.preventDefault();
-                        if (errorFechas) {
-                            errorFechas.classList.remove('hidden');
-                            errorFechas.textContent = 'Ingrese ambas fechas.';
-                        }
-                        return;
-                    }
+                // Reiniciamos el estado del error antes de validar
+                if (errorFechas) {
+                    errorFechas.classList.add('hidden');
+                    errorFechas.textContent = '';
+                }
 
-                    // Si la fecha desde es mayor que la fecha hasta: error "Ingrese bien la fecha."
-                    if (desde > hasta) {
-                        e.preventDefault();
-                        if (errorFechas) {
-                            errorFechas.classList.remove('hidden');
-                            errorFechas.textContent = 'Ingrese bien la fecha.';
-                        }
-                        return;
-                    }
+                // CASO 1: Faltan ambas fechas
+                if (!desde && !hasta) {
+                    mensaje = 'Por favor, seleccione tanto la fecha de ingreso como la de egreso.';
+                }
+                // CASO 2: Falta solo fecha desde
+                else if (!desde) {
+                    mensaje = 'Debe indicar una fecha de ingreso.';
+                }
+                // CASO 3: Falta solo fecha hasta
+                else if (!hasta) {
+                    mensaje = 'Debe indicar una fecha de egreso.';
+                }
+                // CASO 4: Incoherencia (Desde mayor que Hasta)
+                else if (desde > hasta) {
+                    mensaje = 'La fecha de ingreso no puede ser posterior a la fecha de egreso.';
+                }
 
-                    // Si todo está bien, ocultar el error
+                // Si se generó algún mensaje de error, prevenimos el envío y mostramos el mensaje
+                if (mensaje) {
+                    e.preventDefault();
                     if (errorFechas) {
-                        errorFechas.classList.add('hidden');
+                        errorFechas.classList.remove('hidden');
+                        errorFechas.textContent = mensaje;
                     }
-                });
+                }
+            });
 
-                [fechaDesde, fechaHasta].forEach(function(input) {
-                    if (input) {
-                        input.addEventListener('input', function() {
-                            if (errorFechas) {
-                                errorFechas.classList.add('hidden');
-                            }
-                        });
-                    }
-                });
-            }
-        });
-    </script>
+            // Listener para ocultar el error en cuanto el usuario toca un input
+            [fechaDesde, fechaHasta].forEach(function(input) {
+                if (input) {
+                    input.addEventListener('input', function() {
+                        if (errorFechas) {
+                            errorFechas.classList.add('hidden');
+                            errorFechas.textContent = ''; // Limpiamos el texto también
+                        }
+                    });
+                }
+            });
+        }
+    });
+</script>
 </th:block>
 </html>
