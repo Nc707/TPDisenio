@@ -50,7 +50,7 @@
 
                     <!-- MENSAJE DE ERROR FECHAS -->
                     <div id="mensaje-error-fechas" class="mensaje-error hidden">
-                        Ingrese bien la fecha.
+                        Ingrese ambas fechas.
                     </div>
 
                     <div class="form-row">
@@ -294,13 +294,31 @@
 
             if (formBusqueda) {
                 formBusqueda.addEventListener('submit', function(e) {
-                    if (fechaDesde.value && fechaHasta.value && fechaDesde.value > fechaHasta.value) {
+                    const desde = fechaDesde.value;
+                    const hasta = fechaHasta.value;
+
+                    // Si falta una o ambas fechas: error "Ingrese ambas fechas."
+                    if (!desde || !hasta) {
+                        e.preventDefault();
+                        if (errorFechas) {
+                            errorFechas.classList.remove('hidden');
+                            errorFechas.textContent = 'Ingrese ambas fechas.';
+                        }
+                        return;
+                    }
+
+                    // Si la fecha desde es mayor que la fecha hasta: error "Ingrese bien la fecha."
+                    if (desde > hasta) {
                         e.preventDefault();
                         if (errorFechas) {
                             errorFechas.classList.remove('hidden');
                             errorFechas.textContent = 'Ingrese bien la fecha.';
                         }
-                    } else if (errorFechas) {
+                        return;
+                    }
+
+                    // Si todo está bien, ocultar el error
+                    if (errorFechas) {
                         errorFechas.classList.add('hidden');
                     }
                 });
