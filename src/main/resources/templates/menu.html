@@ -4,24 +4,46 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout.html}">
 <head>
-  <!-- El título se insertará en la plantilla maestra -->
-  <title>Menú Principal</title>
+    <!-- El título se insertará en la plantilla maestra -->
+    <title>Menú Principal</title>
 </head>
 <body>
 
-  <!-- 2. Definimos el bloque "content" que se insertará en el layout -->
-  <div class="form-container" layout:fragment="content">
+<!-- 2. Definimos el bloque "content" que se insertará en el layout -->
+<div class="form-container" layout:fragment="content">
     <h1>Menú Principal</h1>
 
     <!-- Enlaces del menú -->
     <div class="menu-links">
-      <!-- Usamos th:href para las rutas de Spring -->
-      <a th:href="@{/habitaciones/formulario-busqueda}" class="btn-primary">Mostrar Estado de Habitaciones</a>
-      <a th:href="@{/huespedes/formulario-alta}" class="btn-primary">Dar de alta un Huesped</a>
-      <a th:href="@{/huespedes/buscar}" class="btn-primary">Buscar Huespedes</a>
+        <!-- Mostrar solo disponibilidad de habitaciones -->
+        <a th:href="@{/habitaciones/buscar(accion='DISPONIBILIDAD')}"
+           class="btn-primary">
+            Mostrar Estado de Habitaciones
+        </a>
+
+        <!-- Caso de uso: Reservar habitaciones -->
+        <a th:href="@{/habitaciones/buscar(accion='RESERVAR')}"
+           class="btn-primary">
+            Reservar Habitaciones
+        </a>
+
+        <!-- Caso de uso: Ocupar habitación (check-in) -->
+        <a th:href="@{/habitaciones/buscar(accion='OCUPAR')}"
+           class="btn-primary">
+            Ocupar Habitación
+        </a>
+
+        <!-- Otros casos de uso ya existentes -->
+        <a th:href="@{/huespedes/formulario-alta}" class="btn-primary">
+            Dar de alta un Huésped
+        </a>
+
+        <a th:href="@{/huespedes/buscar}" class="btn-primary">
+            Buscar Huéspedes
+        </a>
     </div>
 
-  </div>
+</div>
 
 </body>
 </html>

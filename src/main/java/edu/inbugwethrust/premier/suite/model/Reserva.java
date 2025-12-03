@@ -1,0 +1,49 @@
+package edu.inbugwethrust.premier.suite.model;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
+@Table(name = "reserva")
+public class Reserva {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long idReserva;
+
+
+    @Enumerated(EnumType.STRING)
+    private EstadoReserva estadoReserva;
+
+    @OneToMany(mappedBy = "reserva", cascade = CascadeType.ALL)
+    private List<FichaEvento> listaFichaEventos = new ArrayList<>();
+
+    @OneToOne(mappedBy = "reserva")
+    private Estadia estadia;
+
+    @Column(name = "apellido_reserva", length = 50, nullable = false)
+    private String apellidoReserva;
+
+    @Column(name = "nombre_reserva", length = 50, nullable = false)
+    private String nombreReserva;
+
+    @Column(name = "telefono_reserva", length = 30, nullable = false)
+    private String telefonoReserva;
+
+        // (Opcional) helpers para mantener la bidireccionalidad
+    public void agregarFichaEvento(FichaEvento ficha) {
+        listaFichaEventos.add(ficha);
+        ficha.setReserva(this);
+    }
+
+    public void quitarFichaEvento(FichaEvento ficha) {
+        listaFichaEventos.remove(ficha);
+        ficha.setReserva(null);
+    }
+}

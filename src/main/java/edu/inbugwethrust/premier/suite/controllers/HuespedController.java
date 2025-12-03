@@ -9,7 +9,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 import edu.inbugwethrust.premier.suite.dto.BusquedaHuespedDTO;
 import edu.inbugwethrust.premier.suite.dto.HuespedDTO;
-import edu.inbugwethrust.premier.suite.model.Huesped;
+import edu.inbugwethrust.premier.suite.dto.IdentificacionHuespedDTO;
 import edu.inbugwethrust.premier.suite.services.IGestorHuespedes;
 import jakarta.validation.Valid;
 
@@ -32,7 +32,14 @@ public class HuespedController {
      */
     @GetMapping("formulario-alta")
     public String obtenerFormularioAlta() {
-    	        return "alta-huesped-page.html";
+	        return "alta-huesped-page.html";
+    }
+    @GetMapping("editar")
+    public String obtenerFormularioEdicion(@ModelAttribute IdentificacionHuespedDTO idHuesped, Model model) {
+      HuespedDTO huesped = gestorHuespedes.buscarPorId(idHuesped);
+      model.addAttribute("huesped", huesped);
+      return "alta-huesped-page.html";
+      
     }
     
      /**
@@ -42,13 +49,13 @@ public class HuespedController {
      */
     @PostMapping("api/alta")
     @ResponseBody
-    public ResponseEntity<Huesped> darAlta(@Valid @RequestBody HuespedDTO dto) {
+    public ResponseEntity<HuespedDTO> darAlta(@Valid @RequestBody HuespedDTO dto) {
     	// 1. Si la validación falla (ej. apellido en blanco, email inválido)
         //    Spring lanzará una "MethodArgumentNotValidException" AUTOMÁTICAMENTE.
         
         // 2. Esta línea de código NUNCA se ejecutará si la validación falla.
     	
-        Huesped creado = gestorHuespedes.dar_alta_huesped(dto);
+        HuespedDTO creado = gestorHuespedes.dar_alta_huesped(dto);
         // si llegó hasta acá es porque no hubo excepción
         return ResponseEntity.ok(creado);
     }
@@ -60,8 +67,8 @@ public class HuespedController {
      */
     @PostMapping("api/alta-forzar")
     @ResponseBody
-    public ResponseEntity<Huesped> darAltaForzada(@Valid @RequestBody HuespedDTO dto) {
-        Huesped creado = gestorHuespedes.dar_alta_huesped_forzar(dto);
+    public ResponseEntity<HuespedDTO> darAltaForzada(@Valid @RequestBody HuespedDTO dto) {
+        HuespedDTO creado = gestorHuespedes.dar_alta_huesped_forzar(dto);
         return ResponseEntity.ok(creado);
     }
 
@@ -71,35 +78,67 @@ public class HuespedController {
     // -------------------------------------------------
 
     @GetMapping("/buscar")
-    public String mostrarFormularioBusqueda(Model model) {
+    public String mostrarFormularioBusqueda(
+            // Parámetros de control de flujo
+            @RequestParam(name = "accion", defaultValue = "BUSCAR") String accion,
+            
+            // Parámetros de contexto "Ocupar" (pueden venir nulos si es una búsqueda normal)
+            @RequestParam(name = "numeroHabitacion", required = false) Integer numeroHabitacion,
+            @RequestParam(name = "fechaIngreso", required = false) String fechaIngreso,
+            @RequestParam(name = "fechaEgreso", required = false) String fechaEgreso,
+            
+            Model model) {
+
         if (!model.containsAttribute("busquedaHuespedDTO")) {
             model.addAttribute("busquedaHuespedDTO", new BusquedaHuespedDTO());
         }
+        
+        // Pasamos estos datos a la vista para que Thymeleaf los meta en hidden inputs
+        model.addAttribute("accion", accion);
+        model.addAttribute("numeroHabitacion", numeroHabitacion);
+        model.addAttribute("fechaIngreso", fechaIngreso);
+        model.addAttribute("fechaEgreso", fechaEgreso);
+
         return "buscar-huesped-page";
     }
     
     @GetMapping("/resultados")
     public String buscarHuespedes(
-            @ModelAttribute("busquedaHuespedDTO") BusquedaHuespedDTO dto, 
+            @ModelAttribute("busquedaHuespedDTO") BusquedaHuespedDTO dto,
+            
+            // Capturamos los mismos params para mantener el contexto
+            @RequestParam(name = "accion", defaultValue = "BUSCAR") String accion,
+            @RequestParam(name = "numeroHabitacion", required = false) Integer numeroHabitacion,
+            @RequestParam(name = "fechaIngreso", required = false) String fechaIngreso,
+            @RequestParam(name = "fechaEgreso", required = false) String fechaEgreso,
+            
             Model model,
             RedirectAttributes redirectAttributes) {
         
-        
-        List<Huesped> listaResultados = gestorHuespedes.buscar_huespedes(dto);
+        List<HuespedDTO> listaResultados = gestorHuespedes.buscar_huespedes(dto);
         
         if (listaResultados.isEmpty()) {
-            // 3. Agregamos el mensaje "Flash" (vive solo una petición)
-            redirectAttributes.addFlashAttribute("mensajeToast", "No se encontraron resultados con esos criterios. Intente nuevamente.");
-            redirectAttributes.addFlashAttribute("tipoToast", "warning"); // Opcional: para cambiar color
+            redirectAttributes.addFlashAttribute("mensajeToast", "No se encontraron resultados.");
+            redirectAttributes.addFlashAttribute("tipoToast", "warning");
             
-            // 4. Redirigimos AL FORMULARIO DE BÚSQUEDA (no a la tabla vacía)
-            return "redirect:/huespedes/buscar"; 
+            // IMPORTANTE: Al redirigir, debemos pegar los parámetros de nuevo 
+            // para no perder el hilo de la habitación que estamos ocupando.
+            redirectAttributes.addAttribute("accion", accion);
+            if (numeroHabitacion != null) redirectAttributes.addAttribute("numeroHabitacion", numeroHabitacion);
+            if (fechaIngreso != null) redirectAttributes.addAttribute("fechaIngreso", fechaIngreso);
+            if (fechaEgreso != null) redirectAttributes.addAttribute("fechaEgreso", fechaEgreso);
+            
+            return "redirect:/huespedes/formulario-alta"; 
         }
         
-        // 2. Pasamos la lista a la vista
         model.addAttribute("huespedes", listaResultados);
         
-        // 3. Vamos a la nueva vista (que crearemos abajo)
+        // Pasamos de nuevo el contexto a la vista de resultados
+        model.addAttribute("accion", accion);
+        model.addAttribute("numeroHabitacion", numeroHabitacion);
+        model.addAttribute("fechaIngreso", fechaIngreso);
+        model.addAttribute("fechaEgreso", fechaEgreso);
+        
         return "resultados-huesped-page";
     }
     /**
@@ -111,10 +150,10 @@ public class HuespedController {
      */    
     @PostMapping("/api/buscar")
     @ResponseBody
-    public ResponseEntity<List<Huesped>> buscarHuespedes(
+    public ResponseEntity<List<HuespedDTO>> buscarHuespedes(
             @RequestBody(required = false) BusquedaHuespedDTO busqueda) {
 
-        List<Huesped> resultados = gestorHuespedes.buscar_huespedes(busqueda);
+        List<HuespedDTO> resultados = gestorHuespedes.buscar_huespedes(busqueda);
 
         if (resultados.isEmpty()) {
             // No hay resultados → no existe ninguna concordancia según CU02 → CU11

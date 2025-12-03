@@ -4,7 +4,7 @@
       layout:decorate="~{layout.html}">
 <head>
     <title>Resultados de Búsqueda</title>
-    <link rel="stylesheet" th:href="@{resultados-huesped.css}">
+    <link rel="stylesheet" th:href="resultados-huesped.css">
 </head>
 <body>
 
@@ -15,30 +15,37 @@
     <div class="form-container" layout:fragment="content">
         
         <h1 class="titulo-resultados">Buscar Huésped</h1>
+       
+        <form id="form-resultados" th:action="@{/huespedes/seleccionar}" method="post">
 
-        <form th:action="@{/huespedes/seleccionar}" method="post">
+            <input type="hidden" id="input-accion" name="accion" th:value="${accion}" />
+            <input type="hidden" name="numeroHabitacion" th:value="${numeroHabitacion}" />
+            <input type="hidden" name="fechaIngreso" th:value="${fechaIngreso}" />
+            <input type="hidden" name="fechaEgreso" th:value="${fechaEgreso}" />
             
             <div class="table-scroll-container">
-                <table class="result-table">
+                <table class="result-table" id="tabla-resultados">
                     <thead>
                         <tr>
-                            <th>Apellido</th>
-                            <th>Nombre</th>
-                            <th>Tipo de documento</th>
-                            <th>Número de Documento</th>
-                            <th style="width: 40px;"></th> </tr>
+                            <th onclick="ordenarTabla(0)" class="sortable">Apellido <span class="sort-icon">⇅</span></th>
+                            <th onclick="ordenarTabla(1)" class="sortable">Nombre <span class="sort-icon">⇅</span></th>
+                            <th onclick="ordenarTabla(2)" class="sortable">Tipo Doc <span class="sort-icon">⇅</span></th>
+                            <th onclick="ordenarTabla(3)" class="sortable">Número Doc <span class="sort-icon">⇅</span></th>
+                            <th style="width: 40px;"></th> 
+                        </tr>
                     </thead>
                     <tbody>
                         <tr th:each="h : ${huespedes}">
-                            <td th:text="${h.apellido}">APELLIDO 1</td>
-                            <td th:text="${h.nombres}">NOMBRE 1</td>
-                            <td th:text="${h.tipoDocumento}">TIPO 1</td>
+                            <td th:text="${h.apellido}">APELLIDO</td>
+                            <td th:text="${h.nombres}">NOMBRE</td>
+                            <td th:text="${h.tipoDocumento}">DNI</td>
                             <td th:text="${h.numeroDocumento}">0000001</td>
                             <td class="radio-cell">
-                                <input type="radio" 
+                                <input type="checkbox" 
                                        name="idSeleccionado" 
-                                       th:value="${h.tipoDocumento} + '_' + ${h.numeroDocumento}" 
-                                       required>
+                                       th:value="${h.tipoDocumento} + '_' + ${h.numeroDocumento}"
+                                       th:data-tipo-doc="${h.tipoDocumento}"
+                                       th:data-nro-doc="${h.numeroDocumento}">
                             </td>
                         </tr>
                         
@@ -52,14 +59,48 @@
             </div>
 
             <div class="footer-buttons">
-                <a th:href="@{/huespedes/buscar}" class="btn-custom btn-cancelar">CANCELAR</a>
+                <button type="button" id="btn-cancelar" class="btn-custom btn-cancelar">CANCELAR</button>
                 
-                <button type="submit" class="btn-custom btn-siguiente" 
+                <button type="submit" id="btn-siguiente" class="btn-custom btn-siguiente" 
                         th:disabled="${#lists.isEmpty(huespedes)}">
                     SIGUIENTE
                 </button>
             </div>
         </form>
+    </div>
+
+    <div layout:fragment="modals">
+        <div id="modal-accion" class="modal-overlay">
+            <div class="modal-box">
+                <div class="modal-header"><span>Premier</span></div>
+                <div class="modal-content">¿Qué desea hacer ahora?</div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-modal" onclick="gestorOcupacion.finalizarSalir()">SALIR</button>
+                    <button type="button" class="btn-modal" onclick="gestorOcupacion.cargarOtraHabitacion()">CARGAR OTRA HABITACIÓN</button>
+                    <button type="button" class="btn-modal" onclick="gestorOcupacion.seguirCargando()">SEGUIR</button>
+                </div>
+            </div>
+        </div>
+        <div id="modal-feedback" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header" id="feedback-header-bg">
+            <div id="feedback-header-title" style="display:flex; gap:10px; align-items:center;">
+                </div>
+            <span>Premier</span>
+        </div>
+        
+        <div class="modal-content" id="feedback-message">
+            </div>
+        
+        <div class="modal-footer">
+            <button type="button" class="btn-modal" id="btn-feedback-aceptar">ACEPTAR</button>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/huespedes/gestor-ocupacion.js}"></script>
+        <script th:src="@{/huespedes/gestor-ocupacion.js}"></script>
+        <script th:src="@{/huespedes/resultados-busqueda.js}"></script>
     </div>
 
 </body>
