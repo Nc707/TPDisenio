@@ -10,6 +10,7 @@ import edu.inbugwethrust.premier.suite.dto.DatosHuespedReservaDTO;
 import edu.inbugwethrust.premier.suite.dto.OcupacionHabitacionDTO;
 import edu.inbugwethrust.premier.suite.dto.SeleccionHabitacionDTO;
 import edu.inbugwethrust.premier.suite.mappers.HuespedMapper;
+import edu.inbugwethrust.premier.suite.model.Estadia;
 import edu.inbugwethrust.premier.suite.model.EstadoHabitacion;
 import edu.inbugwethrust.premier.suite.model.EstadoReserva;
 import edu.inbugwethrust.premier.suite.model.FichaEvento;
@@ -19,6 +20,7 @@ import edu.inbugwethrust.premier.suite.model.HuespedID;
 import edu.inbugwethrust.premier.suite.model.Reserva;
 import edu.inbugwethrust.premier.suite.repositories.HuespedDAO;
 import edu.inbugwethrust.premier.suite.repositories.ReservaDAO;
+import edu.inbugwethrust.premier.suite.services.exceptions.HabitacionesSolapadasEnReservaException;
 
 @Service
 public class GestorReservas {
@@ -80,11 +82,12 @@ public class GestorReservas {
 
   public Reserva crearReservaWalkIn(List<OcupacionHabitacionDTO> dtos,
       Map<Integer, Habitacion> mapaHabitaciones,
-      Map<HuespedID, Huesped> mapaHuespedes) {
+      Map<Integer, Huesped> mapaHuespedesResponsables,
+      Estadia estadia) {
 
     // 1. Obtener datos del titular (del primer DTO)
     OcupacionHabitacionDTO primerDto = dtos.get(0);
-    Huesped titular = mapaHuespedes.get(mapper.toId(primerDto.getIdsAcompanantes().getFirst()));
+    Huesped titular = mapaHuespedesResponsables.get(primerDto.getNumeroHabitacion());
 
     // 2. Cabecera Reserva
     Reserva reserva = new Reserva();
@@ -92,6 +95,7 @@ public class GestorReservas {
     reserva.setApellidoReserva(titular.getApellido());
     reserva.setNombreReserva(titular.getNombres());
     reserva.setTelefonoReserva(titular.getTelefono());
+    reserva.setEstadia(estadia);
 
     // 3. Generar las Fichas de Reserva (Espejo de la ocupación)
     for (OcupacionHabitacionDTO dto : dtos) {
@@ -131,6 +135,45 @@ public class GestorReservas {
     return reserva;
   }
 
+    /**
+   * Valida que, dentro de una misma solicitud de reserva (lista de selecciones),
+   * no se intente reservar la misma habitación en rangos de fechas que se solapen.
+   *
+   * Regla de negocio:
+   *   - Para una misma habitación, los rangos [ingreso, egreso] no deben intersectarse.
+   *
+   * Lanza HabitacionesSolapadasEnReservaException si encuentra un solapamiento.
+   */
+  public void validarSolapamientosInternos(List<SeleccionHabitacionDTO> selecciones) {
+
+    if (selecciones == null || selecciones.size() <= 1) {
+      return; // Nada que validar
+    }
+
+    for (int i = 0; i < selecciones.size(); i++) {
+      SeleccionHabitacionDTO sel1 = selecciones.get(i);
+
+      for (int j = i + 1; j < selecciones.size(); j++) {
+        SeleccionHabitacionDTO sel2 = selecciones.get(j);
+
+        // Si es la misma habitación, verificamos si las fechas chocan
+        if (sel1.getNumeroHabitacion().equals(sel2.getNumeroHabitacion())) {
+
+          boolean seSolapan =
+              sel1.getFechaIngreso().isBefore(sel2.getFechaEgreso())
+                  && sel1.getFechaEgreso().isAfter(sel2.getFechaIngreso());
+
+          if (seSolapan) {
+            throw new HabitacionesSolapadasEnReservaException(
+                "Se intenta reservar la habitación " + sel1.getNumeroHabitacion()
+                    + " dos veces en fechas superpuestas dentro de la misma solicitud.");
+          }
+        }
+      }
+    }
+  }
+
+
   /**
    * Persiste la reserva (agregado raíz). Por cascade en listaFichaEventos se guardan también las
    * FichaEvento asociadas.
@@ -142,12 +185,13 @@ public class GestorReservas {
   /**
    * Marca la reserva como EN_CURSO (check-in iniciado) y la persiste.
    */
-  public void marcarReservaComoEnCurso(Reserva reserva) {
+  public void marcarReservaComoEnCurso(Reserva reserva, Estadia estadia) {
     if (reserva == null) {
       throw new IllegalArgumentException("La reserva no puede ser nula");
     }
 
     reserva.setEstadoReserva(EstadoReserva.EFECTUADA);
+    reserva.setEstadia(estadia);
     reservaDAO.save(reserva);
   }
 }

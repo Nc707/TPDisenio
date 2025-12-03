@@ -1,32 +1,33 @@
 package edu.inbugwethrust.premier.suite.application;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import edu.inbugwethrust.premier.suite.dto.IdentificacionHuespedDTO;
 import edu.inbugwethrust.premier.suite.dto.OcupacionHabitacionDTO;
 import edu.inbugwethrust.premier.suite.dto.RegistrarOcupacionesRequestDTO;
+import edu.inbugwethrust.premier.suite.dto.ResultadoValidacionHabitacionDTO;
+import edu.inbugwethrust.premier.suite.dto.SeleccionHabitacionOcupacionDTO;
+import edu.inbugwethrust.premier.suite.dto.ValidarOcupacionesRequestDTO;
+import edu.inbugwethrust.premier.suite.dto.ValidarOcupacionesResponseDTO;
 import edu.inbugwethrust.premier.suite.model.Estadia;
-import edu.inbugwethrust.premier.suite.model.FichaEvento;
 import edu.inbugwethrust.premier.suite.model.Habitacion;
 import edu.inbugwethrust.premier.suite.model.Huesped;
 import edu.inbugwethrust.premier.suite.model.HuespedID;
 import edu.inbugwethrust.premier.suite.model.Reserva;
-import edu.inbugwethrust.premier.suite.services.GestorHabitaciones;
+import edu.inbugwethrust.premier.suite.services.GestorEstadia;
 import edu.inbugwethrust.premier.suite.services.GestorFichaEvento;
+import edu.inbugwethrust.premier.suite.services.GestorHabitaciones;
 import edu.inbugwethrust.premier.suite.services.GestorReservas;
 import edu.inbugwethrust.premier.suite.services.IGestorHuespedes;
-import edu.inbugwethrust.premier.suite.services.GestorEstadia; // lo crearás después
 
 @Service
 public class OcuparHabitacionService implements IOcuparHabitacionService {
@@ -39,8 +40,10 @@ public class OcuparHabitacionService implements IOcuparHabitacionService {
 
   @Autowired
   public OcuparHabitacionService(GestorHabitaciones gestorHabitaciones,
-      GestorFichaEvento gestorFichaEvento, GestorReservas gestorReservas,
-      IGestorHuespedes gestorHuespedes, GestorEstadia gestorEstadia) {
+                                 GestorFichaEvento gestorFichaEvento,
+                                 GestorReservas gestorReservas,
+                                 IGestorHuespedes gestorHuespedes,
+                                 GestorEstadia gestorEstadia) {
     this.gestorHabitaciones = gestorHabitaciones;
     this.gestorFichaEvento = gestorFichaEvento;
     this.gestorReservas = gestorReservas;
@@ -48,125 +51,168 @@ public class OcuparHabitacionService implements IOcuparHabitacionService {
     this.gestorEstadia = gestorEstadia;
   }
 
+
+    /**
+   * CU15 – Paso 3.
+   *
+   * Recibe solo habitaciones + fechas (sin acompañantes) y:
+   * - Reutiliza GestorEstadia.validarOcupaciones para chequear fechas y existencia.
+   * - Usa GestorFichaEvento para ver si hay reservas en el rango.
+   *
+   * NO persiste nada, solo informa al front qué habitaciones son válidas
+   * y si tienen una reserva asociada.
+   */
+  @Transactional(readOnly = true)
+  @Override
+  public ValidarOcupacionesResponseDTO prevalidarOcupaciones(ValidarOcupacionesRequestDTO request) {
+
+    Objects.requireNonNull(request, "El request de validación de ocupaciones no puede ser nulo");
+
+    // 1) Normalizar lista de selecciones
+    List<SeleccionHabitacionOcupacionDTO> selecciones = request.getOcupaciones();
+
+    // 2) Armar set de números de habitación
+    Set<Integer> numerosHabitacion = selecciones.stream()
+        .map(SeleccionHabitacionOcupacionDTO::getNumeroHabitacion)
+        .collect(Collectors.toSet());
+
+    // 3) Obtener mapa de habitaciones (según lo que ya tengas implementado)
+    Map<Integer, Habitacion> mapaHabitaciones =
+        gestorHabitaciones.obtenerMapaPorNumeros(numerosHabitacion);
+
+    // 4) Adaptar las selecciones "livianas" a OcupacionHabitacionDTO mínimos
+    List<OcupacionHabitacionDTO> ocupacionesMinimas = new ArrayList<>();
+
+    for (SeleccionHabitacionOcupacionDTO sel : selecciones) {
+      OcupacionHabitacionDTO dto = new OcupacionHabitacionDTO();
+      dto.setNumeroHabitacion(sel.getNumeroHabitacion());
+      dto.setFechaIngreso(sel.getFechaIngreso());
+      dto.setFechaEgreso(sel.getFechaEgreso());
+      // En el paso 3 NO hay acompañantes, ni forzarSobreReserva
+      dto.setIdsAcompanantes(new ArrayList<>());
+      dto.setForzarSobreReserva(false);
+      ocupacionesMinimas.add(dto);
+    }
+
+    // 5) Reutilizar las validaciones generales de GestorEstadia
+    //    (fechas válidas por habitación, existencia, capacidad – aquí 0 acompañantes)
+    gestorEstadia.validarOcupaciones(ocupacionesMinimas, mapaHabitaciones);
+
+    // 6) Para cada ocupación mínima, consultar disponibilidad y reserva
+    List<ResultadoValidacionHabitacionDTO> resultados = new ArrayList<>();
+
+    for (OcupacionHabitacionDTO dto : ocupacionesMinimas) {
+
+      Habitacion habitacion = mapaHabitaciones.get(dto.getNumeroHabitacion());
+
+      // Este método NO persiste nada, solo lee FichaEvento y
+      // devuelve una Reserva si hay días RESERVADA en el rango.
+      Reserva reserva = gestorFichaEvento.obtenerReservaParaOcupacion(dto, habitacion);
+
+      ResultadoValidacionHabitacionDTO res = new ResultadoValidacionHabitacionDTO();
+      res.setNumeroHabitacion(dto.getNumeroHabitacion());
+      res.setFechaIngreso(dto.getFechaIngreso());
+      res.setFechaEgreso(dto.getFechaEgreso());
+      res.setSeleccionValida(true);
+
+      if (reserva != null) {
+        res.setHayReserva(true);
+        res.setIdReserva(reserva.getIdReserva());
+        res.setApellidoReserva(reserva.getApellidoReserva());
+        res.setNombreReserva(reserva.getNombreReserva());
+        res.setTelefonoReserva(reserva.getTelefonoReserva());
+        gestorFichaEvento.completarRangoReservaParaHabitacion(res, reserva, habitacion, dto);
+      } else {
+        res.setHayReserva(false);
+      }
+
+      resultados.add(res);
+    }
+
+    // 7) Armar response global
+    ValidarOcupacionesResponseDTO response = new ValidarOcupacionesResponseDTO();
+    response.setResultados(resultados);
+    return response;
+  }
+
   /**
    * Implementa la lógica principal del CU15 "Ocupar habitación".
    *
-   * - Revalida reglas de negocio sobre el request. - Verifica disponibilidad de cada habitación
-   * contra las FichaEvento existentes. - Toma o no la reserva asociada según forzarSobreReserva. -
-   * Crea una Estadia con sus FichaEvento de OCUPACION y las persiste.
+   * Responsabilidades del Service:
+   * - Validar mínimamente el request (no nulo, lista no vacía).
+   * - Orquestar la carga de habitaciones y huéspedes.
+   * - Delegar reglas de negocio de ocupación al GestorEstadia.
+   * - Delegar validación de disponibilidad global al GestorFichaEvento.
+   * - Delegar creación/persistencia de Reserva y Estadia a sus respectivos gestores.
    */
+  @Override
   @Transactional
   public void registrarOcupaciones(RegistrarOcupacionesRequestDTO request) {
 
-    // 1. Validar request
-    Objects.requireNonNull(request);
-    List<OcupacionHabitacionDTO> listaOcupaciones = request.getOcupaciones();
-    if (listaOcupaciones == null || listaOcupaciones.isEmpty())
-      return;
+    // 1) Defensa mínima: request no nulo y lista con elementos
+    Objects.requireNonNull(request, "El request de ocupaciones no puede ser nulo");
 
-    // 2. PRE-CARGA DE HABITACIONES (Map<Integer, Habitacion>)
+    List<OcupacionHabitacionDTO> listaOcupaciones = request.getOcupaciones();
+    if (listaOcupaciones == null || listaOcupaciones.isEmpty()) {
+      return; // Nada que procesar
+    }
+
+    // 2) PRE-CARGA DE HABITACIONES (Map<Integer, Habitacion>)
     Set<Integer> nrosHabitacion = listaOcupaciones.stream()
-        .map(OcupacionHabitacionDTO::getNumeroHabitacion).collect(Collectors.toSet());
+        .map(OcupacionHabitacionDTO::getNumeroHabitacion)
+        .collect(Collectors.toSet());
+
     Map<Integer, Habitacion> mapaHabitaciones =
         gestorHabitaciones.obtenerMapaPorNumeros(nrosHabitacion);
 
-    // 3. PRE-CARGA DE HUÉSPEDES (Map<Long, Huesped>) --- ¡NUEVO! ---
+    // 3) VALIDACIÓN DE REGLAS DE OCUPACIÓN (fechas, capacidad, acompañantes, existencia)
+    gestorEstadia.validarOcupaciones(listaOcupaciones, mapaHabitaciones);
+
+    // 4) PRE-CARGA DE HUÉSPEDES (Map<HuespedID, Huesped>)
     List<IdentificacionHuespedDTO> todosLosIdsHuespedes = new ArrayList<>();
+    
+    Map<Integer, IdentificacionHuespedDTO> mapaIdsResponsables =
+        listaOcupaciones.stream().collect(Collectors.toMap(
+            OcupacionHabitacionDTO::getNumeroHabitacion, 
+            OcupacionHabitacionDTO::getIdHuespedResponsable));
 
     for (OcupacionHabitacionDTO dto : listaOcupaciones) {
-       
       if (dto.getIdsAcompanantes() != null) {
         todosLosIdsHuespedes.addAll(dto.getIdsAcompanantes());
       }
     }
-    
-    
-    // Obtenemos el mapa (Key: ID, Value: Entidad)
-    Map<HuespedID, Huesped> mapaHuespedes = gestorHuespedes.obtenerMapaPorIds(todosLosIdsHuespedes);
 
+    Map<HuespedID, Huesped> mapaHuespedes =
+        gestorHuespedes.obtenerMapaPorIds(todosLosIdsHuespedes);
+    
+    Map<Integer, Huesped> mapaHuespedesResponsables = mapaIdsResponsables.entrySet().stream()
+        .collect(Collectors.toMap(
+            Map.Entry::getKey, // 1. Mantenemos el Número de Habitación como clave
+            entry -> gestorHuespedes.obtenerPorId(entry.getValue()) // 2. Buscamos la entidad usando el DTO
+        ));
 
-    // 4. VALIDACIÓN GLOBAL (Pasa lista y mapa de habs)
+    // 5) VALIDACIÓN GLOBAL DE DISPONIBILIDAD (contra FichaEvento existentes)
     Reserva reserva =
         gestorFichaEvento.validarDisponibilidadGlobal(listaOcupaciones, mapaHabitaciones);
 
-    // 5. WALK-IN O RESERVA EXISTENTE
+    // 6) CREAR ESTADÍA a partir de la (posible) reserva y las ocupaciones
+    Estadia estadia = gestorEstadia.crearEstadia(reserva, listaOcupaciones,
+                                                 mapaHabitaciones, mapaHuespedes,
+                                                 mapaHuespedesResponsables);
+
+    // 7) WALK-IN O RESERVA EXISTENTE
     if (reserva == null) {
-      // Nota: Aquí también pasamos el mapaHuespedes para no volver a buscar al titular
-      reserva =
-          gestorReservas.crearReservaWalkIn(listaOcupaciones, mapaHabitaciones, mapaHuespedes);
+      // No había reserva previa, se crea una reserva "walk-in"
+      reserva = gestorReservas.crearReservaWalkIn(listaOcupaciones,
+                                                  mapaHabitaciones,
+                                                  mapaHuespedesResponsables,
+                                                  estadia);
     } else {
-      gestorReservas.marcarReservaComoEnCurso(reserva);
+      // Había reserva previa, se marca como "en curso"
+      gestorReservas.marcarReservaComoEnCurso(reserva, estadia);
     }
 
-    // 6. CREAR ESTADÍA (Aquí pasamos TODO: Reserva, DTOs, Habitaciones y Huéspedes)
-    gestorEstadia.crearYGuardarEstadia(reserva, listaOcupaciones, mapaHabitaciones, mapaHuespedes);
+    // 8) PERSISTIR ESTADÍA (como agregado raíz)
+    gestorEstadia.guardarEstadia(estadia);
   }
-
-  // ========================
-  // Métodos privados helpers
-  // ========================
-
-  /**
-   * Valida reglas básicas sobre fechas y campos obligatorios del DTO.
-   */
-  private void validarDatosBasicos(OcupacionHabitacionDTO dto) {
-
-    if (dto.getFechaIngreso() == null || dto.getFechaEgreso() == null) {
-      throw new IllegalArgumentException("Las fechas de ingreso y egreso son obligatorias.");
-    }
-
-    LocalDate ingreso = dto.getFechaIngreso();
-    LocalDate egreso = dto.getFechaEgreso();
-
-    if (!egreso.isAfter(ingreso)) {
-      throw new IllegalArgumentException(
-          "La fecha de egreso debe ser posterior a la fecha de ingreso para la habitación "
-              + dto.getNumeroHabitacion());
-    }
-  }
-
-  /**
-   * Reglas del CU15 sobre acompañantes / ocupantes: - Cada huésped puede aparecer como acompañante
-   * (ocupante) en UNA sola habitación. - Se permite que el huésped responsable de la reserva figure
-   * también como acompañante en UNA habitación (la que realmente ocupa).
-   */
-  private void aplicarReglasAcompanantes(OcupacionHabitacionDTO dto,
-      Set<IdentificacionHuespedDTO> acompanantesUsadosGlobal) {
-
-    // Validamos la lista de acompañantes (ahora es una lista de objetos, no de Longs)
-    if (dto.getIdsAcompanantes() == null) {
-      return;
-    }
-
-    for (IdentificacionHuespedDTO acompDTO : dto.getIdsAcompanantes()) {
-
-      if (acompDTO == null) {
-        continue;
-      }
-
-      // Regla global: El Set devuelve 'false' si el objeto ya existía adentro.
-      // Al tener @EqualsAndHashCode, comparará por tipo y número de documento.
-      if (!acompanantesUsadosGlobal.add(acompDTO)) {
-        throw new IllegalArgumentException("El huésped con documento "
-            + acompDTO.getNumeroDocumento() + " (" + acompDTO.getTipoDocumento() + ") "
-            + "ya se encuentra asignado como acompañante en otra habitación de esta misma operación.");
-      }
-    }
-  }
-
-
-  private void validarCapacidadHabitacion(OcupacionHabitacionDTO dto, Habitacion habitacion) {
-
-    int cantidadOcupantes =
-        (dto.getIdsAcompanantes() == null) ? 0 : dto.getIdsAcompanantes().size();
-
-    int maximo = habitacion.getTipoHabitacion().getMaximoHuespedes();
-
-    if (cantidadOcupantes > maximo) {
-      throw new IllegalArgumentException(
-          "La habitación " + dto.getNumeroHabitacion() + " tiene una capacidad máxima de " + maximo
-              + " huéspedes y se están intentando asignar " + cantidadOcupantes + ".");
-    }
-  }
-
 }

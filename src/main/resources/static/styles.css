@@ -210,3 +210,14 @@ input[type="date"] {
 	background-color: #003b73;
 	padding: 6px 12px;
 }
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="number"],
+input:not([type]) {
+    text-transform: uppercase;
+}
+
+select {
+    text-transform: uppercase;
+}

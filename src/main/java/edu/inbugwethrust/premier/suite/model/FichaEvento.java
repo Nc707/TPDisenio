@@ -60,4 +60,10 @@ public class FichaEvento {
         }
     )
     private List<Huesped> acompanantes = new ArrayList<>();
+    
+    /**
+     * Huesped responsable de la ocupación (huésped principal).
+     */
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    private Huesped responsable;
 }

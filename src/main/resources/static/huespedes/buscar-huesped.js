@@ -1,0 +1,96 @@
+document.addEventListener('DOMContentLoaded', () => {
+    gestionarToast();
+    actualizarTextoRolOcupacion();
+		
+		    configurarBotonCancelar();
+});
+function configurarBotonCancelar() {
+    const btnCancelar = document.getElementById('btn-cancelar');
+    
+    if (btnCancelar) {
+        btnCancelar.addEventListener('click', (e) => {
+            e.preventDefault(); 
+            
+            // Intentamos obtener el modo actual
+            let accion = 'BUSCAR'; // Default
+            
+            // 1. Desde el input hidden (si agregaste el id en el HTML)
+            const inputAccion = document.getElementById('input-accion');
+            if (inputAccion && inputAccion.value) {
+                accion = inputAccion.value;
+            } else {
+                // 2. Fallback: Desde la URL
+                const params = new URLSearchParams(window.location.search);
+                if (params.get('accion')) {
+                    accion = params.get('accion');
+                }
+            }
+
+            // Lógica de limpieza para el Wizard
+            if (accion === 'OCUPAR') {
+                console.log("Cancelando proceso de ocupación. Limpiando sessionStorage...");
+                sessionStorage.removeItem('colaOcupacion');
+                sessionStorage.removeItem('indiceOcupacionActual');
+                sessionStorage.removeItem('modoAccion');
+                sessionStorage.removeItem('seleccionHabitaciones');
+            }
+
+            // Redirección al inicio
+            window.location.href = '/';
+        });
+    }
+}
+
+/**
+ * Maneja la visualización y ocultamiento del mensaje Toast
+ */
+function gestionarToast() {
+    const toast = document.getElementById("toast-notification");
+    if (toast) {
+        setTimeout(function(){ 
+            toast.classList.remove("show");
+            toast.style.display = 'none';
+        }, 4500);
+    }
+}
+
+/**
+ * Verifica si estamos en modo "OCUPAR" y actualiza el texto 
+ * para indicar si buscamos "Responsable" o "Acompañante"
+ * basándose en el sessionStorage.
+ */
+function actualizarTextoRolOcupacion() {
+    // 1. Obtener parámetros de URL para saber si estamos en 'OCUPAR'
+    const params = new URLSearchParams(window.location.search);
+    const accion = params.get('accion');
+
+    // 2. Elemento del DOM donde escribiremos el rol
+    const spanRol = document.getElementById('texto-rol-huesped');
+
+    // Si no es OCUPAR o no existe el span, no hacemos nada
+    if (accion !== 'OCUPAR' || !spanRol) return;
+
+    // 3. Leer datos del Wizard desde sessionStorage
+		const colaJson = sessionStorage.getItem('colaOcupacion');
+		    const indiceStr = sessionStorage.getItem('indiceOcupacionActual');
+
+		    if (colaJson && indiceStr) {
+		        try {
+		            const cola = JSON.parse(colaJson);
+		            const indice = parseInt(indiceStr);
+		            const habitacionActual = cola[indice];
+
+		            if (habitacionActual) {
+		                // === CAMBIO AQUÍ ===
+		                // Verificamos si el campo OBJETO 'idHuespedResponsable' es nulo
+		                if (!habitacionActual.idHuespedResponsable) {
+		                    spanRol.textContent = "Huésped Responsable";
+		                    spanRol.style.color = "#d35400"; // Naranja
+		                } else {
+		                    spanRol.textContent = "Acompañante";
+		                    spanRol.style.color = "#27ae60"; // Verde
+		                }
+		            }
+		        } catch (e) { console.error(e); }
+    }
+}

@@ -423,3 +423,218 @@
   font-size: 15px;
   text-align: center;
 }
+/* Estilos adicionales para el Modal de Conflicto */
+.warning-header {
+    color: #f1c40f; /* Amarillo */
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+#lista-conflictos li strong {
+    color: #c0392b; /* Rojo oscuro para el número de habitación */
+}
+
+/* Reutilización de clases de modal (asegúrate que estén presentes) */
+.modal-overlay {
+    display: none;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center; align-items: center;
+}
+.modal-overlay.show { display: flex; }
+
+.modal-box {
+    background: white;
+    width: 500px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    font-family: sans-serif;
+    text-align: center;
+}
+
+.modal-header {
+    background-color: #2c3e50;
+    color: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+}
+
+.modal-footer {
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    background: #f9f9f9;
+}
+
+.btn-modal {
+    background-color: #5d8aa8;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 3px;
+}
+.btn-modal:hover { opacity: 0.9; }
+/* Asegura que el z-index sea muy alto para tapar todo */
+.modal-overlay {
+    z-index: 9999 !important; 
+}
+
+/* Asegura la visibilidad */
+.modal-overlay.show {
+    display: flex !important;
+}
+/* Modal específico para la pantalla de espera */
+.modal-box-espera {
+    background: white;
+    width: 80%;
+    max-width: 800px; /* Es más ancho que los modales normales */
+    height: 400px;    /* Altura fija para parecerse a la imagen */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-header-premier {
+    background-color: #1f2a44; /* Azul oscuro Premier */
+    color: white;
+    padding: 15px 30px;
+    text-align: right; /* "Premier" a la derecha según la imagen */
+    font-weight: bold;
+    font-size: 1.2rem;
+    font-family: sans-serif;
+}
+
+.modal-content-espera {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-size: 1.5rem;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+/* =========================================
+   ESTILOS PARA DATOS EN GRILLA (ID + TOOLTIP)
+   ========================================= */
+
+/* Necesario para posicionar el tooltip relativo a la celda */
+.cell-content-wrapper {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+/* Ajustes al círculo para mostrar el número */
+.status-circle {
+    /* Mantenemos tus dimensiones originales, asegúrate que sean suficientes */
+    width: 24px;  /* Ajusta si el número no entra */
+    height: 24px;
+    border-radius: 50%;
+    
+    /* Centrado del texto (ID) */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    /* Estilo del texto */
+    color: black;       /* Texto blanco para contraste */
+    font-size: 10px;    /* Letra pequeña para que entre */
+    font-weight: bold;
+    font-family: sans-serif;
+    
+    cursor: help; /* Cambia el cursor para indicar que hay info */
+}
+
+/* La viñeta (Tooltip) - Oculta por defecto */
+.custom-tooltip {
+    display: none; /* Oculto */
+    position: absolute;
+    bottom: 120%; /* Aparece justo arriba del círculo */
+    left: 50%;
+    transform: translateX(-50%); /* Centrado horizontalmente */
+    
+    /* Estilo visual de la viñeta */
+    background-color: #333;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap; /* Evita que el nombre se corte en dos líneas */
+    z-index: 100; /* Asegura que flote sobre otras celdas */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    pointer-events: none; /* Para que el mouse no interactúe con el tooltip */
+}
+
+/* Flechita decorativa del tooltip (opcional) */
+.custom-tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%; /* Abajo del tooltip */
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+}
+
+/* MOSTRAR EL TOOLTIP AL PASAR EL MOUSE */
+.cell-content-wrapper:hover .custom-tooltip {
+    display: block;
+    animation: fadeInTooltip 0.2s ease-in-out;
+}
+
+@keyframes fadeInTooltip {
+    from { opacity: 0; transform: translate(-50%, 5px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* Ajuste específico para que el texto sea legible en los colores claros si usas alguno */
+.status-libre { color: transparent; } /* En libre no mostramos nada */
+
+/* Sobrescribimos el cursor solo para las libres */
+.status-circle.status-libre {
+    cursor: pointer; /* Muestra la 'manito' indicando que se puede hacer clic */
+    /* O usa: cursor: default; si prefieres la flecha normal */
+}
+/* =========================================
+   CORRECCIÓN LISTAS EN LEYENDA
+   ========================================= */
+
+/* Afecta tanto a la lista de colores como a la de capacidades */
+.leyenda-container ul {
+    list-style: none;      /* Quita el puntito negro por defecto */
+    padding-left: 0;       /* Quita la sangría (lo pega a la izquierda) */
+    margin-left: 0;        /* Asegura que no haya margen izquierdo */
+    margin-bottom: 15px;   /* Un poco de espacio al final de cada lista */
+}
+
+/* Opcional: Un poco de aire entre cada ítem para que se lea mejor */
+.leyenda-container li {
+    margin-bottom: 5px;
+    text-align: left;      /* Alineación forzada a la izquierda */
+    font-size: 0.8rem;    /* Ajuste de tamaño si lo necesitas */
+}
+
+/* Asegurar que el título también esté alineado si no lo estaba */
+.leyenda-container h3 {
+    text-align: left;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    font-size: 1rem;       /* O el tamaño que prefieras */
+    font-weight: bold;
+}

@@ -8,7 +8,10 @@ import lombok.*;
 @Table(name = "tarjeta")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor
-public class Tarjeta extends Pago {
+public class Tarjeta extends MetodoPago{
+    
+    @Column(unique = true)
+    private String numero;
 
     private String banco;
 

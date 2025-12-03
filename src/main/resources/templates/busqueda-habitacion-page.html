@@ -22,6 +22,14 @@
             <li><span class="status-circle status-ocupada"></span>Ocupada</li>
             <li><span class="status-circle status-libre"></span>Libre</li>
         </ul>
+        <h3>Capacidad Habitaciones:</h3>
+        <ul>
+            <li>Individual Estandard: 1</li>
+            <li>Doble Estandard: 2</li>
+            <li>Doble Superior: 2</li>
+            <li>Superior Family Plan: 5</li>
+            <li>Suite Doble: 2</li>
+        </ul>
     </aside>
 
     <div class="main-content">
@@ -40,15 +48,31 @@
                       method="get">
                     <input type="hidden" name="accion" th:value="${modoAccion}" />
 
+                    <!-- MENSAJE DE ERROR FECHAS -->
+                    <div id="mensaje-error-fechas" class="mensaje-error hidden">
+                        Ingrese ambas fechas.
+                    </div>
+
                     <div class="form-row">
+
+                        <!-- INPUT FECHA DESDE (con persistencia) -->
                         <div class="form-group">
                             <label for="fecha-desde">Fecha desde</label>
-                            <input type="date" id="fecha-desde" th:field="*{fechaInicio}">
+                            <input type="date"
+                                   id="fecha-desde"
+                                   name="fechaInicio"
+                                   th:value="${param.fechaInicio != null ? param.fechaInicio[0] : (busquedaDTO != null ? busquedaDTO.fechaInicio : '')}">
                         </div>
+
+                        <!-- INPUT FECHA HASTA (con persistencia) -->
                         <div class="form-group">
                             <label for="fecha-hasta">Fecha hasta</label>
-                            <input type="date" id="fecha-hasta" th:field="*{fechaFin}">
+                            <input type="date"
+                                   id="fecha-hasta"
+                                   name="fechaFin"
+                                   th:value="${param.fechaFin != null ? param.fechaFin[0] : (busquedaDTO != null ? busquedaDTO.fechaFin : '')}">
                         </div>
+
                         <button type="submit" class="btn-primary">BUSCAR</button>
                     </div>
                 </form>
@@ -83,7 +107,6 @@
 
                         <tbody>
                         <tr th:each="fecha : ${calendario.fechas}">
-
                             <th th:text="${#temporals.format(fecha, 'dd/MM/yyyy')}"
                                 th:data-fecha="${fecha}">
                                 04/11/2025
@@ -94,13 +117,19 @@
                                     class="celda-interactiva"
                                     th:data-habitacion="${hab.numeroHabitacion}"
                                     th:data-fecha="${fecha}"
-                                    th:with="estado=${calendario.mapaDisponibilidad.get(fecha).get(hab.numeroHabitacion)}"
-                                    th:attr="data-estado=${estado.toString()}, data-tipo=${entry.key}">
+
+                                    th:with="estadoDTO=${calendario.mapaDisponibilidad.get(fecha).get(hab.numeroHabitacion)}"
+
+                                    th:attr="data-estado=${estadoDTO.estado.toString()},
+                                             data-tipo=${entry.key},
+                                             data-id-estado=${estadoDTO.idEstado},
+                                             data-nombres-responsable=${estadoDTO.nombresResponsable},
+                                             data-apellidos-responsable=${estadoDTO.apellidosResponsable}">
 
                                     <div class="cell-content"
-                                         th:attr="data-estado=${estado.toString()}">
+                                         th:attr="data-estado=${estadoDTO.estado.toString()}">
 
-                                        <th:block th:if="${estado == T(edu.inbugwethrust.premier.suite.model.EstadoHabitacion).LIBRE}">
+                                        <th:block th:if="${estadoDTO.estado == T(edu.inbugwethrust.premier.suite.model.EstadoHabitacion).LIBRE}">
                                             <input type="checkbox"
                                                    class="hidden-checkbox"
                                                    th:id="'chk_' + ${hab.numeroHabitacion} + '_' + ${fecha}"
@@ -110,9 +139,19 @@
                                             <div class="status-circle status-libre"></div>
                                         </th:block>
 
-                                        <th:block th:unless="${estado == T(edu.inbugwethrust.premier.suite.model.EstadoHabitacion).LIBRE}">
-                                            <div class="status-circle"
-                                                 th:classappend="' status-' + ${estado.toString().toLowerCase()}">
+                                        <th:block th:unless="${estadoDTO.estado == T(edu.inbugwethrust.premier.suite.model.EstadoHabitacion).LIBRE}">
+                                            <div class="cell-content-wrapper">
+                                                <div class="status-circle"
+                                                     th:classappend="' status-' + ${estadoDTO.estado.toString().toLowerCase()}"
+                                                     th:text="${estadoDTO.idEstado}">
+                                                </div>
+
+                                                <div class="custom-tooltip"
+                                                     th:if="${estadoDTO.nombresResponsable != null or estadoDTO.apellidosResponsable != null}">
+                                                    <span th:text="${estadoDTO.apellidosResponsable}">Pérez</span>,
+                                                    <span th:text="${estadoDTO.nombresResponsable}">Juan</span>
+                                                </div>
+
                                             </div>
                                         </th:block>
 
@@ -125,16 +164,19 @@
                 </div>
             </form>
 
-            <!-- Botones inferiores: se ocultan en modo DISPONIBILIDAD -->
-            <div class="botones-inferiores" th:if="${modoAccion != 'DISPONIBILIDAD'}">
+            <div class="botones-inferiores">
                 <button type="button" class="btn-secondary" id="open-modal-btn">CANCELAR</button>
-                <button type="button" class="btn-secondary" id="reset-btn">LIMPIAR</button>
-                <button type="submit" class="btn-primary" id="btn-siguiente" form="form-seleccion">
-                    SIGUIENTE</button>
+
+                <th:block th:if="${modoAccion != 'DISPONIBILIDAD'}">
+                    <button type="button" class="btn-secondary" id="reset-btn">LIMPIAR</button>
+                    <button type="button" class="btn-primary" id="btn-siguiente" form="form-seleccion">
+                        SIGUIENTE
+                    </button>
+                </th:block>
             </div>
         </div>
 
-        <!-- SECCIÓN 2: RESUMEN (solo RESERVAR) -->
+        <!-- SECCIÓN 2: RESUMEN -->
         <div id="seccion-resumen" class="hidden" th:if="${modoAccion == 'RESERVAR'}">
             <h1>Reservar Habitaciones</h1>
 
@@ -148,7 +190,6 @@
                     </tr>
                     </thead>
                     <tbody id="tbody-resumen">
-                    <!-- filas cargadas desde JS -->
                     </tbody>
                 </table>
             </div>
@@ -159,7 +200,7 @@
             </div>
         </div>
 
-        <!-- SECCIÓN 3: DATOS HUÉSPED (solo RESERVAR) -->
+        <!-- SECCIÓN 3: DATOS HUÉSPED -->
         <div id="seccion-datos-huesped" class="hidden" th:if="${modoAccion == 'RESERVAR'}">
             <h1>Reservar Habitaciones</h1>
 
@@ -189,8 +230,6 @@
                         </div>
                     </div>
 
-                    <!-- Inputs hidden con SeleccionHabitacionDTO se agregan por JS -->
-
                     <div class="botonera-final">
                         <button type="button" class="btn-secondary" id="btn-final-cancelar">CANCELAR</button>
                         <button type="submit" class="btn-primary">ACEPTAR</button>
@@ -203,6 +242,108 @@
     </div>
 </div>
 
-<script layout:fragment="scripts" th:src="@{seleccion-rango.js}"></script>
-</body>
+<div layout:fragment="modals">
+    <div id="modal-conflicto-reserva" class="modal-overlay">
+        <div class="modal-box" style="border-top: 5px solid #f1c40f;">
+            <div class="modal-header">
+                <div class="warning-header" style="display:flex; gap:10px; align-items:center; color:#f39c12;">
+                    <span style="font-size:1.5em;">⚠</span>
+                    <span>HABITACIÓN RESERVADA</span>
+                </div>
+                <span>Premier</span>
+            </div>
+
+            <div class="modal-content" style="text-align: left; font-size: 1rem;">
+                <p>Las siguientes habitaciones tienen reservas en las fechas seleccionadas:</p>
+                <ul id="lista-conflictos" style="background: #f9f9f9; padding: 15px; border-left: 3px solid #f1c40f; list-style: none;">
+                </ul>
+                <p style="margin-top: 20px; font-weight: bold; text-align: center;">
+                    ¿Desea ocupar la habitación de todas formas?
+                </p>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-modal" id="btn-conflicto-volver">VOLVER</button>
+                <button type="button" class="btn-modal" id="btn-conflicto-ocupar-igual" style="background-color: #f39c12; border:none;">OCUPAR IGUAL</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-espera" class="modal-overlay">
+        <div class="modal-box-espera">
+            <div class="modal-header-premier">
+                <span>Premier</span>
+            </div>
+            <div class="modal-content-espera">
+                <p>PRESIONE CUALQUIER TECLA PARA CONTINUAR...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block layout:fragment="scripts">
+    <script th:src="seleccion-rango.js"></script>
+
+    <!-- Validación de rango de fechas -->
+   <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const formBusqueda = document.getElementById('form-busqueda');
+        const fechaDesde   = document.getElementById('fecha-desde');
+        const fechaHasta   = document.getElementById('fecha-hasta');
+        const errorFechas  = document.getElementById('mensaje-error-fechas');
+
+        if (formBusqueda) {
+            formBusqueda.addEventListener('submit', function(e) {
+                const desde = fechaDesde.value;
+                const hasta = fechaHasta.value;
+                let mensaje = '';
+
+                // Reiniciamos el estado del error antes de validar
+                if (errorFechas) {
+                    errorFechas.classList.add('hidden');
+                    errorFechas.textContent = '';
+                }
+
+                // CASO 1: Faltan ambas fechas
+                if (!desde && !hasta) {
+                    mensaje = 'Por favor, seleccione tanto la fecha de ingreso como la de egreso.';
+                }
+                // CASO 2: Falta solo fecha desde
+                else if (!desde) {
+                    mensaje = 'Debe indicar una fecha de ingreso.';
+                }
+                // CASO 3: Falta solo fecha hasta
+                else if (!hasta) {
+                    mensaje = 'Debe indicar una fecha de egreso.';
+                }
+                // CASO 4: Incoherencia (Desde mayor que Hasta)
+                else if (desde > hasta) {
+                    mensaje = 'La fecha de ingreso no puede ser posterior a la fecha de egreso.';
+                }
+
+                // Si se generó algún mensaje de error, prevenimos el envío y mostramos el mensaje
+                if (mensaje) {
+                    e.preventDefault();
+                    if (errorFechas) {
+                        errorFechas.classList.remove('hidden');
+                        errorFechas.textContent = mensaje;
+                    }
+                }
+            });
+
+            // Listener para ocultar el error en cuanto el usuario toca un input
+            [fechaDesde, fechaHasta].forEach(function(input) {
+                if (input) {
+                    input.addEventListener('input', function() {
+                        if (errorFechas) {
+                            errorFechas.classList.add('hidden');
+                            errorFechas.textContent = ''; // Limpiamos el texto también
+                        }
+                    });
+                }
+            });
+        }
+    });
+</script>
+</th:block>
 </html>

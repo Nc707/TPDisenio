@@ -128,7 +128,7 @@ public class HuespedController {
             if (fechaIngreso != null) redirectAttributes.addAttribute("fechaIngreso", fechaIngreso);
             if (fechaEgreso != null) redirectAttributes.addAttribute("fechaEgreso", fechaEgreso);
             
-            return "redirect:/huespedes/buscar"; 
+            return "redirect:/huespedes/formulario-alta"; 
         }
         
         model.addAttribute("huespedes", listaResultados);

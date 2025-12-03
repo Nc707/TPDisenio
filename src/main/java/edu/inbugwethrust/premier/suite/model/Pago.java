@@ -4,27 +4,36 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
 
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+@Getter 
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "pago")
-@Inheritance(strategy = InheritanceType.JOINED)
-public abstract class Pago {
-
+public class Pago {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idPago;
 
-    private Double importe;
+    private float importe;
 
-    private Double vuelto;
+    private float vuelto;
 
     private LocalDate fechaPago;
 
     @Enumerated(EnumType.STRING)
-    private EstadoPago estadoPago;
+    private  EstadoPago estadoPago;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "id_factura", nullable = false)
-    private Factura factura;
+    private  Factura factura;
+    
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "metodo_pago_id")
+    private MetodoPago metodoDePago; 
 }
+
+
+
+
+

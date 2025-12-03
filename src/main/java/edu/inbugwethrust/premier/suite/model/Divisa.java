@@ -4,15 +4,19 @@ import jakarta.persistence.*;
 import lombok.*;
 
 
-
-
 @Entity
 @Table(name = "divisa")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor
-public class Divisa extends Pago {
-
+public class Divisa  extends MetodoPago{
+   
+    @Column(unique = true)
+    private String numero;
+    
     private String cotizacion;
 
     private String moneda;
+
+    
+
 }

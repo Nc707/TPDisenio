@@ -8,13 +8,16 @@ import java.time.LocalDate;
 @Table(name = "cheque")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor
-public class Cheque extends Pago {
-
+public class Cheque extends MetodoPago {
+    
+    @Column(unique = true)
     private String numero;
 
     private LocalDate fechaCobro;
 
     private String banco;
+
+    private float monto;
 
     @Enumerated(EnumType.STRING)
     private TipoCheque tipo;
